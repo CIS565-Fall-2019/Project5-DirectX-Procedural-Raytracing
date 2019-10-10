@@ -1,0 +1,6 @@
+.vs
+Packages
+UpgradeLog.*
+*/UpgradeLog.*
+FallbackLayer_Build/*
+.FallbackLayer_Build/*
