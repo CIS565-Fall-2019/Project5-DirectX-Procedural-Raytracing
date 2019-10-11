@@ -18,7 +18,7 @@ Go back to [Project0-Getting-Started](https://github.com/CIS565-Fall-2019/Projec
 ## Building the Project
 1. Open the VS Solution named `DXR-Project`.
 2. Make `D3D12RaytracingProceduralGeometry` as `Start-Up Project`
-3. Build both `Release` and `Debug`. This will build the `Fallback` layer with it too.
+3. Build both `Release` and `Debug`. This will build the `Fallback Layer` with it too.
 4. **Important Note**: running the solution won't do anything unless the CPU code works perfectly. We added a flag to `Main.cpp` which you should set to 1 once you complete this entire CPU section. Basically, when you move on to writing shader/GPU code, the flag should always be set to 1.
 
 <p align="center">
