@@ -11,7 +11,7 @@ This is due Sunday, October 27th.
 
 Note on terminology: `DirectX` is a graphics API developed by Microsoft. `DirectX Raytracing` (DXR) is an API extension that supports GPU raytracing capabilities (mostly NVIDIA high end GPUs), that is to say that the API supports operations closely tied to the concept of raytracing.
 
-# Part 0: DXR-Compatibility & Building the Project
+# Part 0: DXR-Compatibility & Building the Project & Conceptual Questions
 ## DXR-Compatibility
 Go back to [Project0-Getting-Started](https://github.com/CIS565-Fall-2019/Project0-Getting-Started) and make sure Part 2.3 works correctly.
 
@@ -24,6 +24,20 @@ Go back to [Project0-Getting-Started](https://github.com/CIS565-Fall-2019/Projec
 <p align="center">
   <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/flag.png">
 </p>
+
+## Conceptual Questions
+This part is due Sunday, October 19th.
+
+Answer these conceptual questions that may help you gain a solid understanding of Raytracing and DXR. Make a GitHub pull request highlighting your answers:
+
+1. Ray tracing begins by firing off rays from the camera's perspective, with 1 ray corresponding to each pixel. Say viewport is 1280 by 720, how would you convert these pixel locations into rays, with each ray being defined by an `Origin` and a `Direction`, such that `Ray = Origin + t * Direction`? Consult this [intro](https://www.scratchapixel.com/lessons/3d-basic-rendering/computing-pixel-coordinates-of-3d-point/mathematics-computing-2d-coordinates-of-3d-points) to camera transformations and this [explanation](http://webglfactory.blogspot.com/2011/05/how-to-convert-world-to-screen.html) of world-to-screen/screen-to-world space article to formulate an answer in your own words.
+2. Each procedural geometry can be defined using 3 things: the `Axis-Aligned Bounding Box` (AABB) (e.g. bottom left corner at (-1,-1,-1) and top right corner at (1,1,1)) that surrounds it,the `Type` (e.g Sphere of radius 2 centered at the AABB) of the procedural geometry contained within the AABB, and an `Equation` describing the procedural geometry (e.g. Sphere: `(x - center)^2 = r^2`). **Using these 2 constructs, conceptually explain how one could go about rendering the procedural geometry**. To be specific, consider an arbitrary ray that enters the AABB of the procedural geometry.
+3. **Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures** of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. Multiple answers can be correct.
+
+<p align="center">
+  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/scene.png">
+</p>
+
 
 # Part 1: Project Description
 This DXR project will teach you how to **(1)** build a DXR rendering pipeline and **(2)** raytrace procedural geometries using the pipeline.
