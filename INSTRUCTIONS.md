@@ -6,7 +6,7 @@ This is due Sunday, October 27th.
 **Summary:** In this project, you will learn how to use the newly released DirectX Raytracing API to ray trace procedural geometries. The project is structured such that you're introduced to DXR concepts in multiple steps, starting with CPU-side code for setting up the rendering pipeline, and finishing up with the actual rendering pipeline execution through GPU-side code.
 
 <p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/render.png">
+  <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/render.png">
 </p>
 
 Note on terminology: `DirectX` is a graphics API developed by Microsoft. `DirectX Raytracing` (DXR) is an API extension that supports GPU raytracing capabilities (mostly NVIDIA high end GPUs), that is to say that the API supports operations closely tied to the concept of raytracing.
@@ -22,7 +22,7 @@ Go back to [Project0-Getting-Started](https://github.com/CIS565-Fall-2019/Projec
 4. **Important Note**: running the solution won't do anything unless the CPU code works perfectly. We added a flag to `Main.cpp` which you should set to 1 once you complete this entire CPU section. Basically, when you move on to writing shader/GPU code, the flag should always be set to 1.
 
 <p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/flag.png">
+  <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/flag.png">
 </p>
 
 ## Conceptual Questions
@@ -35,7 +35,7 @@ Answer these conceptual questions that may help you gain a solid understanding o
 3. **Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures** of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. Multiple answers can be correct.
 
 <p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/scene.png">
+  <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/scene.png">
 </p>
 
 
@@ -45,13 +45,13 @@ This DXR project will teach you how to **(1)** build a DXR rendering pipeline an
 For the unfamiliar, ray tracing is a process similar to path tracing, except that it is deterministic (no more probabilities!) and that we only do a single pass over the entire scene (no more multiple iterations). This image summarizes what goes on in ray tracing:
 
 <p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/raytrace.jpg">
+  <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/raytrace.jpg">
 </p>
 
 Specifically, the DXR execution pipeline mimics all the interactions depicted above. This diagram summarizes the DXR execution pipeline:
 
 <p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/pipeline.png">
+  <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/pipeline.png">
 </p>
 
 This does not prevent us from calling `TraceRay()` multiple times. In fact, any self-respecting raytracing project will allow multiple (~3) `TraceRay()` calls. The common denominator between ray and path tracing is the depth of the ray. In this project, we use a *minimum depth of 3* to allow tracing the following:
@@ -175,7 +175,7 @@ Files to checkout:
 So far we've been doing standard DirectX stuff (no raytracing involved). Now we will turn to do some DXR related stuff. Specifically, we will be creating hitgroup subobjects that will be built into the pipeline. The definition of a hitgroup is a `Closest Hit Shader`, at least one `Intersection Shader` (if the primitive is a triangle, this is not needed: triangle intersection is built into DXR), and an optional `Any Hit Shader` for transparency testing (which we won't do). Visually, the hitgroup is this:
 
 <p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/hitgroup.png">
+  <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/hitgroup.png">
 </p>
 
 What's as important as creating these hitgroups is binding a local root signature to them, which you defined in the previous section (they live in `m_raytracingLocalRootSignature`).
@@ -206,13 +206,13 @@ Raytracing is an expensive process. The most prevalent way to boost performance 
 On a high level, the entire scene is divided into `Top Level Acceleration Structures` (TLAS), which themselves hold multiple **instances** of `Bottom Level Acceleration Structures` (BLAS). In turn, a BLAS holds geometry data (the data you defined and uploaded before). Here is a visualization that explains this:
 
 <p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/accel.png">
+  <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/accel.png">
 </p>
 
 In our project, we only have 1 TLAS, which in turn has 1 **instance** of a Triangle BLAS, and 1 **instance** of an AABB BLAS. The Triangle BLAS holds triangle data that will be used to render a horizontal plane, on top of which our other geometries will be drawn. The AABB BLAS holds *multiple* AABBs, one for each procedural geometry to render. This graph summarizes the project's AS:
 
 <p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/accelexplained.png">
+  <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/accelexplained.png">
 </p>
 
 In DXR, building the Acceleration Structure requires multiple steps:
@@ -262,7 +262,7 @@ These files will contain important GPU-side code used to do the actual raytracin
 Implement ray generation. This is very similar to path tracing ray generation. Rays are emitted from the camera, with each pixel having a corresponding ray. The rays should be output in world coordinates. When ray generation is complete, you should see a very dark image with slight ambient occlusion going on:
 
 <p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/after-ray-gen.png">
+  <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/after-ray-gen.png">
 </p>
 
 Files to checkout:
