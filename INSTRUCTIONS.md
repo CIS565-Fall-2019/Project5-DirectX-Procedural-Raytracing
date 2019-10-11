@@ -11,8 +11,19 @@ This is due Sunday, October 27th.
 
 Note on terminology: `DirectX` is a graphics API developed by Microsoft. `DirectX Raytracing` (DXR) is an API extension that supports GPU raytracing capabilities (mostly NVIDIA high end GPUs), that is to say that the API supports operations closely tied to the concept of raytracing.
 
-# Part 0: Making sure your machine is DXR-compatible
+# Part 0: DXR-Compatibility & Building the Project
+## DXR-Compatibility
 Go back to [Project0-Getting-Started](https://github.com/CIS565-Fall-2019/Project0-Getting-Started) and make sure Part 2.3 works correctly.
+
+## Building the Project
+1. Open the VS Solution named `DXR-Project`.
+2. Make `D3D12RaytracingProceduralGeometry` as `Start-Up Project`
+3. Build both `Release` and `Debug`. This will build the `Fallback` layer with it too.
+4. **Important Note**: running the solution won't do anything unless the CPU code works perfectly. We added a flag to `Main.cpp` which you should set to 1 once you complete this entire CPU section. Basically, when you move on to writing shader/GPU code, the flag should always be set to 1.
+
+<p align="center">
+  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/flag.png">
+</p>
 
 # Part 1: Project Description
 This DXR project will teach you how to **(1)** build a DXR rendering pipeline and **(2)** raytrace procedural geometries using the pipeline.
@@ -103,12 +114,6 @@ These files will contain important CPU-side code used to setup the DXR pipeline.
     * LOOKAT-2.6: DXR-AccelerationStructure.cpp
     * LOOKAT-2.7: DXR-ShaderNames.cpp, DXR-ShaderTable.cpp
     * LOOKAT-2.8: DXR-DoRaytracing.cpp
-
-**IMPORTANT NOTE**: The project will not run correctly unless the CPU code works perfectly. We added a flag to `Main.cpp` which you should set to 1 once you complete this entire CPU section. Basically, when you move on to writing shader/GPU code, the flag should always be set to 1.
-
-<p align="center">
-  <img src="https://github.com/CIS565-Fall-2019/ProjectDXR/blob/assignment/images/flag.png">
-</p>
 
 ## 2.1 - Scene Data, Constant Buffers, Structured Buffers
 We begin by concerning ourselves by how to send scene data to the GPU. The scene contains a camera, lights, colors for objects, as well as transforms for the objects to render. To send this data to the GPU, we need to (1) populate the structs with the values we need, then (2) somehow map this data onto the CPU in a region that the GPU can read from (this is called allocating and uploading to the GPU).
