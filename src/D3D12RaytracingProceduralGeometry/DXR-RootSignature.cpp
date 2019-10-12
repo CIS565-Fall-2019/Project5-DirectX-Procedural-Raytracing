@@ -19,18 +19,25 @@ void DXProceduralProject::CreateRootSignatures()
 		CD3DX12_DESCRIPTOR_RANGE ranges[2];
 		ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);  // 1 output texture
 
-		// TODO-2.2: In range index 1 (the second range), initialize 2 SRV resources at register 1.
-		// We will have 1 SRV resource for the vertices, and another for the indices.
+		// TODO-2.2: In range index 1 (the second range), initialize 2 SRV resources at register 1: indices and vertices of triangle data.
+        // This will effectively put the indices at register 1, and the vertices at register 2.
+        
 
-		// TODO-2.2: Initialize all the parameters of the GlobalRootSignature in their appropriate slot.
-		//		* These are the actual global root parameters. 
+		// TODO-2.2: Initialize all the parameters of the GlobalRootSignature in their appropriate slots.
 		//		* See GlobalRootSignature in RaytracingSceneDefines.h to understand what they are.
-		// - The OutputView and the VertexBuffers should correspond to the UAV (UniformAccessView) descriptor above and 
-		//   the SRV (ShaderResourceView) descriptors above respectively.
-		// - As for the AccelerationStructure, SceneConstant, and AABBAttributeBuffer, they should be:
-		//	 SRV, ConstantBufferView (CBV), and SRV respectively.
+		// - The OutputView should correspond to the UAV range descriptor above (descriptor table), bound to register 0 of the UAV registers.
+        // - The Index/Vertex Buffer should correspond to the SRV range (descriptor table) above, bound to registers 1 and 2 of the SRV registers.
+        //      Note that since we initialize these as a range of size 2, then you should bind the entire range to register 1.
+        //      This will automatically fill in registers 1 and 2.
+		// - The AccelerationStructure should be init as SRV bound to register 0 of the SRV registers.
+        // - The SceneConstant should be init as a ConstantBufferView (CBV) bound to register 0 of the CBV registers.
+        // - The AABBAttributeBuffer should be init as SRV bound to register 3 of the SRV registers.
 		// - Look up InitAsDescriptorTable(), InitAsShaderResourceView(), and InitAsConstantBuffer() in the DirectX documentation
 		// to understand what to do.
+        // - If you're ever unsure if the register mapping is correct, look at the top of Raytracing.hlsl.
+        //      u registers --> UAV
+        //      t registers --> SRV
+        //      b registers --> CBV
 		CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignature::Slot::Count];
 
 		// Finally, we bundle up all the descriptors you filled up and tell the device to create this global root signature!
@@ -46,17 +53,19 @@ void DXProceduralProject::CreateRootSignatures()
 		{
 			namespace RootSignatureSlots = LocalRootSignature::Triangle::Slot;
 			CD3DX12_ROOT_PARAMETER rootParameters[RootSignatureSlots::Count];
-			rootParameters[RootSignatureSlots::MaterialConstant].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 1);
+			rootParameters[RootSignatureSlots::MaterialConstant].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 1); 
 
 			CD3DX12_ROOT_SIGNATURE_DESC localRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
 			localRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 			SerializeAndCreateRaytracingRootSignature(localRootSignatureDesc, &m_raytracingLocalRootSignature[LocalRootSignature::Type::Triangle]);
 		}
 
-		// TODO-2.2: AABB geometry. Inspire yourself from the triangle code local signature above to create an AABB local signature
-		// Remember that the AABB holds 1 slot for Material Constants, and another for the geometry instance.
-		// See the AABB Definition in RaytracingSceneDefines.h to understand what this means.
-		// Use registers 1 and 2 for the AABB.
+		// TODO-2.2: AABB geometry. Inspire yourself from the triangle local signature above to create an AABB local signature
+		// - Remember that the AABB holds 1 slot for Material Constants, and another 1 for the geometry instance.
+		// - See the AABB Definition in RaytracingSceneDefines.h to understand what this means.
+		// - Use registers 1 and 2 of the CBVs for the AABB. Yes, althought the triangle MaterialConstant *also* maps
+        //      to register 1, this overlap is allowed since we are talking about *local* root signatures --> the values they hold will depend on the 
+        //      shader the local signature is bound to!
 		{
 			
 		}
