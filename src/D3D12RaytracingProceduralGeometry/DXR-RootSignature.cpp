@@ -20,24 +20,24 @@ void DXProceduralProject::CreateRootSignatures()
 		ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);  // 1 output texture
 
 		// TODO-2.2: In range index 1 (the second range), initialize 2 SRV resources at register 1: indices and vertices of triangle data.
-        // This will effectively put the indices at register 1, and the vertices at register 2.
+                // This will effectively put the indices at register 1, and the vertices at register 2.
         
 
 		// TODO-2.2: Initialize all the parameters of the GlobalRootSignature in their appropriate slots.
 		//		* See GlobalRootSignature in RaytracingSceneDefines.h to understand what they are.
 		// - The OutputView should correspond to the UAV range descriptor above (descriptor table), bound to register 0 of the UAV registers.
-        // - The Index/Vertex Buffer should correspond to the SRV range (descriptor table) above, bound to registers 1 and 2 of the SRV registers.
-        //      Note that since we initialize these as a range of size 2, then you should bind the entire range to register 1.
-        //      This will automatically fill in registers 1 and 2.
+                // - The Index/Vertex Buffer should correspond to the SRV range (descriptor table) above, bound to registers 1 and 2 of the SRV registers.
+                //      Note that since we initialize these as a range of size 2, then you should bind the entire range to register 1.
+                //      This will automatically fill in registers 1 and 2.
 		// - The AccelerationStructure should be init as SRV bound to register 0 of the SRV registers.
-        // - The SceneConstant should be init as a ConstantBufferView (CBV) bound to register 0 of the CBV registers.
-        // - The AABBAttributeBuffer should be init as SRV bound to register 3 of the SRV registers.
+                // - The SceneConstant should be init as a ConstantBufferView (CBV) bound to register 0 of the CBV registers.
+                // - The AABBAttributeBuffer should be init as SRV bound to register 3 of the SRV registers.
 		// - Look up InitAsDescriptorTable(), InitAsShaderResourceView(), and InitAsConstantBuffer() in the DirectX documentation
 		// to understand what to do.
-        // - If you're ever unsure if the register mapping is correct, look at the top of Raytracing.hlsl.
-        //      u registers --> UAV
-        //      t registers --> SRV
-        //      b registers --> CBV
+                // - If you're ever unsure if the register mapping is correct, look at the top of Raytracing.hlsl.
+                //      u registers --> UAV
+                //      t registers --> SRV
+                //      b registers --> CBV
 		CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignature::Slot::Count];
 
 		// Finally, we bundle up all the descriptors you filled up and tell the device to create this global root signature!
@@ -64,8 +64,8 @@ void DXProceduralProject::CreateRootSignatures()
 		// - Remember that the AABB holds 1 slot for Material Constants, and another 1 for the geometry instance.
 		// - See the AABB Definition in RaytracingSceneDefines.h to understand what this means.
 		// - Use registers 1 and 2 of the CBVs for the AABB. Yes, althought the triangle MaterialConstant *also* maps
-        //      to register 1, this overlap is allowed since we are talking about *local* root signatures --> the values they hold will depend on the 
-        //      shader the local signature is bound to!
+                //      to register 1, this overlap is allowed since we are talking about *local* root signatures 
+		//      --> the values they hold will depend on the shader function the local signature is bound to!
 		{
 			
 		}
