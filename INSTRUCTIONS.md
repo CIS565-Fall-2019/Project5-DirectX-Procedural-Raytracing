@@ -301,7 +301,7 @@ Files to checkout:
 ### 3.4.2 - Metaballs
 Section 3.4.1 should have given you a good understanding on how intersection shaders are configured and called and what they end up doing. We ask you to implement a similar process but for Metaballs. Metaballs (a.k.a blobs) are special spheres: they have this *potential* that causes adjacent spheres to merge together. This process can be rendered with a special technique using potential thresholding.
 
-At a hight level:
+At a high level:
 1. We begin by identifying the beginning intersection point around these spheres, and the end intersection point.
 2. We raymarch between this beginning and end point with a fixed number of steps.
 3. At each raymarched point, we compute the sum potential caused by the metaballs. If this potential exceeds some threshold, we may render the point (conditioned on it being not culled). Otherwsie, we keep raymarching.
