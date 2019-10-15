@@ -3,6 +3,8 @@ DirectX Procedural Raytracing
 
 This is due Sunday, October 27th.
 
+Answers to [Conteptual Questions](https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/INSTRUCTIONS.md#conceptual-questions) are due Sunday, October 19.
+
 **Summary:** In this project, you will learn how to use the newly released DirectX Raytracing API to ray trace procedural geometries. The project is structured such that you're introduced to DXR concepts in multiple steps, starting with CPU-side code for setting up the rendering pipeline, and finishing up with the actual rendering pipeline execution through GPU-side code.
 
 <p align="center">
