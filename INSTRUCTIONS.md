@@ -262,7 +262,7 @@ These files will contain important GPU-side code used to do the actual raytracin
     * LOOKAT-1.9.5: Raytracing.hlsl
 
 ## 3.1 - Ray Generation
-Implement ray generation. This is very similar to path tracing ray generation. Rays are emitted from the camera, with each pixel having a corresponding ray. The rays should be output in world coordinates. When ray generation is complete, you should see a very dark image with slight ambient occlusion going on:
+Implement ray generation. This is very similar to path tracing ray generation. Rays are emitted from the camera, with each pixel having a corresponding ray. The rays should be output in world coordinates. When ray generation is complete, you should see a very dark image with slight ambient occlusion going on [adjust brightness settings / check pixel-by-pixel but this image is not actually 100% black though it may seem to be]:
 
 <p align="center">
   <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/after-ray-gen.png">
