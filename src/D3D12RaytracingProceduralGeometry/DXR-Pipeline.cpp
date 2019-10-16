@@ -19,6 +19,7 @@ void DXProceduralProject::CreateRaytracingPipelineStateObject()
 	// DXIL library
 	CreateDxilLibrarySubobject(&raytracingPipeline);
 
+	// TODO: figure out why these instructions are telling me to do something they already did
 	// TODO-2.4: Hit groups. Call the function you filled in in DXR-HitGroup.cpp. 
 	CreateHitGroupSubobjects(&raytracingPipeline);
 
@@ -28,6 +29,7 @@ void DXProceduralProject::CreateRaytracingPipelineStateObject()
 	UINT attributeSize = sizeof(struct ProceduralPrimitiveAttributes);
 	shaderConfig->Config(payloadSize, attributeSize);
 
+	// TODO: figure out why these instructions are telling me to do something they already did
 	// TODO-2.4: Local root signature and shader association. Call the other function you did in in DXR-HitGroup.cpp.
 	CreateLocalRootSignatureSubobjects(&raytracingPipeline);
 

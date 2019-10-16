@@ -60,6 +60,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 	auto device = m_deviceResources->GetD3DDevice();
 
 	// Set up AABBs on a grid.
+	// But fucking why though? It seems *super* arbitrary
 	{
 		// 9x3 slots = 9 slots. Note that one procedural geometry can take up multiple slots.
 		// You could have a small sphere that takes up 1 slot, and another that is giant and takes up 4 slots.
@@ -71,14 +72,14 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// The division by 2 centers the grid. The base position is still at the -x,-z corner.
 		const XMFLOAT3 basePosition =
 		{
-			-(aabbGrid.x * c_aabbWidth + (aabbGrid.x - 1) * c_aabbDistance) / 2.0f,
-			-(aabbGrid.y * c_aabbWidth + (aabbGrid.y - 1) * c_aabbDistance) / 2.0f,
-			-(aabbGrid.z * c_aabbWidth + (aabbGrid.z - 1) * c_aabbDistance) / 2.0f,
+			-(aabbGrid.x * c_aabbWidth + (aabbGrid.x - 1) * c_aabbDistance) / 2.0f,//-(6+4)/2=-5
+			-(aabbGrid.y * c_aabbWidth + (aabbGrid.y - 1) * c_aabbDistance) / 2.0f,//-(2+0)/2=-1
+			-(aabbGrid.z * c_aabbWidth + (aabbGrid.z - 1) * c_aabbDistance) / 2.0f,//-(6+4)/2=-5
 		};
 
 		// The stride is "how much to move" for the next slot. This is basically the size of a slot + it's separation from its direct
 		// neighbor
-		XMFLOAT3 stride = XMFLOAT3(c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance);
+		XMFLOAT3 stride = XMFLOAT3(c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance);//(4, 4, 4)
 		
 		// TODO-2.5: Lookup the DXR API for the D3D12_RAYTRACING_AABB struct and fill up this lamda function that creates
 		// and returns an D3D12_RAYTRACING_AABB for you.
@@ -87,11 +88,27 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
 			D3D12_RAYTRACING_AABB aabb{};
+			//center coordinate for our (0, 0) index point
+			XMFLOAT3 baseCenter = { basePosition.x + c_aabbWidth / 2.0f,
+									basePosition.y + c_aabbWidth / 2.0f,
+									basePosition.z + c_aabbWidth / 2.0f};
+			XMFLOAT3 myCenter = baseCenter;// + offsetIndex * stride
+			myCenter.x += offsetIndex.x * stride.x;
+			myCenter.y += offsetIndex.y * stride.y;
+			myCenter.x += offsetIndex.z * stride.z;
+			aabb.MaxX = myCenter.x + size.x / 2.0f;
+			aabb.MaxY = myCenter.y + size.y / 2.0f;
+			aabb.MaxZ = myCenter.z + size.z / 2.0f;
+			aabb.MinX = myCenter.x - size.x / 2.0f;
+			aabb.MinY = myCenter.y - size.y / 2.0f;
+			aabb.MinZ = myCenter.z - size.z / 2.0f;
+			
 			return aabb;
 		};
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);
 		UINT offset = 0;
 
+		//THIS IS WHERE WE ARE HARDCODING SOME GEOMETRY BECAUSE WHY WOULDN'T WE I GUESS
 		// Analytic primitives.
 		{
 			using namespace AnalyticPrimitive;
@@ -110,12 +127,19 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-	
+		AllocateUploadBuffer(device, m_aabbs.data(), sizeof(m_aabbs.data()), &m_aabbBuffer.resource);
+		//AllocateUploadBuffer(device, vertices, sizeof(vertices), &m_vertexBuffer.resource);
+
+		UINT descriptorIndexAB = CreateBufferSRV(&m_aabbBuffer, m_aabbs.size(), sizeof(m_aabbs[0]));
+		//UINT descriptorIndexIB = CreateBufferSRV(&m_indexBuffer, sizeof(indices) / 4, 0);
+		//UINT descriptorIndexVB = CreateBufferSRV(&m_vertexBuffer, ARRAYSIZE(vertices), sizeof(vertices[0]));
+		//ThrowIfFalse(descriptorIndexVB == descriptorIndexIB + 1, L"Vertex Buffer descriptor index must follow that of Index Buffer descriptor index");
 	}
 }
 
 // TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
-
+	BuildPlaneGeometry();
+	BuildProceduralGeometryAABBs();
 }
