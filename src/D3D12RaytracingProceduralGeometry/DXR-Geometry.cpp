@@ -54,7 +54,7 @@ void DXProceduralProject::BuildPlaneGeometry()
 	ThrowIfFalse(descriptorIndexVB == descriptorIndexIB + 1, L"Vertex Buffer descriptor index must follow that of Index Buffer descriptor index");
 }
 
-// TODO-2.5: Build AABBs for procedural geometry that will be used within the acceleration structure.
+// TDO-2.5: Build AABBs for procedural geometry that will be used within the acceleration structure.
 void DXProceduralProject::BuildProceduralGeometryAABBs()
 {
 	auto device = m_deviceResources->GetD3DDevice();
@@ -81,7 +81,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// neighbor
 		XMFLOAT3 stride = XMFLOAT3(c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance);//(4, 4, 4)
 		
-		// TODO-2.5: Lookup the DXR API for the D3D12_RAYTRACING_AABB struct and fill up this lamda function that creates
+		// TDO-2.5: Lookup the DXR API for the D3D12_RAYTRACING_AABB struct and fill up this lamda function that creates
 		// and returns an D3D12_RAYTRACING_AABB for you.
 		// Note that you are only filling an axis-aligned bounding box.
 		// This should take into account the basePosition and the stride defined above.
@@ -124,7 +124,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 			offset += VolumetricPrimitive::Count;
 		}
 
-		// TODO-2.5: Allocate an upload buffer for this AABB data.
+		// TDO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
 		AllocateUploadBuffer(device, m_aabbs.data(), sizeof(m_aabbs.data()), &m_aabbBuffer.resource);
@@ -137,7 +137,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 	}
 }
 
-// TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
+// TDO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
 	BuildPlaneGeometry();

@@ -39,7 +39,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		geometryDesc.Triangles.IndexFormat = m_indexBuffer.resource->GetDesc().Format;
 
 		m_vertexBuffer.cpuDescriptorHandle;
-		geometryDesc.Triangles.VertexBuffer = { m_vertexBuffer.resource->GetGPUVirtualAddress(), 3 * sizeof(float) };//TODO: this is probably wrong so fix it
+		geometryDesc.Triangles.VertexBuffer = { m_vertexBuffer.resource->GetGPUVirtualAddress(), 2 * sizeof(XMFLOAT3) };//TODO: this is probably wrong so fix it? pos, normal
 		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width;
 		geometryDesc.Triangles.VertexFormat = m_vertexBuffer.resource->GetDesc().Format;
 	}
@@ -159,7 +159,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	};//retval
 }
 
-// TODO-2.6: Build the instance descriptor for each bottom-level AS you built before.
+// TDO-2.6: Build the instance descriptor for each bottom-level AS you built before.
 // An instance descriptor will contain information on how these bottom-level ASes will be instanciated in the scene.
 // Among other things, we will pass the world transformation matrix in the instance descriptor.
 // InstanceDescType will either be D3D12_RAYTRACING_INSTANCE_DESC for real DXR or D3D12_RAYTRACING_FALLBACK_INSTANCE_DESC for fallback layer.
@@ -355,18 +355,36 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 		m_dxrCommandList->BuildRaytracingAccelerationStructure(&topLevelBuildDesc, 0, nullptr);
 	}
 
+	
+
 	// TODO-2.6: After we finished building the top-level AS, save all the info in the AccelerationStructureBuffers struct.
 	// Very similar to how you did this in BuildBottomLevelAS() except now you have to worry about topLevelASBuffers.instanceDesc.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h.
 	// Make sure to return the topLevelASBuffers before you exit the function.
+	D3D12_RAYTRACING_INSTANCE_DESC topLevelInstanceDesc;
+	topLevelInstanceDesc.AccelerationStructure = topLevelAS->GetGPUVirtualAddress();
+	topLevelInstanceDesc.Flags = 0;//WHO KNOWS
+	topLevelInstanceDesc.InstanceID = 0;//WHO KNOWS
+	topLevelInstanceDesc.InstanceContributionToHitGroupIndex = 0;//WHO KNOWS
+	XMMATRIX mScale = XMMatrixScaling(1, 1, 1);
+	XMMATRIX mTranslation = XMMatrixTranslation(0, 0, 0);
+	XMMATRIX mTransform = mScale * mTranslation;
+
+	// Store the transform in the instanceDesc.
+	XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(topLevelInstanceDesc.Transform), mTransform);
+
+	ComPtr<ID3D12Resource> topLevelInstanceDescPtr;
+	AllocateUploadBuffer(device, &topLevelInstanceDesc, sizeof(D3D12_RAYTRACING_INSTANCE_DESC), &(topLevelInstanceDescPtr), L"TopLevelInstanceDesc");
+
+
 	return AccelerationStructureBuffers{
 		scratch,
 		topLevelAS,
-		nullptr,//TODO: find the fucking instance desc 
+		topLevelInstanceDescPtr,//TODO: figure out if my garbage instance desc is the right one
 		topLevelPrebuildInfo.ResultDataMaxSizeInBytes };
 }
 
-// TODO-2.6: This will wrap building the Acceleration Structure! This is what we will call when building our scene.
+// TDO-2.6: This will wrap building the Acceleration Structure! This is what we will call when building our scene.
 void DXProceduralProject::BuildAccelerationStructures()
 {
 	auto device = m_deviceResources->GetD3DDevice();

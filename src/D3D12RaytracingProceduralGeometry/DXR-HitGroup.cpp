@@ -2,7 +2,7 @@
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
 
-// LOOKAT-2.3, TODO-2.3: Create the hitgroup pipeline subobject.
+// LOOKAT-2.3, TDO-2.3: Create the hitgroup pipeline subobject.
 // A hitgroup specifies closest hit (mandatory), any hit (optional) and intersection shaders (mandatory but not for triangles).
 // They are executed when a ray intersects the geometry.
 // See how we do it for 1 triangle, and apply that logic to an AABB.
@@ -27,7 +27,7 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 		}
 	}
 
-	// TODO-2.3: AABB geometry hit groups. Very similar to triangles, except now you have to *also* loop over the primitive types.
+	// TDO-2.3: AABB geometry hit groups. Very similar to triangles, except now you have to *also* loop over the primitive types.
 	{
 		for (UINT rayType = 0; rayType < RayType::Count; rayType++)
 		{
@@ -37,14 +37,8 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 				{
 					hitGroup->SetClosestHitShaderImport(c_closestHitShaderNames[GeometryType::AABB]);
 					// We import the closest hit shader name
-					if (primitiveType == IntersectionShaderType::AnalyticPrimitive) {
-						hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[IntersectionShaderType::AnalyticPrimitive]);
-					}
-					if (primitiveType == IntersectionShaderType::VolumetricPrimitive) {
-						hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[IntersectionShaderType::VolumetricPrimitive]);
-					}
-
 				}
+				hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[primitiveType]);
 				// We tell the hitgroup that it should export into the correct shader hit group name, with the correct type
 				hitGroup->SetHitGroupExport(c_hitGroupNames_AABBGeometry[primitiveType][rayType]);
 				hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
@@ -54,7 +48,7 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 	}
 }
 
-// TODO-2.3: Local root signature and shader association (linking)
+// TDO-2.3: Local root signature and shader association (linking)
 void DXProceduralProject::CreateLocalRootSignatureSubobjects(CD3D12_STATE_OBJECT_DESC* raytracingPipeline)
 {
 	// Ray gen and miss shaders in this project are not using a local root signature and thus one is not associated with them.
@@ -72,7 +66,7 @@ void DXProceduralProject::CreateLocalRootSignatureSubobjects(CD3D12_STATE_OBJECT
 		rootSignatureAssociation->AddExports(c_hitGroupNames_TriangleGeometry);
 	}
 
-	// TODO-2.3: AABB geometry hitgroup/local root signature association.
+	// TDO-2.3: AABB geometry hitgroup/local root signature association.
 	// Very similar to triangles, except now one for each primitive type.
 	{
 		auto localRootSignature = raytracingPipeline->CreateSubobject<CD3D12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();

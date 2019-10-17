@@ -32,8 +32,10 @@ void DXProceduralProject::BuildShaderTables()
 		// TODO-2.7: Miss shaders.
 		// Similar to the raygen shader, but now we  have 1 for each ray type (radiance, shadow)
 		// Don't forget to update shaderIdToStringMap.
-		missShaderIDs[0] = nullptr;
-		missShaderIDs[1] = nullptr;
+		missShaderIDs[0] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[0]);
+		shaderIdToStringMap[missShaderIDs[0]] = c_missShaderNames[0];
+		missShaderIDs[1] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[1]);
+		shaderIdToStringMap[missShaderIDs[1]] = c_missShaderNames[1];
 
 		// Hitgroup shaders for the Triangle. We have 2: one for radiance ray, and another for the shadow ray.
 		for (UINT i = 0; i < RayType::Count; i++)
@@ -42,9 +44,17 @@ void DXProceduralProject::BuildShaderTables()
 			shaderIdToStringMap[hitGroupShaderIDs_TriangleGeometry[i]] = c_hitGroupNames_TriangleGeometry[i];
 		}
 
-		// TODO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
+		// TDO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
+		for (UINT primitiveType = 0; primitiveType < IntersectionShaderType::Count; primitiveType++) {
+			for (UINT rayType = 0; rayType < RayType::Count; rayType++) {
+				hitGroupShaderIDs_AABBGeometry[primitiveType][rayType] =
+					stateObjectProperties->GetShaderIdentifier(c_hitGroupNames_AABBGeometry[primitiveType][rayType]);
+				shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[primitiveType][rayType]]
+					= c_hitGroupNames_AABBGeometry[primitiveType][rayType];
+			}//for ray
+		}//for primitive
 		
-	};
+	};//getShaderIDs
 
 	// Get shader identifiers using the lambda function defined above.
 	UINT shaderIDSize;
@@ -92,10 +102,19 @@ void DXProceduralProject::BuildShaderTables()
 		m_rayGenShaderTable = rayGenShaderTable.GetResource();
 	}
 
-	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
+	// TDO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	{
-		
+		UINT numShaderRecords = 2;
+		UINT shaderRecordSize = shaderIDSize;
+
+		ShaderTable missShaderTable(device, numShaderRecords, shaderRecordSize, L"MissShaderTable");
+
+		missShaderTable.push_back(ShaderRecord(missShaderIDs[0], shaderRecordSize, nullptr, 0));
+		missShaderTable.push_back(ShaderRecord(missShaderIDs[1], shaderRecordSize, nullptr, 0));
+
+		missShaderTable.DebugPrint(shaderIdToStringMap);
+		m_missShaderTable = missShaderTable.GetResource();
 	}
 
 	// Hit group shader table. This one is slightly different given that a hit group requires its own custom root signature.
@@ -133,17 +152,18 @@ void DXProceduralProject::BuildShaderTables()
 		//				in DXR-Pipeline.cpp. So if you did AABB, then Sphere, then Metaballs, then follow that order.
 		//			the primitive type is used to tell the shader what type of procedural geometry this is.
 		// Remember that hitGroupShaderIDs_AABBGeometry is a 2-array indexed like so [type of geometry][ray type]
+		//TODO: investigate if this is actually TODO, or if this was just magically not erased
 		{
 			LocalRootSignature::AABB::RootArguments rootArgs;
 			UINT instanceIndex = 0;
 
 			// Create a shader record for each primitive.
-			for (UINT iShader = 0, instanceIndex = 0; iShader < IntersectionShaderType::Count; iShader++)
+			for (UINT iShader = 0, instanceIndex = 0; iShader < IntersectionShaderType::Count; iShader++)//2, one for each primitive type
 			{
 				UINT numPrimitiveTypes = IntersectionShaderType::PerPrimitiveTypeCount(static_cast<IntersectionShaderType::Enum>(iShader));
 
 				// Primitives for each intersection shader.
-				for (UINT primitiveIndex = 0; primitiveIndex < numPrimitiveTypes; primitiveIndex++)
+				for (UINT primitiveIndex = 0; primitiveIndex < numPrimitiveTypes; primitiveIndex++)	//this is 2 (cube, sphere) or 1 (metaball)
 				{
 					rootArgs.materialCb = m_aabbMaterialCB[instanceIndex];
 					rootArgs.aabbCB.instanceIndex = instanceIndex;

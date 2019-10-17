@@ -19,8 +19,7 @@ void DXProceduralProject::CreateRaytracingPipelineStateObject()
 	// DXIL library
 	CreateDxilLibrarySubobject(&raytracingPipeline);
 
-	// TODO: figure out why these instructions are telling me to do something they already did
-	// TODO-2.4: Hit groups. Call the function you filled in in DXR-HitGroup.cpp. 
+	// TDO-2.4: Hit groups. Call the function you filled in in DXR-HitGroup.cpp. 
 	CreateHitGroupSubobjects(&raytracingPipeline);
 
 	// Shader config: defines the maximum sizes in bytes for the ray rayPayload and attribute structure.
@@ -29,8 +28,7 @@ void DXProceduralProject::CreateRaytracingPipelineStateObject()
 	UINT attributeSize = sizeof(struct ProceduralPrimitiveAttributes);
 	shaderConfig->Config(payloadSize, attributeSize);
 
-	// TODO: figure out why these instructions are telling me to do something they already did
-	// TODO-2.4: Local root signature and shader association. Call the other function you did in in DXR-HitGroup.cpp.
+	// TDO-2.4: Local root signature and shader association. Call the other function you did in in DXR-HitGroup.cpp.
 	CreateLocalRootSignatureSubobjects(&raytracingPipeline);
 
 	// Global root signature
@@ -54,4 +52,5 @@ void DXProceduralProject::CreateRaytracingPipelineStateObject()
 	{
 		ThrowIfFailed(m_dxrDevice->CreateStateObject(raytracingPipeline, IID_PPV_ARGS(&m_dxrStateObject)), L"Couldn't create DirectX Raytracing state object.\n");
 	}
+
 }

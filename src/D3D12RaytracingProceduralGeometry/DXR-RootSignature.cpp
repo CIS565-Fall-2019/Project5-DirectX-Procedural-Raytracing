@@ -40,17 +40,10 @@ void DXProceduralProject::CreateRootSignatures()
                 //      t registers --> SRV
                 //      b registers --> CBV
 		CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignature::Slot::Count];
-		/*  OutputView = 0,
-            AccelerationStructure,
-            SceneConstant,
-            AABBattributeBuffer,
-            VertexBuffer,
-			Count BECAUSE *APPARENTLY* THIS IS HOW WE DOCUMENT THINGS
-		*/
 		//g_renderTarget : register(u0);
-		rootParameters[GlobalRootSignature::Slot::OutputView].InitAsDescriptorTable(1, &ranges[0]);
+		rootParameters[GlobalRootSignature::Slot::OutputView].InitAsDescriptorTable(0, &ranges[0], D3D12_SHADER_VISIBILITY_ALL);
 		//g_indices : register(t1, space0);g_vertices : register(t2, space0);
-		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(2, &ranges[1]);
+		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(1, &ranges[1], D3D12_SHADER_VISIBILITY_ALL);
 		//g_scene : register(t0, space0)
 		rootParameters[GlobalRootSignature::Slot::AccelerationStructure].InitAsShaderResourceView(0);
 		//g_sceneCB : register(b0);
@@ -92,7 +85,7 @@ void DXProceduralProject::CreateRootSignatures()
 
 			CD3DX12_ROOT_SIGNATURE_DESC localRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
 			localRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
-			SerializeAndCreateRaytracingRootSignature(localRootSignatureDesc, &m_raytracingLocalRootSignature[LocalRootSignature::Type::Triangle]);
+			SerializeAndCreateRaytracingRootSignature(localRootSignatureDesc, &m_raytracingLocalRootSignature[LocalRootSignature::Type::AABB]);
 		}
 	}
 }
