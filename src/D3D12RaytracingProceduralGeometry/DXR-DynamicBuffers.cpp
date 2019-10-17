@@ -111,7 +111,12 @@ void DXProceduralProject::CreateConstantBuffers()
 //		structured buffers are for structs that have dynamic data (e.g lights in a scene, or AABBs in this case)
 void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
-
+	// similiar to creating the scene buffer above
+	auto device = m_deviceResources->GetD3DDevice();
+	//look at 1.7 holds 1 AABB per procedural object (e.g 1 for metaballs, 1 for a sphere, etc..)
+	auto aabb_objects = m_aabbs.size();
+	// dxproceduralproject.h holds the primitive buffer LOOKAT 1.6 has info 
+	m_aabbPrimitiveAttributeBuffer.Create(device, aabb_objects, 1, L"TODO2.1");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
@@ -164,6 +169,17 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// You can infer what the bottom level AS space to local space transform should be.
 		// The intersection shader tests in this project work with local space, but the geometries are provided in bottom level 
 		// AS space. So this data will be used to convert back and forth from these spaces.
+
+		// do the scale * rotation part
+		auto transform_matrice = XMMatrixMultiply(mScale, mRotation);
+		// multiply translation to get your transform matrice
+		transform_matrice = XMMatrixMultiply(transform_matrice, mTranslation);
+		// create our inverse transform matrice 
+		auto inv_transform_matrice = XMMatrixInverse(nullptr, transform_matrice);
+		// this is like our example here https://www.scratchapixel.com/lessons/3d-basic-rendering/computing-pixel-coordinates-of-3d-point/mathematics-computing-2d-coordinates-of-3d-points
+		// creating local to world and world to local
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = transform_matrice;
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = inv_transform_matrice;
 	};
 
 	UINT offset = 0;
