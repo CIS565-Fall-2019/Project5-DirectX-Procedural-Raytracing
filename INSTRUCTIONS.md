@@ -190,11 +190,11 @@ Files to checkout:
     * 4 TODOs
 
 ## 2.4 - Ray Tracing Pipeline State Object (RTPSO)
-Surprisingly, what you've done so far (in addition to other things we've done for you such as comiling the shaders in the form of a DXIL library - a compiled "dll" of shaders), is enough to create the RTPSO. An RTPSO represents a full set of shaders reachable by a `DispatchRays()` call, with all configuration options resolved such as local signatures and other state. This section will show you how to finalize creating the RTPSO. The actual geometry data will be brought at a later stage.
+Surprisingly, what you've done so far (in addition to other things we've done for you such as comiling the shaders in the form of a DXIL library - a compiled "dll" of shaders), is enough to create the RTPSO. An RTPSO represents a full set of shaders reachable by a `DispatchRays()` call, with all configuration options resolved such as local signatures and other state. This section will show you how creating the RTPSO is created. The actual geometry data will be brought at a later stage.
 
 Files to checkout:
 * DXR-Pipeline.cpp
-    * 3 TODOs
+    * No TODOs (just read through it to understand what's done there)
 
 ## 2.5 - Geometry Data
 The next most important part of rendering is unsurprisingly the shapes/data to render! This section will show you how to allocate and upload data to the GPU in the form of (1) triangle data (vertices, indices) and (2) procedural geometry data (axis-aligned bounding boxes, or AABBs).
