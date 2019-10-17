@@ -2,7 +2,7 @@
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
 
-// LOOKAT-2.4, TODO-2.4: Fill in the Raytracing Pipeline State Object (RTPSO).
+// LOOKAT-2.4: Fill in the Raytracing Pipeline State Object (RTPSO).
 // An RTPSO represents a full set of shaders reachable by a DispatchRays() call, with all configuration options resolved, 
 // such as local signatures and other state.
 void DXProceduralProject::CreateRaytracingPipelineStateObject()
@@ -19,7 +19,7 @@ void DXProceduralProject::CreateRaytracingPipelineStateObject()
 	// DXIL library
 	CreateDxilLibrarySubobject(&raytracingPipeline);
 
-	// TODO-2.4: Hit groups. Call the function you filled in in DXR-HitGroup.cpp. 
+	// LOOKAT-2.4: Hit groups. Call the function you filled in in DXR-HitGroup.cpp. 
 	CreateHitGroupSubobjects(&raytracingPipeline);
 
 	// Shader config: defines the maximum sizes in bytes for the ray rayPayload and attribute structure.
@@ -28,7 +28,7 @@ void DXProceduralProject::CreateRaytracingPipelineStateObject()
 	UINT attributeSize = sizeof(struct ProceduralPrimitiveAttributes);
 	shaderConfig->Config(payloadSize, attributeSize);
 
-	// TODO-2.4: Local root signature and shader association. Call the other function you did in in DXR-HitGroup.cpp.
+	// LOOKAT-2.4: Local root signature and shader association. Call the other function you did in in DXR-HitGroup.cpp.
 	CreateLocalRootSignatureSubobjects(&raytracingPipeline);
 
 	// Global root signature
