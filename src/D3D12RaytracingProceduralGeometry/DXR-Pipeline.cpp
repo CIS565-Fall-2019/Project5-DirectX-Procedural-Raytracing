@@ -2,7 +2,7 @@
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
 
-// LOOKAT-2.4, TODO-2.4: Fill in the Raytracing Pipeline State Object (RTPSO).
+// LOOKAT-2.4, TDO-2.4: Fill in the Raytracing Pipeline State Object (RTPSO).
 // An RTPSO represents a full set of shaders reachable by a DispatchRays() call, with all configuration options resolved, 
 // such as local signatures and other state.
 void DXProceduralProject::CreateRaytracingPipelineStateObject()

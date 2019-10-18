@@ -127,10 +127,11 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TDO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-		AllocateUploadBuffer(device, m_aabbs.data(), sizeof(m_aabbs.data()), &m_aabbBuffer.resource);
+		AllocateUploadBuffer(device, m_aabbs.data(), m_aabbs.size() * sizeof(m_aabbs[0]), &m_aabbBuffer.resource);
 		//AllocateUploadBuffer(device, vertices, sizeof(vertices), &m_vertexBuffer.resource);
 
 		UINT descriptorIndexAB = CreateBufferSRV(&m_aabbBuffer, m_aabbs.size(), sizeof(m_aabbs[0]));
+		printf("AABB Buffer Descriptor Index %d\n", descriptorIndexAB);
 		//UINT descriptorIndexIB = CreateBufferSRV(&m_indexBuffer, sizeof(indices) / 4, 0);
 		//UINT descriptorIndexVB = CreateBufferSRV(&m_vertexBuffer, ARRAYSIZE(vertices), sizeof(vertices[0]));
 		//ThrowIfFalse(descriptorIndexVB == descriptorIndexIB + 1, L"Vertex Buffer descriptor index must follow that of Index Buffer descriptor index");

@@ -36,12 +36,14 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress();
 		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width;
-		geometryDesc.Triangles.IndexFormat = m_indexBuffer.resource->GetDesc().Format;
+		//geometryDesc.Triangles.IndexFormat = m_indexBuffer.resource->GetDesc().Format;
+		geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
 
 		m_vertexBuffer.cpuDescriptorHandle;
 		geometryDesc.Triangles.VertexBuffer = { m_vertexBuffer.resource->GetGPUVirtualAddress(), 2 * sizeof(XMFLOAT3) };//TODO: this is probably wrong so fix it? pos, normal
 		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width;
-		geometryDesc.Triangles.VertexFormat = m_vertexBuffer.resource->GetDesc().Format;
+		//geometryDesc.Triangles.VertexFormat = m_vertexBuffer.resource->GetDesc().Format;
+		geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	}
 
 	{
@@ -51,20 +53,24 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		aabbDescTemplate.AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);
 		aabbDescTemplate.Flags = geometryFlags;
 
+
 		// One AABB primitive per procedural geometry.
 		geometryDescs[BottomLevelASType::AABB].resize(IntersectionShaderType::TotalPrimitiveCount, aabbDescTemplate);
-		for (auto intersectionType = 0; intersectionType < IntersectionShaderType::Count; intersectionType++) {
-			auto& geometryDesc = geometryDescs[BottomLevelASType::AABB][intersectionType];
 
-			geometryDesc.AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() 
-														+ intersectionType * geometryDesc.AABBs.AABBs.StrideInBytes;
-		}
 		// TDO-2.6: Fill the AABB geometry desc for every procedural geometry. LOOK AT THIS BECAUSE I DEFINITELY MESSED IT UP
-
 		// Look-up what a D3D12_RAYTRACING_GEOMETRY_AABBS_DESC structs needs to be filled in correctly.
 		// Remember to use m_aabbBuffer to get the AABB geometry data you previously filled in.
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
+		for (auto primitiveType = 0; primitiveType < IntersectionShaderType::TotalPrimitiveCount; primitiveType++) {
+			auto& geometryDesc = geometryDescs[BottomLevelASType::AABB][primitiveType];
+
+			auto startAddress = m_aabbBuffer.resource->GetGPUVirtualAddress()
+								+ primitiveType * geometryDesc.AABBs.AABBs.StrideInBytes;
+			geometryDesc.AABBs.AABBs.StartAddress = startAddress;
+			
+		}
+
 		
 	}
 }
@@ -152,7 +158,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// Don't forget that this is the return value.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h
 	return AccelerationStructureBuffers{
-				scratch, 
+				scratch,
 				bottomLevelAS,
 				nullptr,//"used only for top-level AS" SHOULD THIS BE NULL?
 				bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes
@@ -189,7 +195,8 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		instanceDesc.InstanceContributionToHitGroupIndex = hitGroupIndexOffset;
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::Triangle];
 
-		hitGroupIndexOffset += ARRAYSIZE(c_hitGroupNames_TriangleGeometry);
+		//hitGroupIndexOffset += ARRAYSIZE(c_hitGroupNames_TriangleGeometry);
+		hitGroupIndexOffset += 1;
 
 		// Calculate transformation matrix.
 		// We multiply the width by -0.5 in the x,z plane because we want the middle of the plane
@@ -214,7 +221,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		//for the sake of typing not being garbage, this is a D3D12_RAYTRACING_INSTANCE_DESC
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
-		instanceDesc.InstanceMask = 1;//who knows??
+		instanceDesc.InstanceMask = 1;
 		instanceDesc.InstanceContributionToHitGroupIndex = hitGroupIndexOffset;
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
@@ -231,7 +238,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 
 	// Upload all these instances to the GPU, and make sure the resouce is set to instanceDescsResource.
 	UINT64 bufferSize = static_cast<UINT64>(instanceDescs.size() * sizeof(instanceDescs[0]));
-	AllocateUploadBuffer(device, instanceDescs.data(), bufferSize, &(*instanceDescsResource), L"InstanceDescs");
+	AllocateUploadBuffer(device, instanceDescs.data(), bufferSize, &(*instanceDescsResource), L"BLInstanceDescs");
 };
 
 // TDO-2.6: Build the top-level acceleration structure.
@@ -251,8 +258,8 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS &topLevelInputs = topLevelBuildDesc.Inputs;
 	topLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 	topLevelInputs.Flags = buildFlags;
-	topLevelInputs.NumDescs = 2;//triangles, aabb
 	topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	topLevelInputs.NumDescs = BottomLevelASType::Count;
 
 
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO topLevelPrebuildInfo = {};
@@ -285,11 +292,6 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 		AllocateUAVBuffer(device, topLevelPrebuildInfo.ResultDataMaxSizeInBytes, &topLevelAS, initialResourceState, L"TopLevelAccelerationStructure");
 	}
 
-	// Note on Emulated GPU pointers (AKA Wrapped pointers) requirement in Fallback Layer:
-	// The primary point of divergence between the DXR API and the compute-based Fallback layer is the handling of GPU pointers. 
-	// DXR fundamentally requires that GPUs be able to dynamically read from arbitrary addresses in GPU memory. 
-	// The existing Direct Compute API today is more rigid than DXR and requires apps to explicitly inform the GPU what 
-	// blocks of memory it will access with SRVs/UAVs.
 	// In order to handle the requirements of DXR, the Fallback Layer uses the concept of Emulated GPU pointers, 
 	// which requires apps to create views around all memory they will access for raytracing, 
 	// but retains the DXR-like flexibility of only needing to bind the top level acceleration structure at DispatchRays.
@@ -323,9 +325,9 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 			bottomLevelAS[1].accelerationStructure->GetGPUVirtualAddress()
 		};
 
+		// TDO-2.6: Call the DXR-templated version of BuildBottomLevelASInstanceDescs() you completed above.
 		BuildBottomLevelASInstanceDescs< D3D12_RAYTRACING_INSTANCE_DESC, D3D12_GPU_VIRTUAL_ADDRESS>
 			(bottomLevelASaddresses, &instanceDescsResource);
-		// TDO-2.6: Call the DXR-templated version of BuildBottomLevelASInstanceDescs() you completed above.
 		
 	}
 
@@ -357,31 +359,16 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 
 	
 
-	// TODO-2.6: After we finished building the top-level AS, save all the info in the AccelerationStructureBuffers struct.
+	// TDO-2.6: After we finished building the top-level AS, save all the info in the AccelerationStructureBuffers struct.
 	// Very similar to how you did this in BuildBottomLevelAS() except now you have to worry about topLevelASBuffers.instanceDesc.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h.
 	// Make sure to return the topLevelASBuffers before you exit the function.
-	D3D12_RAYTRACING_INSTANCE_DESC topLevelInstanceDesc;
-	topLevelInstanceDesc.AccelerationStructure = topLevelAS->GetGPUVirtualAddress();
-	topLevelInstanceDesc.Flags = 0;//WHO KNOWS
-	topLevelInstanceDesc.InstanceID = 0;//WHO KNOWS
-	topLevelInstanceDesc.InstanceContributionToHitGroupIndex = 0;//WHO KNOWS
-	XMMATRIX mScale = XMMatrixScaling(1, 1, 1);
-	XMMATRIX mTranslation = XMMatrixTranslation(0, 0, 0);
-	XMMATRIX mTransform = mScale * mTranslation;
-
-	// Store the transform in the instanceDesc.
-	XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(topLevelInstanceDesc.Transform), mTransform);
-
-	ComPtr<ID3D12Resource> topLevelInstanceDescPtr;
-	AllocateUploadBuffer(device, &topLevelInstanceDesc, sizeof(D3D12_RAYTRACING_INSTANCE_DESC), &(topLevelInstanceDescPtr), L"TopLevelInstanceDesc");
-
-
 	return AccelerationStructureBuffers{
 		scratch,
 		topLevelAS,
-		topLevelInstanceDescPtr,//TODO: figure out if my garbage instance desc is the right one
-		topLevelPrebuildInfo.ResultDataMaxSizeInBytes };
+		instanceDescsResource,
+		topLevelPrebuildInfo.ResultDataMaxSizeInBytes 
+	};
 }
 
 // TDO-2.6: This will wrap building the Acceleration Structure! This is what we will call when building our scene.
@@ -419,8 +406,7 @@ void DXProceduralProject::BuildAccelerationStructures()
 	commandList->ResourceBarrier(BottomLevelASType::Count, resourceBarriers);
 
 	// TDO-2.6: Build top-level AS. Hint, you already made a function that does this.
-	AccelerationStructureBuffers topLevelAS;
-	topLevelAS = BuildTopLevelAS(bottomLevelAS, buildFlags);
+	AccelerationStructureBuffers topLevelAS = BuildTopLevelAS(bottomLevelAS, buildFlags);
 
 
 	// Kick off acceleration structure construction.
