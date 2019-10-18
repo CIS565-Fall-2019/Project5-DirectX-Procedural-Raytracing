@@ -24,3 +24,5 @@ When a ray enters the `AABB` for the procedural geometry, we can use the scale/t
 We can then choose which kind of shader handles it based on the `Type` of the geometry. These shaders can encode the hit-or-miss capabilities for each geometric equation. To calculate whether a ray hits or misses a given geometry within an AABB, we do some math based on the transformed ray and the unit geometry, and use the results of that to determine whether our ray hit the geometry or not.
 
 #### 3 - Acceleration Structures
+
+![Image of BLAS structure](img/Proj5Conceptual3.png)
