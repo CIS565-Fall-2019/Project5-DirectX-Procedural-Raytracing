@@ -1,11 +1,11 @@
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture,
 Project 5 - DirectX Procedural Raytracing**
 
-* (TODO) YOUR NAME HERE
-  * (TODO) [LinkedIn](), [personal website](), [twitter](), etc.
-* Tested on: (TODO) Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Joshua Nadel
+  * https://www.linkedin.com/in/joshua-nadel-379382136/, http://www.joshnadel.com/
+* Tested on: Windows 10, i7-6700HQ @ 2.60GHz 16GB, GTX 970M (Personal laptop)
 
-### (TODO: Your README)
+### Conceptual Questions
+1. First, set the ray origin to the eye location of the camera. This is the same for every pixel. For a given pixel at screen coordinate (x, y), the direction of the ray travelling through that pixel can be computed as follows. First, we need to convert our pixel coordinate from 0 to resolution pixel space to -1 to 1 screen space. This can be done by dividing the coordinates by the screen dimensions, multiplying them by 2, then subtracting 1 from each coordinate. Now, tranform the coordinate by the inverse of the projection matrix, then the inverse of the view matrix. This gives us a 3D coordinate of the pixel in world space. Subtract the camera eye from this location to get the ray direction.
 
-Include screenshots, analysis, etc. (Remember, this is public, so don't put
-anything here that you don't want to share with the world.)
+2. 
