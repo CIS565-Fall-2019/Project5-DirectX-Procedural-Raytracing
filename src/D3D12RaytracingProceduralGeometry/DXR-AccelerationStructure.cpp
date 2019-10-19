@@ -30,8 +30,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// GPUVirtualAddresses can be accessed from a D3D12Resource using GetGPUVirtualAddress() (e.g m_vertexBuffer.resource->GetGPUVirtualAddress())
 		// The number of elements of a D3D12 resource can be accessed from GetDesc().Width (e.g m_indexBuffer.resource->GetDesc().Width)
 		auto& geometryDesc = geometryDescs[BottomLevelASType::Triangle][0];
-		geometryDesc = {};
-		
+		geometryDesc = { D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES, geometryFlags };
 	}
 
 	{
