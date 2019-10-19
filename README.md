@@ -11,4 +11,4 @@ Project 5 - DirectX Procedural Raytracing**
 2. Rendering procedural geometry involves using the right equation to check intersections against each pixel's ray. But computing these intersection equations can become slow for complex procedural shapes and meshes. So, we check collisions against the object's axis-aligned-bounding-box first to see if our ray passes through the object at all. If the ray hits the bounding box, we can then check whether the system of equations describing the ray and the object's surface has a solution. Which equation we use for the object's surface depends on the object's type. If a solution exists, then the ray intersects with that object and we color that pixel in according to the object's shader.
 
 3.
-![](img/diagram.png)
+![](images/diagram.png)
