@@ -224,7 +224,8 @@ In DXR, building the Acceleration Structure requires multiple steps:
     * The geometry descriptors you built will be passed in as acceleration structure inputs
     * You then query the *pre-build* info for these bottom-level AS. This will output 2 things: scratch size, and result data max size. Scratch size is like extra memory the driver needs to build the AS, and result data max is an upper bound for the size of the AS. You need to allocate 2 buffers for both of these.
     * Finally, you tell the command list that you want to build the acceleration structure using the scratch and result data allocated.
-3. Create a function that builds **instances** of your BLAS. An instance of a BLAS is basically a BLAS but with a specific world-space transform. If you were to spawn multiple boxes in your scene, you would not create multiple box BLAS - you would create only one, but 4. Build the top-level acceleration structure. This is very similar to step (2) except now your inputs to the AS is the bottom-level AS. You will need to additionally call the function you created in step (3) to describe the instances that will be held by your TLAS.
+3. Create a function that builds **instances** of your BLAS. An instance of a BLAS is basically a BLAS but with a specific world-space transform. If you were to spawn multiple boxes in your scene, you would not create multiple box BLAS - you would create only one, but have multiple instances of it.
+4. Build the top-level acceleration structure. This is very similar to step (2) except now your inputs to the AS is the bottom-level AS. You will need to additionally call the function you created in step (3) to describe the instances that will be held by your TLAS.
 
 Files to checkout:
 * DXR-AccelerationStructure.cpp
