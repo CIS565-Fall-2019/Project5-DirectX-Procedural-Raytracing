@@ -1,11 +1,13 @@
+# DirectX Procedural Raytracing
+
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture,
 Project 5 - DirectX Procedural Raytracing**
 
-* (TODO) YOUR NAME HERE
-  * (TODO) [LinkedIn](), [personal website](), [twitter](), etc.
-* Tested on: (TODO) Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Klayton Wittler
+    * [LinkedIn](https://www.linkedin.com/in/klayton-wittler/)
+* Tested on: Windows 10 Pro, i7-7700K @ 4.20GHz 16.0GB, GTX 1070 8.192GB (my PC)
 
-### (TODO: Your README)
+## Sections
 
-Include screenshots, analysis, etc. (Remember, this is public, so don't put
-anything here that you don't want to share with the world.)
+
+# Introduction
