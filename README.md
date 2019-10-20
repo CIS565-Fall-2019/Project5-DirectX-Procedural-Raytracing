@@ -49,3 +49,7 @@ If we never find our ray inside the geometry, it means there is no intersection.
 
 3. **Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures** of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. We require that you limit your answer to 1 TLAS. You may use multiple BLASes, but you must define the Geometry contained within each BLAS.
 
+![](images/AsDiagram.png)
+
+Each type of geometry, sphere, box, model, and plane, has its own BLAS, and then each instance of geometry has an instance in the TLAS that points to the type of geometry that it is.  The instance would store the transformation of the geometry, the color, and the pose if it is a type of geometry that has a pose, as well as any other descriptive information about that instance of the geometry.
+
