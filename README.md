@@ -39,4 +39,4 @@ When a ray enters the AABB of a procedural geometry, we need to
 
 3. **Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures** of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. We require that you limit your answer to 1 TLAS. You may use multiple BLASes, but you must define the Geometry contained within each BLAS.
 
-![](images/Q3.PNG)
+[](images/Q3.PNG)
