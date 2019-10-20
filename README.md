@@ -15,16 +15,17 @@ Here, we can assume the ray will pass through the mid point of every pixel in th
 
 <p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/NDC%20Coordinates.png" width="300"/></p>
 
+Note that, in above, the value of P'<sub>normalized</sub>.z = 1.
+
 Here, `P'x` and `P'y` represents the pixel coordinates of the bottom left of the grid of each pixel.
 
-2 . After obtaining the mnormalized device coordinates, we find the world coordinates using the camera to world transformation matrix. 
+2 . After obtaining the mnormalized device coordinates, we find the world coordinates using the camera to world transformation matrix, which of dimension 4X4. 
 
-`P<sub>world</sub> = P'<sub>normalized</sub>M<sub>camera-to-world</sub>`
+P'<sub>world</sub> = P'<sub>normalized</sub>M<sub>camera-to-world</sub>
 
+3. After getting the world coordinated, we can crreate the ray by using the origin as the camera position (P<sub>camera-point</sub> and the direction as the unit vector between P<sub>camera-point</sub> and P'<sub>world</sub>. The distance between the camera location and the point location becomes the value of "t". Note that we need to get the P<sub>camera-point</sub> co-ordinates with respect to world coordinates using the the transformation matrix in the step 2 using the Normalized coordinates as [0,0,0].  
 
-We need to convert 3D world space point to 2D camera point, which is a projection on the point on the pixel.
-
-So, for tranforming the 3D point first to the 3D camera space point, we use world to camera transformation matrix and multiply with the world coordinated to get the camera coordinates. 
+Ray: Origin + t* Direction :=   P<sub>camera-point</sub> + t.P'<sub>world</sub> 
 
 
 ##### Q2. Each procedural geometry can be defined using 3 things: the Axis-Aligned Bounding Box (AABB) (e.g. bottom left corner at (-1,-1,-1) and top right corner at (1,1,1)) that surrounds it, the Type (e.g. Sphere) of the procedural geometry contained within the AABB, and an Equation describing the procedural geometry (e.g. Sphere: (x - center)^2 = r^2). Using these 3 constructs, conceptually explain how one could go about rendering the procedural geometry. To be specific, consider how to proceed when a ray enters the AABB of the procedural geometry.
