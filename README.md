@@ -13,6 +13,7 @@ Project 5 - DirectX Procedural Raytracing**
 at a high level the rays live in pixel space where as the camera and objects in the scene are in world space. pixel space is 2d where as scene and world space are 3d. to convert from scene to world we can create a matrix and inverse matrix to convert from each domain respectively.
 
 Pscreen = Pworld * MatrixInverse
+
 Pworld = Pscreen * Matrix
 
 The harder part is converting from 2d to 3d. To do this we need to do map our pixel in a range from 0 --> 1
