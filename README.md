@@ -15,7 +15,7 @@ Here, we can assume the ray will pass through the mid point of every pixel in th
 
 <p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/NDC%20Coordinates.png" width="300"/></p>
 
-Note that, in above, the value of P'<sub>normalized</sub>.z = 1. Here, the height and width correspond to the height and width of the each pixel, and P'x and P'y are the pixel co-ordinates. 
+Note that, in above, the value of P'<sub>normalized</sub>.z = 1. Here, the `height` and `width` correspond to the height and width of the each pixel, and `P'x` and `P'y` are the pixel co-ordinates. 
 
 Here, `P'x` and `P'y` represents the pixel coordinates of the bottom left of the grid of each pixel.
 
