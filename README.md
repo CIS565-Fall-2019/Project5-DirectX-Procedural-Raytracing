@@ -11,10 +11,15 @@ Project 5 - DirectX Procedural Raytracing**
 
 Here, we can assume the ray will pass through the mid point of every pixel in the grid.
 
-Hence, given the grid of 1280 by 720, we can find the normalized device coordinates (2D pint) with respect to the camera space by using the below equations:
+1. Hence, given the grid of 1280 by 720, we can find the normalized device coordinates (2D pint) with respect to the camera   space by using the below equations:
 
-`P′normalized.x=P′.x+width/2width`
-`P′normalised.y=P′.y+height/2height`
+<p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/NDC%20Coordinates.png" width="600"/></p>
+
+Here, `P'x` and `P'y` represents the pixel coordinates of the bottom left of the grid of each pixel.
+
+2 . After obtaining the mnormalized device coordinates, we find the world coordinates using the camera to world transformation matrix. 
+
+P<sub>world</sub> = P'<sub>normalized</sub>M<sub>camera-to-world</sub>
 
 
 We need to convert 3D world space point to 2D camera point, which is a projection on the point on the pixel.
