@@ -31,6 +31,11 @@ worldSpacePoint = viewProjInverse * vec4(unhomogenizedScreenSpace, 1)
 ```
 Note the extra 1 is because the inverse view projection matrix is a 4x4 matrix, so we must make the point a vec4. We choose 1 as the fourth coordinates as 1 allows the point to be translated in the transformation.
 
+Also note that in the implementation in the assignment, instead of performing the unhomogenization stage, we get our world space positions by transforming  (homogenizedScreenX, homogenizedScreenY, 0, 1) by a projection to world transformation matrix:
+```
+worldSpacePoint = projectionToWorld * vec4(homogenizedScreenX, homogenizedScreenY, 0, 1)
+```
+
 Now that we have the pixel's position in world space, we can find the ray diretion by finding the direction between the camera eye and the world space position:
 ```
 origin = cameraEye
@@ -41,15 +46,9 @@ direction = normalize(worldSpacePoint - cameraEye)
 
 The first step will be to see if a ray has any chance of hitting the geometry. We check this by seeing if the ray intersects with the geometry's AABB. If not, we know there is no intersection. If it does hit the AABB, we then must check if the ray intersects the object. To do this, we first must get the type of geometry we are testing intersection with. The geometry's type determines the equation the describes it, and this equation is needed for intersection testing.
 
-Once we have this equation, we can use it to find the intersection with our geometry using raymarching. In ray marching, we start at a point a certain distance along our ray and make small steps along the ray until hitting the object or missing it. The starting position is the position where our ray intersected the boudning box, as this is the farthest point along the ray that we know is not already past our geometry. We use the equation to test if our point is inside our outside our geometry (or perfectly on the surface, but this is unlikely). In the example of a sphere equation given above, if the LHS is less than the RHS, we know our point is inside the sphere and vice versa. 
+Once we have this equation, we can use it to find the intersection with our geometry.  For analytic geometry, we know the equation of geometry and the equation of a point along a ray (x = rayOrigin + t * rayDirection). We can equate these two equations and solve for the position that is both on the ray and on the surface.  If there is no valid solution to this, we know that the ray missed the object.
 
-While we are outside the geometry, we continue to step forward along the ray in small steps. As soon as we go from being outside to inside, we know that the intersection occured between the current position and the position before the last step. If our step size is small enough, we can use the previous position before the last step as the intersection. If we want a more accurate intersection, we can start marching from the previous position with a smaller step size. We continue this process until we have an accurate enough intersection point. 
-
-If we never find our ray inside the geometry, it means there is no intersection. Of course we cannot infinitely ray march our ray to find that it never is inside, but we can see if it leaves the AABB without hitting the geometry. Once our ray is outside the AABB, if it has not yet hit the geometry, it never will and we can return no intersection.
+For volumetric geometry, for example the metaballs, we can use raymarching. In ray marching, we start at a point a certain distance along our ray and make small steps along the ray until hitting the object or missing it. The starting position is the position where our ray intersected the boudning box, as this is the farthest point along the ray that we know is not already past our geometry. We can use the equation for the metaballs to see if our current point evaluates to something that exceeds the threshold of being in the metaball. While we are outside the geometry, we continue to step forward along the ray in small steps. As soon as we go from being outside to inside, we know that the intersection occured between the current position and the position before the last step. If we never find our ray inside the geometry, it means there is no intersection. Of course we cannot infinitely ray march our ray to find that it never is inside, but we can see if it leaves the AABB without hitting the geometry. Once our ray is outside the AABB, if it has not yet hit the geometry, it never will and we can return no intersection.
 
 3. **Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures** of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. We require that you limit your answer to 1 TLAS. You may use multiple BLASes, but you must define the Geometry contained within each BLAS.
-
-![](images/ASDiagram.png)
-
-Each type of geometry, sphere, box, model, and plane, has its own BLAS, and then each instance of geometry has an instance in the TLAS that points to the type of geometry that it is.  The instance would store the transformation of the geometry, the color, and the pose if it is a type of geometry that has a pose, as well as any other descriptive information about that instance of the geometry.
 
