@@ -105,7 +105,7 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 
 	// TraceRay() is a built-in DXR function. Lookup its documentation to see what it does.
 	// To understand how a ray "finds out" what type of object it hit and therefore call the correct shader hitgroup, it indexes into the shader
-	// table as follows:
+	// as follows:
 	// hitgroup to choose = ptr to shader table + size of a shader record + (ray contribution + (geometry index * geometry stride) + instance contribution)
 	// * `ray contribution` and `geometry stride` are given here.
 	// * `ptr to shader table` + `size of a shader record` are given in BuildShaderTables() in DXR-ShaderTable.cpp
@@ -149,9 +149,11 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
+	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition, g_sceneCB.projectionToWorld);
+	float4 color = TraceRadianceRay(ray, 3);
 
 	// Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	g_renderTarget[DispatchRaysIndex().xy] = color;
 }
 
 //***************************************************************************

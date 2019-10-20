@@ -22,7 +22,8 @@ void DXProceduralProject::DoRaytracing()
 	commandList->SetComputeRootConstantBufferView(GlobalRootSignature::Slot::SceneConstant, m_sceneCB.GpuVirtualAddress(frameIndex));
 
 	// TODO-2.8: do a very similar operation for the m_aabbPrimitiveAttributeBuffer
-	
+	m_aabbPrimitiveAttributeBuffer.CopyStagingToGpu(frameIndex);
+	commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::AABBattributeBuffer, m_aabbPrimitiveAttributeBuffer.GpuVirtualAddress(frameIndex));
 
 	// Bind the descriptor heaps.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -49,10 +50,11 @@ void DXProceduralProject::DoRaytracing()
 	// This should be done by telling the commandList to SetComputeRoot*(). You just have to figure out what * is.
 	// Example: in the case of GlobalRootSignature::Slot::SceneConstant above, we used SetComputeRootConstantBufferView()
 	// Hint: look at CreateRootSignatures() in DXR-Pipeline.cpp.
-	
+	commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::VertexBuffers, m_indexBuffer.resource->GetGPUVirtualAddress());
 
 	// TODO-2.8: Bind the OutputView (basically m_raytracingOutputResourceUAVGpuDescriptor). Very similar to the Index/Vertex buffer.
-	
+	commandList->SetComputeRootUnorderedAccessView(GlobalRootSignature::Slot::OutputView, m_raytracingOutputResourceUAVGpuDescriptor.ptr);
+
 
 	// This will define a `DispatchRays` function that takes in a command list, a pipeline state, and a descriptor
 	// This will set the hooks using the shader tables built before and call DispatchRays on the command list
@@ -60,13 +62,24 @@ void DXProceduralProject::DoRaytracing()
 	{
 		// You will fill in a D3D12_DISPATCH_RAYS_DESC (which is dispatchDesc).
 		// TODO-2.8: fill in dispatchDesc->HitGroupTable. Look up the struct D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE 
-		
+		D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE hitGroupRangeAndStride = {};
+		hitGroupRangeAndStride.StartAddress = m_hitGroupShaderTable->GetGPUVirtualAddress();
+		hitGroupRangeAndStride.StrideInBytes = m_hitGroupShaderTableStrideInBytes;
+		hitGroupRangeAndStride.SizeInBytes = sizeof(m_hitGroupShaderTable);
+		dispatchDesc->HitGroupTable = hitGroupRangeAndStride;
 
 		// TODO-2.8: now fill in dispatchDesc->MissShaderTable
-		
+		D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE missShaderTableRangeAndStride = {};
+		missShaderTableRangeAndStride.StartAddress = m_missShaderTable->GetGPUVirtualAddress();
+		missShaderTableRangeAndStride.StrideInBytes = m_missShaderTableStrideInBytes;
+		missShaderTableRangeAndStride.SizeInBytes = sizeof(m_missShaderTable);
+		dispatchDesc->MissShaderTable = missShaderTableRangeAndStride;
 
 		// TODO-2.8: now fill in dispatchDesc->RayGenerationShaderRecord
-		
+		D3D12_GPU_VIRTUAL_ADDRESS_RANGE rayGenShaderRecordRange;
+		rayGenShaderRecordRange.StartAddress = m_rayGenShaderTable->GetGPUVirtualAddress();
+		rayGenShaderRecordRange.SizeInBytes = sizeof(m_rayGenShaderTable);
+		dispatchDesc->RayGenerationShaderRecord = rayGenShaderRecordRange;
 
 		// We do this for you. This will define how many threads will be dispatched. Basically like a blockDims in CUDA!
 		dispatchDesc->Width = m_width;

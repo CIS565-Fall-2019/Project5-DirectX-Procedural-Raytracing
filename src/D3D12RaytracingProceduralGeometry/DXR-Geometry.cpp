@@ -61,7 +61,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 
 	// Set up AABBs on a grid.
 	{
-		// 9x3 slots = 9 slots. Note that one procedural geometry can take up multiple slots.
+		// 3x3 slots = 9 slots. Note that one procedural geometry can take up multiple slots.
 		// You could have a small sphere that takes up 1 slot, and another that is giant and takes up 4 slots.
 		XMINT3 aabbGrid = XMINT3(3, 1, 3);
 
@@ -86,7 +86,16 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// This should take into account the basePosition and the stride defined above.
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
-			D3D12_RAYTRACING_AABB aabb{};
+			// ????
+			D3D12_RAYTRACING_AABB aabb{
+				basePosition.x + offsetIndex.x,
+				basePosition.y + offsetIndex.y,
+				basePosition.z + offsetIndex.z,
+				basePosition.x + offsetIndex.x + stride.x * size.x,
+				basePosition.y + offsetIndex.y + stride.y * size.y,
+				basePosition.z + offsetIndex.z + stride.z * size.z,
+
+			};
 			return aabb;
 		};
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);
@@ -110,6 +119,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
+		AllocateUploadBuffer(device, m_aabbs.data(), sizeof(m_aabbs.data()), &m_aabbBuffer.resource);
 	
 	}
 }
@@ -117,5 +127,6 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 // TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
-
+	BuildPlaneGeometry();
+	BuildProceduralGeometryAABBs();
 }
