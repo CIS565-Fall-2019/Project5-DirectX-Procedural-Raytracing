@@ -190,11 +190,11 @@ Files to checkout:
     * 4 TODOs
 
 ## 2.4 - Ray Tracing Pipeline State Object (RTPSO)
-Surprisingly, what you've done so far (in addition to other things we've done for you such as comiling the shaders in the form of a DXIL library - a compiled "dll" of shaders), is enough to create the RTPSO. An RTPSO represents a full set of shaders reachable by a `DispatchRays()` call, with all configuration options resolved such as local signatures and other state. This section will show you how to finalize creating the RTPSO. The actual geometry data will be brought at a later stage.
+Surprisingly, what you've done so far (in addition to other things we've done for you such as comiling the shaders in the form of a DXIL library - a compiled "dll" of shaders), is enough to create the RTPSO. An RTPSO represents a full set of shaders reachable by a `DispatchRays()` call, with all configuration options resolved such as local signatures and other state. This section will show you how creating the RTPSO is created. The actual geometry data will be brought at a later stage.
 
 Files to checkout:
 * DXR-Pipeline.cpp
-    * 3 TODOs
+    * No TODOs (just read through it to understand what's done there)
 
 ## 2.5 - Geometry Data
 The next most important part of rendering is unsurprisingly the shapes/data to render! This section will show you how to allocate and upload data to the GPU in the form of (1) triangle data (vertices, indices) and (2) procedural geometry data (axis-aligned bounding boxes, or AABBs).
@@ -224,7 +224,8 @@ In DXR, building the Acceleration Structure requires multiple steps:
     * The geometry descriptors you built will be passed in as acceleration structure inputs
     * You then query the *pre-build* info for these bottom-level AS. This will output 2 things: scratch size, and result data max size. Scratch size is like extra memory the driver needs to build the AS, and result data max is an upper bound for the size of the AS. You need to allocate 2 buffers for both of these.
     * Finally, you tell the command list that you want to build the acceleration structure using the scratch and result data allocated.
-3. Create a function that builds **instances** of your BLAS. An instance of a BLAS is basically a BLAS but with a specific world-space transform. If you were to spawn multiple boxes in your scene, you would not create multiple box BLAS - you would create only one, but 4. Build the top-level acceleration structure. This is very similar to step (2) except now your inputs to the AS is the bottom-level AS. You will need to additionally call the function you created in step (3) to describe the instances that will be held by your TLAS.
+3. Create a function that builds **instances** of your BLAS. An instance of a BLAS is basically a BLAS but with a specific world-space transform. If you were to spawn multiple boxes in your scene, you would not create multiple box BLAS - you would create only one, but have multiple instances of it.
+4. Build the top-level acceleration structure. This is very similar to step (2) except now your inputs to the AS is the bottom-level AS. You will need to additionally call the function you created in step (3) to describe the instances that will be held by your TLAS.
 
 Files to checkout:
 * DXR-AccelerationStructure.cpp
