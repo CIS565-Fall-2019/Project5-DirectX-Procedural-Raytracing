@@ -8,7 +8,7 @@ Project 5 - DirectX Procedural Raytracing**
 
 ### Conceptual Questions
 
-**1 Ray tracing begins by firing off rays from the camera's perspective, with 1 ray corresponding to 1 pixel. Say the viewport is (1280 by 720), how would you convert these pixel locations into rays, with each ray being defined by an Origin and a Direction, such that Ray = Origin + t * Direction? Consult this intro to camera transformations and this explanation of world-to-screen/screen-to-world space article to formulate an answer in your own words. **
+**1 Ray tracing begins by firing off rays from the camera's perspective, with 1 ray corresponding to 1 pixel. Say the viewport is (1280 by 720), how would you convert these pixel locations into rays, with each ray being defined by an Origin and a Direction, such that Ray = Origin + t * Direction? Consult this intro to camera transformations and this explanation of world-to-screen/screen-to-world space article to formulate an answer in your own words.**
 
 at a high level the rays live in pixel space where as the camera and objects in the scene are in world space. pixel space is 2d where as scene and world space are 3d. to convert from scene to world we can create a matrix and inverse matrix to convert from each domain respectively.
 
