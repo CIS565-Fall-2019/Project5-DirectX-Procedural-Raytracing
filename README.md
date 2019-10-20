@@ -17,9 +17,10 @@ Pscreen = Pworld * MatrixInverse
 Pworld = Pscreen * Matrix
 
 The harder part is converting from 2d to 3d. To do this we need to do map our pixel in a range from 0 --> 1
-
 we can do this by the following equations.
+
 PnormX = (( Px + width/2) / width)
+
 PnormY = (( Py + height/2) / height)
 
 we then neec to invert our y as we want to point down instead of up:
@@ -29,6 +30,7 @@ PnormY = -PnormY
 Following this we can now convert to screen space 
 
 PrasterX = PnormX * width
+
 PrasterY = PnormY * height
 
 When converting we must also remeber to divide by our perspective. So in our 4x4 matrice at some point we must divide by W.
