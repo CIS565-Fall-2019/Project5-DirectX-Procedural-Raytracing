@@ -1,11 +1,26 @@
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture,
 Project 5 - DirectX Procedural Raytracing**
 
-* (TODO) YOUR NAME HERE
-  * (TODO) [LinkedIn](), [personal website](), [twitter](), etc.
-* Tested on: (TODO) Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Somanshu Agarwal
+  * [LinkedIn](https://www.linkedin.com/in/somanshu25/)
+
 
 ### Conceptual Questions
+
+##### Q1. Ray tracing begins by firing off rays from the camera's perspective, with 1 ray corresponding to 1 pixel. Say the viewport is (1280 by 720), how would you convert these pixel locations into rays, with each ray being defined by an Origin and a Direction, such that Ray = Origin + t * Direction? Consult this intro to camera transformations and this explanation of world-to-screen/screen-to-world space article to formulate an answer in your own words.
+
+Here, we can assume the ray will pass through the mid point of every pixel in the grid.
+
+Hence, given the grid of 1280 by 720, we can find the normalized device coordinates (2D pint) with respect to the camera space by using the below equations:
+
+`P′normalized.x=P′.x+width/2width`
+`P′normalised.y=P′.y+height/2height`
+
+
+We need to convert 3D world space point to 2D camera point, which is a projection on the point on the pixel.
+
+So, for tranforming the 3D point first to the 3D camera space point, we use world to camera transformation matrix and multiply with the world coordinated to get the camera coordinates. 
+
 
 ##### Q2. Each procedural geometry can be defined using 3 things: the Axis-Aligned Bounding Box (AABB) (e.g. bottom left corner at (-1,-1,-1) and top right corner at (1,1,1)) that surrounds it, the Type (e.g. Sphere) of the procedural geometry contained within the AABB, and an Equation describing the procedural geometry (e.g. Sphere: (x - center)^2 = r^2). Using these 3 constructs, conceptually explain how one could go about rendering the procedural geometry. To be specific, consider how to proceed when a ray enters the AABB of the procedural geometry.
 
