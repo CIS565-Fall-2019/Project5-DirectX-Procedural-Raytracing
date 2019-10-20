@@ -258,7 +258,7 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
             pProject->OnDisplayChanged();
         }
         return 0;
-
+	// Handles change in scene (updates camera matrix)
     case WM_MOUSEMOVE:
         if (pProject && static_cast<UINT8>(wParam) == MK_LBUTTON)
         {

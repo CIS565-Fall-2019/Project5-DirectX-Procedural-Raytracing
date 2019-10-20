@@ -63,7 +63,7 @@ protected:
     // Override to be able to start without Dx11on12 UI for PIX. PIX doesn't support 11 on 12. 
     bool m_enableUI;
 
-    // LOOKAT-1.2: A DXProject has access to the D3D device resources.
+    // LOOKAT-1.2: A DXProject has access to the Direct 3D device resources.
     UINT m_adapterIDoverride;
     std::unique_ptr<DX::DeviceResources> m_deviceResources;
 
