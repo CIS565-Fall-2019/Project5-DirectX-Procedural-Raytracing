@@ -7,14 +7,14 @@ Project 5 - DirectX Procedural Raytracing**
 
 ### Conceptual Questions
 
-#### Q2. Each procedural geometry can be defined using 3 things: the Axis-Aligned Bounding Box (AABB) (e.g. bottom left corner at (-1,-1,-1) and top right corner at (1,1,1)) that surrounds it, the Type (e.g. Sphere) of the procedural geometry contained within the AABB, and an Equation describing the procedural geometry (e.g. Sphere: (x - center)^2 = r^2). Using these 3 constructs, conceptually explain how one could go about rendering the procedural geometry. To be specific, consider how to proceed when a ray enters the AABB of the procedural geometry.
+##### Q2. Each procedural geometry can be defined using 3 things: the Axis-Aligned Bounding Box (AABB) (e.g. bottom left corner at (-1,-1,-1) and top right corner at (1,1,1)) that surrounds it, the Type (e.g. Sphere) of the procedural geometry contained within the AABB, and an Equation describing the procedural geometry (e.g. Sphere: (x - center)^2 = r^2). Using these 3 constructs, conceptually explain how one could go about rendering the procedural geometry. To be specific, consider how to proceed when a ray enters the AABB of the procedural geometry.
 
 When a ray from the camera piercing through a unique pixel of the camera plane enters the Align Axis Bounding Box(AABB) of the procedural geometry, then the shader will check whether the ray is hitting the object or not. According the the AABB of the geometry type it entered, its corresponding intersection shader will perform intersection check with the help of the equation which is provided in the procedural geometry and the ray it intersected. Note that since, we know the pixel the ray came from, we will have the equation of ray known to us. The shader will determine the position and normal for the intersection and will generate a ray which would go the light source and other reflective ray if the object is reflective. Later on, we will check for the ray going to the light whether it is a shadow ray or not mand for reflective ray, we will have another similar recusrion with the same above procedure.
 
-#### Q3. Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. We require that you limit your answer to 1 TLAS. You may use multiple BLASes, but you must define the Geometry contained within each BLAS.
+##### Q3. Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. We require that you limit your answer to 1 TLAS. You may use multiple BLASes, but you must define the Geometry contained within each BLAS.
 
 <p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/scene.png" width="600"/></p>
 
-# Sol:
+##### Sol:
 
 <p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/accelerated_structure.png" width="600"/></p>
