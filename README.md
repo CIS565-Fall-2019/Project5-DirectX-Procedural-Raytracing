@@ -23,6 +23,8 @@ This is essentially converting a pervieved point in Pixel Space back to World Sp
 
 ### Locating Procedural Geometry
 
+![](images/sdf.png)
+
 Every procedural geometry in this project is defined using 3 things: its `Axis-Aligned Bounding Box` (shortened to AABB, it is a tight bounds that encases the whole shape), its `Type` or shape, and the `Equation` determined by its `Type` and transformation. This `Equation` will most likely be a signed distance function, which tells us how far we are from the closest point on the geometry (but not necessarily the closest point along a ray).
 
 To render procedural geometry, we check each pixel's corresponding ray for intersections with the scene. To simplify this, we can first see if the current ray passes through an `AABB` stored within our Bottom Level Acceleration Structure (BLAS). This tells us that the geometry encased within can potentially influence this pixel. We then use a Closest Hit Shader determined by the object's `Type` to trace our ray with the influence of this geometry's `Equation`. This equation should give us a `t` value, as shown in the aforementioned ray representation: `Ray = Origin + t * Direction`. We displace our ray by this value and test again. This part happens recursively until the `Equation` returns a zero (or a value within some epsilon factor), or if the ray leaves the `AABB`.
@@ -39,7 +41,7 @@ Say our scene looks like this:
 
 This is a diagram of the resulting acceleration structure:
 
-
+![](images/diagram.png)
 
 
 # (TODO: My README)
