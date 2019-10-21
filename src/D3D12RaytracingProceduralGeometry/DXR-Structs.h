@@ -13,7 +13,7 @@ struct AccelerationStructureBuffers
 	UINT64                 ResultDataMaxSizeInBytes;	// this can be acquired from the prebuild info
 };
 
-// LOOKAT-1.6: Think of this as data that needs to be used by a shader. e.g: vertex data (position, color, normals)
+// LOOKAT-1.6: Think of this as data that needs to be used by a shader. e.g: \ data (position, color, normals)
 struct D3DBuffer
 {
 	ComPtr<ID3D12Resource> resource;

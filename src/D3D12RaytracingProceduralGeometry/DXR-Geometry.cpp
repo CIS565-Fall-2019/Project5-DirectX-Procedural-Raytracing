@@ -87,6 +87,19 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
 			D3D12_RAYTRACING_AABB aabb{};
+	/*		FLOAT MinX;
+			FLOAT MinY;
+			FLOAT MinZ;
+			FLOAT MaxX;
+			FLOAT MaxY;
+			FLOAT MaxZ;*/
+			// fuck with variables until a decent thing appears and then hope its fine
+			aabb.MinX = basePosition.x + offsetIndex.x * stride.x;
+			aabb.MinY = basePosition.y + offsetIndex.y * stride.y;
+			aabb.MinZ = basePosition.z + offsetIndex.z * stride.z;
+			aabb.MaxX = basePosition.x + offsetIndex.x * stride.x + size.x;
+			aabb.MaxY = basePosition.y + offsetIndex.y * stride.y + size.y;
+			aabb.MaxZ = basePosition.z + offsetIndex.z * stride.z + size.z;
 			return aabb;
 		};
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);
@@ -110,12 +123,15 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-	
+		// m_aabbs is a vector of balls and metaballs
+		UINT64 copy_size = m_aabbs.size()*sizeof(D3D12_RAYTRACING_AABB);
+		AllocateUploadBuffer(device, m_aabbs.data(), copy_size, &m_aabbBuffer.resource);
 	}
 }
 
 // TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
-
+	BuildPlaneGeometry();
+	BuildProceduralGeometryAABBs();
 }

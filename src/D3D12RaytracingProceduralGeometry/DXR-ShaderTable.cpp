@@ -32,8 +32,11 @@ void DXProceduralProject::BuildShaderTables()
 		// TODO-2.7: Miss shaders.
 		// Similar to the raygen shader, but now we  have 1 for each ray type (radiance, shadow)
 		// Don't forget to update shaderIdToStringMap.
-		missShaderIDs[0] = nullptr;
-		missShaderIDs[1] = nullptr;
+		missShaderIDs[0] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[0]); // this is miss shader
+		missShaderIDs[1] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[1]); // this is miss shadow ray
+		// sset their names
+		shaderIdToStringMap[missShaderIDs[0]] = c_missShaderNames[0];
+		shaderIdToStringMap[missShaderIDs[1]] = c_missShaderNames[1];
 
 		// Hitgroup shaders for the Triangle. We have 2: one for radiance ray, and another for the shadow ray.
 		for (UINT i = 0; i < RayType::Count; i++)
@@ -43,6 +46,14 @@ void DXProceduralProject::BuildShaderTables()
 		}
 
 		// TODO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
+		for (UINT i = 0; i < RayType::Count; i++)
+		{
+			for (UINT count = 0; count < IntersectionShaderType::Count; count++)
+			{
+				hitGroupShaderIDs_AABBGeometry[count][i] = stateObjectProperties->GetShaderIdentifier(c_hitGroupNames_AABBGeometry[count][i]);
+				shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[count][i]] = c_hitGroupNames_AABBGeometry[count][i];
+			}
+		}
 		
 	};
 
@@ -95,7 +106,23 @@ void DXProceduralProject::BuildShaderTables()
 	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	{
+		//ummm wtf
+		UINT numShaderRecords = 2;
+		UINT shaderRecordSize = shaderIDSize; // No root arguments
+		ShaderTable missed_table(device, numShaderRecords, shaderRecordSize, L"Missedtable");
+
+		// push back our missed shaders
+		missed_table.push_back(ShaderRecord(missShaderIDs[0], shaderRecordSize, nullptr, 0));
+		missed_table.push_back(ShaderRecord(missShaderIDs[1], shaderRecordSize, nullptr, 0));
 		
+		//
+		missed_table.DebugPrint(shaderIdToStringMap);
+		
+		// 
+		m_missShaderTableStrideInBytes = missed_table.GetShaderRecordSize();
+		
+		//
+		m_missShaderTable = missed_table.GetResource();
 	}
 
 	// Hit group shader table. This one is slightly different given that a hit group requires its own custom root signature.

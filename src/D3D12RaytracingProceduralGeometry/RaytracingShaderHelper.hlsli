@@ -128,10 +128,29 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 // Once you have the normalized-device coordinates, use the projectionToWorld matrix to find a 3D location for this pixel. The depth will be wrong but
 // as long as the direction of the ray is correct then the depth does not matter.
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
-{
+{	
+	float2 xy_coordinate = index;
+	// http://webglfactory.blogspot.com/2011/05/how-to-convert-world-to-screen.html
+	// algorithm taken from above
+	// we now have our 2d point
+	float x = 2.0 * xy_coordinate.x / DispatchRaysDimensions().x - 1;
+	float y = -2.0 * xy_coordinate.y / DispatchRaysDimensions().y + 1;
+	float2 screenPos = { x,y };
+
+	// do what I said in hte conceptual question which is trafnsorm us
+	// screen pos = x,y 0 is z since we have no z and w = 1
+	float4 world = mul(float4(screenPos, 0, 1), projectionToWorld);
+
+	// do what ziad told me to do in OH divide everything by w to get the correct perspective view
+	world.xyz /= world.w;
+
 	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+	
+	// in ray tracing our origin is always at the camera
+	ray.origin = cameraPosition;
+	
+	// normalize our coordinates because thats something CG ppl do
+	ray.direction = normalize(world.xyz - ray.origin);
 
     return ray;
 }
@@ -141,7 +160,10 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0;
+	float3 albedo = f0;
+	// saturate clamps from 0 to 1
+	float cos_theta = saturate(dot(-I, N));
+	return albedo + (1 - albedo)*pow(1 - cos_theta, 5);
 }
 
 #endif // RAYTRACINGSHADERHELPER_H

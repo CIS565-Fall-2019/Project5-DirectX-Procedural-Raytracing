@@ -49,15 +49,15 @@ void DXProceduralProject::CreateRootSignatures()
 		// somewhat helpful?
 		//https://docs.microsoft.com/en-us/windows/win32/direct3d12/descriptor-tables-overview
 		CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignature::Slot::Count];
-		// init at as a descriptor table with our initd UAV
+		// init at as a descriptor table with our initd UAV bind to register 0 =
 		rootParameters[GlobalRootSignature::Slot::OutputView].InitAsDescriptorTable(1, &ranges[0]);
-		// set the vertex buffer set to register 1 in above init
-		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(2, &ranges[1]);
+		// set the vertex buffer set to register 1 in above init bind to register 1 hope it overlaps to 2?
+		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(1, &ranges[1]);
 		// acceleration SRV = shader resource view set to register 0
 		rootParameters[GlobalRootSignature::Slot::AccelerationStructure].InitAsShaderResourceView(0);
 		// set as CBV to register 0 
 		rootParameters[GlobalRootSignature::Slot::SceneConstant].InitAsConstantBufferView(0);
-		// why 3? but set as a shader in register 2
+		// why 3? to match hlsl file thats why
 		rootParameters[GlobalRootSignature::Slot::AABBattributeBuffer].InitAsShaderResourceView(3);
 
 		// Finally, we bundle up all the descriptors you filled up and tell the device to create this global root signature!
@@ -95,7 +95,7 @@ void DXProceduralProject::CreateRootSignatures()
 
 			CD3DX12_ROOT_SIGNATURE_DESC localRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
 			localRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
-			SerializeAndCreateRaytracingRootSignature(localRootSignatureDesc, &m_raytracingLocalRootSignature[LocalRootSignature::Type::Triangle]);
+			SerializeAndCreateRaytracingRootSignature(localRootSignatureDesc, &m_raytracingLocalRootSignature[LocalRootSignature::Type::AABB]);
 		}
 	}
 }

@@ -116,7 +116,7 @@ void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 	//look at 1.7 holds 1 AABB per procedural object (e.g 1 for metaballs, 1 for a sphere, etc..)
 	auto aabb_objects = m_aabbs.size();
 	// dxproceduralproject.h holds the primitive buffer LOOKAT 1.6 has info 
-	m_aabbPrimitiveAttributeBuffer.Create(device, aabb_objects, 1, L"TODO2.1");
+	m_aabbPrimitiveAttributeBuffer.Create(device, aabb_objects, 3, L"TODO2.1");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
