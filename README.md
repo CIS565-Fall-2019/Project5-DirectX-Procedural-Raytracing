@@ -37,7 +37,7 @@ The final ray will thus be defined as ```ray = (Cx, Cy) + t * (XW, YW)```
 When a ray enters the AABB of a procedural geometry, we need to
 
 - Convert the ray description to the local coordinate system of the AABB of concern. This means we need to transform the ray's origin and direction component to the coordinate system with origin at the center of the AABB of concern.
-- Using the type of object in the AABB and its equation (which we assume is with respect to the AABB's local coordinate system), calculate the intersection (t) and direction of the normal at the point of intersection.
+- Using the type of object in the AABB and its equation (which we assume is with respect to the AABB's local coordinate system), we first determine if the ray hits or misses the object inside the AABB. If it hits, we calculate the intersection (t) and direction of the normal at the point of intersection.
 - Connvert the normal's origin (point of intersection) and direction to the world coordinate system.
 
 
