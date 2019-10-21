@@ -11,3 +11,10 @@ This involves an inverse projective transformation from *screen* space (2D) to *
 Now, we have converted from 3D space into Pixel Space. If we assume rays emanate from the center of each pixel, notice that all of the above transformations are invertible (projective transformations are invertible, multiplications/divisions are invertible when we know all of the variables neccessarry etc.) EXCEPT for when we lose information about the **Z** coordinate of the object in 3D space due to the perspective divide. In order to invert that step, we require the Z-coordinate, but do not have access to it. This is the need for ray-tracing. We invert all the transformations, and assume Z=1 for inverting the perspective divide step. This will define the origin of our ray. The ray itself is defined by setting **Z = t**, which results in the full ray equation, where the direction vector is given by the un-normalized point in *view* space. 
 
 **Q2**:
+Consider a sphere in the AABB space. We can manipulate the sphere equation into an 'intersection' equations by realizing that if any x, y, z solves the sphere equation, then it must intersect with the sphere (simply involves some algebraic manipulation and use of the quadratic equation). Thus, when a ray enters the AABB of the procedural geometry, we continue tracing its path until some x,y,z solves the sphere equation. If it exits the AABB without any solution, then we don't render anything because there were no intersections. If some x,y,z solves  the sphere equation, then there is an intersection and we shade that point. The normal to this point is simply the ray from the center to this intersection. 
+
+This same methodology applies to any AABB, Type, and Equation. Once a ray enters an AABB, we continue tracing it until a point solves the intersection Equation defined by that an instance of that Type. If it exits the AABB without any solution, then we render nothing. If we have a solution, then we render that point and continue reflection/casting shadow rays as neccesarry. 
+
+**Q3**
+
+
