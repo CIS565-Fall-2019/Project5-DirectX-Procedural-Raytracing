@@ -12,7 +12,7 @@ Project 5 - DirectX Procedural Raytracing**
 A ray shot from the camera center is assumed to pass through the center of each pixel (u,v) in the image frame/projection frame. The image/rendering frame is asumed to be parallel to the x-y plane of the camera lying unit distance away along the z direction (as shown in the image below). Given this setup, we can derive the relationship beween the pixel coordiates and the world coordinates.
 
 <p align="center">
-  <img src="images/q122.png", width=0.7>
+  <img src="images/q122.png">
 </p>
 
 From Perspetive Geometry, a point in the 3D world coordinate system can be convered into the pixel id as shown above. We first transform the point (Xw, Yw, Zw) from world coordinate system to camera coordinate system. (This would be applicable in cases where the camera is not at the origin). Once we have the point with respect to the camera, we use the camera instrinsic matrix [K] to convert the point to pixel space. 
@@ -22,7 +22,7 @@ Here, Xw, Yw, Zw are the world coordinate points. [R] an [t] are rotation and tr
 This process can be inverted to get world coordinates based on a given depth, from pixel coordinates as follows.
 
 <p align="center">
-  <img src="images/q133.png", width=0.7>
+  <img src="images/q133.png">
 </p>
 
 In our case, if we assume that the camera is at the origin, (that is R is identity and T is zero), then we simply multiply the pixel coordinates by the inverted camera intrinsic matrix K and scale it by depth (lambda) to get the point in world coordinates. 
