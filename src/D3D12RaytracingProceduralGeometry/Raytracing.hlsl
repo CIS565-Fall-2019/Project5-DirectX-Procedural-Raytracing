@@ -149,9 +149,11 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
-
+    Ray cameraRay = GenerateCameraRay(uint2(DispatchRaysIndex().xy), g_sceneCB.cameraPosition, g_sceneCB.projectionToWorld);
+    float4 radianceResult = TraceRadianceRay(cameraRay, 0);
+    
 	// Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    g_renderTarget[DispatchRaysIndex().xy] = radianceResult;
 }
 
 //***************************************************************************
