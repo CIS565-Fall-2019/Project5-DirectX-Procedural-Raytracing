@@ -45,4 +45,4 @@ When a ray enters the AABB of a procedural geometry, we need to
 
 **Answer**
 
-![](images/Q3.PNG)
+![](images/Q31.PNG)
