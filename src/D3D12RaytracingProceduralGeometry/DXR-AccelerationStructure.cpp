@@ -26,12 +26,20 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		geometryDescs[BottomLevelASType::Triangle].resize(1); // only 1 triangle-type geometry: the plane
 
 		// TODO-2.6: Fill the triangle geometry desc.
-		// Remember to use m_indexBuffer and m_vertexBuffer to get pointers to the data.
-		// GPUVirtualAddresses can be accessed from a D3D12Resource using GetGPUVirtualAddress() (e.g m_vertexBuffer.resource->GetGPUVirtualAddress())
-		// The number of elements of a D3D12 resource can be accessed from GetDesc().Width (e.g m_indexBuffer.resource->GetDesc().Width)
+		//  * Remember to use m_indexBuffer and m_vertexBuffer to get pointers to the data.
+		//  * GPUVirtualAddresses can be accessed from a D3D12Resource using GetGPUVirtualAddress() (e.g m_vertexBuffer.resource->GetGPUVirtualAddress())
+		//  * The *total size* of the buffer can be accessed from GetDesc().Width (e.g m_indexBuffer.resource->GetDesc().Width)
+        //  * We filled in the format of the buffers to avoid confusion.
 		auto& geometryDesc = geometryDescs[BottomLevelASType::Triangle][0];
 		geometryDesc = {};
-		
+		geometryDesc.Triangles.Transform3x4 = NULL; // assuming vertices given world space positions
+        geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
+        geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width / sizeof(Index);
+		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width / sizeof(Vertex);
+		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress();
+		geometryDesc.Triangles.VertexBuffer.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
+		geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
 	}
 
 	{
@@ -49,7 +57,11 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Remember to use m_aabbBuffer to get the AABB geometry data you previously filled in.
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
-		
+		for (int i = 0; i < IntersectionShaderType::TotalPrimitiveCount; i++)
+		{
+			auto& desc = geometryDescs[BottomLevelASType::AABB][i];
+			desc.AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + i * sizeof(D3D12_RAYTRACING_AABB);
+		}
 	}
 }
 
@@ -68,7 +80,10 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// Again, these tell the AS where the actual geometry data is and how it is laid out.
 	// TODO-2.6: fill the bottom-level inputs. Consider using D3D12_ELEMENTS_LAYOUT_ARRAY as the DescsLayout.
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS &bottomLevelInputs = bottomLevelBuildDesc.Inputs;
-
+	bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+	bottomLevelInputs.NumDescs = 4;
+	bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	bottomLevelInputs.pGeometryDescs = &geometryDescs[0];
 
 	// Query the driver for resource requirements to build an acceleration structure. We've done this for you.
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO bottomLevelPrebuildInfo = {};
@@ -87,7 +102,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 
 	// Allocate resources for acceleration structures as a UAV --> this will prepare bottomLevelAS for us.
 	// Acceleration structures can only be placed in resources that are created in the default heap (or custom heap equivalent). 
-	// Default heap is OK since the application doesn’t need CPU read/write access to them. 
+	// Default heap is OK since the application doesnï¿½t need CPU read/write access to them. 
 	// The resources that will contain acceleration structures must be created in the state D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, 
 	// and must have resource flag D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS. The ALLOW_UNORDERED_ACCESS requirement simply acknowledges both: 
 	//  - the system will be doing this type of access in its implementation of acceleration structure builds behind the scenes.
