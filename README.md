@@ -4,7 +4,7 @@ Project 5 - DirectX Procedural Raytracing**
 * Zheyuan Xie
 * Tested on: Windows 10 Pro, i7-7700HQ @ 2.80GHz, 16GB, GTX 1050 2GB (Dell XPS 15 9560)
 
-## Conceptuel Questions
+## Conceptual Questions
 ### Question 1: Generate Ray from Pixels
 In ray tracing, a ray is generated for each pixel P'<sub>raster</sub> represented in raster space. The original and direction of the ray can be calculated by the following steps:
 
