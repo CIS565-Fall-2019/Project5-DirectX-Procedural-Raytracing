@@ -21,9 +21,18 @@ Then we set the z coordinate to zero and add a 4th coordinate (w) as one to proc
 <img src ="img/screenToCamera.png"/>  
 And then finally undoing the view transform and then dividing the by the 4th coordinate we get the world coordinates. 
 <img src = "img/cameraToWorld.png" />  
-```Origin``` is the ```world coordinates of the camera``` and the ```Direction``` is the ```world coordinates of the pixel - world coordinates of the camera```.   
-##### 2. Each procedural geometry can be defined using 3 things: the `Axis-Aligned Bounding Box` (AABB) (e.g. bottom left corner at (-1,-1,-1) and top right corner at (1,1,1)) that surrounds it, the `Type` (e.g. Sphere) of the procedural geometry contained within the AABB, and an `Equation` describing the procedural geometry (e.g. Sphere: `(x - center)^2 = r^2`). **Using these 3 constructs, conceptually explain how one could go about rendering the procedural geometry**. To be specific, consider how to proceed when a ray enters the AABB of the procedural geometry.
-##### 3. **Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures** of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. We require that you limit your answer to 1 TLAS. You may use multiple BLASes, but you must define the Geometry contained within each BLAS.
+`Origin` is the `world coordinates of the camera` and the `Direction` is the `world coordinates of the pixel - world coordinates of the camera`.  
+
+
+##### 2. Each procedural geometry can be defined using 3 things: the `Axis-Aligned Bounding Box` (AABB) (e.g. bottom left corner at (-1,-1,-1) and top right corner at (1,1,1)) that surrounds it, the `Type` (e.g. Sphere) of the procedural geometry contained within the AABB, and an `Equation` describing the procedural geometry (e.g. Sphere: `(x - center)^2 = r^2`). **Using these 3 constructs, conceptually explain how one could go about rendering the procedural geometry**. To be specific, consider how to proceed when a ray enters the AABB of the procedural geometry.  
+
+*  AABBs are the boxes which enclose the procedural geometry and to determine whether the ray enters the AABB at all or not. Once we are certain that the ray enters the AABB of the procedural geometry, then we can look up the type of the geometry in the AABB and then use the corresponding equation to find if the ray intersects the surface of the geometry. Once we know that there is an intersection, then we can use the appropriate shader with the point of intersection and the normal to find the color of the ray. For finding whether a ray intersects a geometry or not, we can either use some condition (like the distance criterion for spheres) or ray marching or sample different points and see if 2 of them are on different side of a surface.
+
+##### 3. **Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures** of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. We require that you limit your answer to 1 TLAS. You may use multiple BLASes, but you must define the Geometry contained within each BLAS.  
+
 <p align="center">
   <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/scene.png">
 </p>
+
+
+ *  
