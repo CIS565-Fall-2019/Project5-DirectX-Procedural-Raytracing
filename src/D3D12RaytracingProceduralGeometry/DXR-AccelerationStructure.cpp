@@ -35,15 +35,13 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		geometryDesc.Flags = geometryFlags;
 		geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress();
-		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width;
-		//geometryDesc.Triangles.IndexFormat = m_indexBuffer.resource->GetDesc().Format;
-		geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width / sizeof(Index);
+		geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
 
-		m_vertexBuffer.cpuDescriptorHandle;
 		geometryDesc.Triangles.VertexBuffer = { m_vertexBuffer.resource->GetGPUVirtualAddress(), 2 * sizeof(XMFLOAT3) };//TODO: this is probably wrong so fix it? pos, normal
-		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width;
-		//geometryDesc.Triangles.VertexFormat = m_vertexBuffer.resource->GetDesc().Format;
-		geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width / sizeof(Vertex);
+		geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+		
 	}
 
 	{
@@ -145,6 +143,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	{
 		// Set the descriptor heaps to be used during acceleration structure build for the Fallback Layer.
 		ID3D12DescriptorHeap *pDescriptorHeaps[] = { m_descriptorHeap.Get() };
+		auto numDescriptorHeaps = ARRAYSIZE(pDescriptorHeaps);
 		m_fallbackCommandList->SetDescriptorHeaps(ARRAYSIZE(pDescriptorHeaps), pDescriptorHeaps);
 		m_fallbackCommandList->BuildRaytracingAccelerationStructure(&bottomLevelBuildDesc, 0, nullptr);
 	}
@@ -195,8 +194,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		instanceDesc.InstanceContributionToHitGroupIndex = hitGroupIndexOffset;
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::Triangle];
 
-		//hitGroupIndexOffset += ARRAYSIZE(c_hitGroupNames_TriangleGeometry);
-		hitGroupIndexOffset += 1;
+		hitGroupIndexOffset += ARRAYSIZE(c_hitGroupNames_TriangleGeometry);
 
 		// Calculate transformation matrix.
 		// We multiply the width by -0.5 in the x,z plane because we want the middle of the plane
@@ -378,7 +376,7 @@ void DXProceduralProject::BuildAccelerationStructures()
 	auto commandList = m_deviceResources->GetCommandList();
 	auto commandQueue = m_deviceResources->GetCommandQueue();
 	auto commandAllocator = m_deviceResources->GetCommandAllocator();
-	auto buildFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;//WHO KNOWS?
+	auto buildFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;//WHO KNOWS?
 
 	// Reset the command list for the acceleration structure construction.
 	commandList->Reset(commandAllocator, nullptr);

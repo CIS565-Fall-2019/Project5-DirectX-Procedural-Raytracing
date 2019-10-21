@@ -133,6 +133,8 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
     ray.origin = float3(0.0f, 0.0f, 0.0f);
 	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
 
+
+
     return ray;
 }
 

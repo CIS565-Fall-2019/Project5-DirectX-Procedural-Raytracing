@@ -57,12 +57,19 @@ void DXProceduralProject::AllocateUAVBuffer(ID3D12Device* pDevice, UINT64 buffer
 UINT DXProceduralProject::AllocateDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE* cpuDescriptor, UINT descriptorIndexToUse)
 {
 	auto descriptorHeapCpuBase = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	if (descriptorIndexToUse >= m_descriptorHeap->GetDesc().NumDescriptors)
+	auto descHeapDesc = m_descriptorHeap->GetDesc();
+	UINT numDescriptors = descHeapDesc.NumDescriptors;
+	if (descriptorIndexToUse >= numDescriptors)
+//	if (descriptorIndexToUse >= m_descriptorHeap->GetDesc().NumDescriptors)
 	{
-		ThrowIfFalse(m_descriptorsAllocated < m_descriptorHeap->GetDesc().NumDescriptors, L"Ran out of descriptors on the heap!");
+		ThrowIfFalse(m_descriptorsAllocated < numDescriptors, L"Ran out of descriptors on the heap!\n");
+//		ThrowIfFalse(m_descriptorsAllocated < m_descriptorHeap->GetDesc().NumDescriptors, L"Ran out of descriptors on the heap!\n");
 		descriptorIndexToUse = m_descriptorsAllocated++;
 	}
 	*cpuDescriptor = CD3DX12_CPU_DESCRIPTOR_HANDLE(descriptorHeapCpuBase, descriptorIndexToUse, m_descriptorSize);
+	char buffer[50];
+	sprintf_s(buffer, "Allocated for index %d\n", descriptorIndexToUse);
+	OutputDebugStringA(buffer);
 	return descriptorIndexToUse;
 }
 

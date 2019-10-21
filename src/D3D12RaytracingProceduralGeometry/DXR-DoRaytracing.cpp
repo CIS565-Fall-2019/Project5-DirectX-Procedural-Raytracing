@@ -23,8 +23,8 @@ void DXProceduralProject::DoRaytracing()
 
 	// TDO-2.8: do a very similar operation for the m_aabbPrimitiveAttributeBuffer
 	m_aabbPrimitiveAttributeBuffer.CopyStagingToGpu(frameIndex);
-	commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::AABBattributeBuffer, m_aabbPrimitiveAttributeBuffer.GpuVirtualAddress(frameIndex));
-	//TODO: should the above be a structured buffer of some sort?
+	//commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::AABBattributeBuffer, m_aabbPrimitiveAttributeBuffer.GpuVirtualAddress(frameIndex));
+	commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::AABBattributeBuffer, m_aabbPrimitiveAttributeBuffer.GpuVirtualAddress());
 
 	// Bind the descriptor heaps.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)

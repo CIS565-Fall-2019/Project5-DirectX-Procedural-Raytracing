@@ -2,6 +2,14 @@
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
 
+#ifndef CAPTURING
+#define CAPTURING 0
+#endif
+
+#if CAPTURING
+#include <DXProgrammableCapture.h>
+#endif
+
 // LOOKAT-1.8.3: This file contains pretty much everything else we decided was not too important. Feel free to explore what's going on here though.
 
 using namespace std;
@@ -55,6 +63,11 @@ void DXProceduralProject::EnableDirectXRaytracing(IDXGIAdapter1* adapter)
 // Create resources that depend on the device.
 void DXProceduralProject::CreateDeviceDependentResources()
 {
+#if CAPTURING
+	ComPtr<IDXGraphicsAnalysis> ga;
+	HRESULT hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&ga));
+	ga->BeginCapture();
+#endif
     CreateAuxilaryDeviceResources();
 
     // Create raytracing interfaces: raytracing device and commandlist.
@@ -86,6 +99,9 @@ void DXProceduralProject::CreateDeviceDependentResources()
 
     // Create an output 2D texture to store the raytracing result to.
     CreateRaytracingOutputResource();
+#if CAPTURING
+	ga->EndCapture();
+#endif
 }
 
 // Selects the RTX API to use and tells the device to create a root signature given the descriptor.
