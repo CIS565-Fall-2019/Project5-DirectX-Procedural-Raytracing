@@ -17,16 +17,13 @@ Point in various coordinate systems:
  
 **Steps to convert the pixel from Screen Coordinate System to a ray in World Coordinate System:**
 -  **Screen Coordinate System to Normalized Screen Coordinate System**: Pixels are in the range (0 to 1280, 0 to 720) and we need to bring them into (-1 to 1, -1 to 1). So, W = 1280, H = 720 
-
-![](https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/s_ndc.png)
+<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/s_ndc.png"></p>
 
 - **Camera Coordinate System to World Coordinate System**: Next, we need to convert these points to the world co-ordinate system. Given the camera coordinates, we have world projection matrix (M) from which we can calculate the screen to world projection matrix by taking the inverse. Multiplying this matrix with the camera coordinates give the world coordinates.
-
-![](https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/nw.png)
+<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/nw.png"></p>
 
 - **Ray Generation**: Now, we have the origin of the ray (Camera coordinates) as well the direction it is going in, both of them in the world coordinates. So, we can use the following equation to calculate the ray for each pixel:
-
-![](https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/ray.png)
+<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/ray.png"></p>
 
 2. Each procedural geometry can be defined using 3 things: the Axis-Aligned Bounding Box (AABB) (e.g. bottom left corner at (-1,-1,-1) and top right corner at (1,1,1)) that surrounds it, the Type (e.g. Sphere) of the procedural geometry contained within the AABB, and an Equation describing the procedural geometry (e.g. Sphere: (x - center)^2 = r^2). Using these 3 constructs, conceptually explain how one could go about rendering the procedural geometry. To be specific, consider how to proceed when a ray enters the AABB of the procedural geometry.
 
@@ -36,8 +33,8 @@ Using this point, we have the world projection matrix from which we can calculat
 
 3. Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. We require that you limit your answer to 1 TLAS. You may use multiple BLASes, but you must define the Geometry contained within each BLAS.
 
-![](https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/scene.png)
+<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/scene.png" width="500"></p>
 
 **DXR Top-Level/Bottom-Level Acceleration Structures**
 
-![](https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/acc_str.png)
+<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/conceptual-questions/images/acc_str.png" width="700"></p>
