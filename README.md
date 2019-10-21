@@ -16,5 +16,6 @@ Consider a sphere in the AABB space. We can manipulate the sphere equation into 
 This same methodology applies to any AABB, Type, and Equation. Once a ray enters an AABB, we continue tracing it until a point solves the intersection Equation defined by that an instance of that Type. If it exits the AABB without any solution, then we render nothing. If we have a solution, then we render that point and continue reflection/casting shadow rays as neccesarry. 
 
 **Q3**
-[img.JPG]
+
+![](img.JPG)
 
