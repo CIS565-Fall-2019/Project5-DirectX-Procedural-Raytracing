@@ -34,5 +34,4 @@ And then finally undoing the view transform and then dividing the by the 4th coo
   <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/scene.png">
 </p>
 
-
- *  
+<img src = "img/DXRAccelerationStructures.png" />  
