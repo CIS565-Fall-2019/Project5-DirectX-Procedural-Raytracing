@@ -34,7 +34,10 @@ void DXProceduralProject::BuildShaderTables()
 		// Don't forget to update shaderIdToStringMap.
 		missShaderIDs[0] = nullptr;
 		missShaderIDs[1] = nullptr;
-
+		for (UINT i = 0; i < RayType::Count; i++) {
+			missShaderIDs[i] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[i]);
+			shaderIdToStringMap[missShaderIDs[i]] = c_missShaderNames[i];
+		}
 		// Hitgroup shaders for the Triangle. We have 2: one for radiance ray, and another for the shadow ray.
 		for (UINT i = 0; i < RayType::Count; i++)
 		{
@@ -43,7 +46,14 @@ void DXProceduralProject::BuildShaderTables()
 		}
 
 		// TODO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
-		
+		for (UINT i = 0; i < RayType::Count; i++)
+		{
+			for (int j = 0; j < IntersectionShaderType::Count; j++){
+				hitGroupShaderIDs_AABBGeometry[j][i] = stateObjectProperties->GetShaderIdentifier(c_hitGroupNames_AABBGeometry[j][i]);
+				shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[j][i]] = c_hitGroupNames_AABBGeometry[j][i];
+			}
+		}
+
 	};
 
 	// Get shader identifiers using the lambda function defined above.
@@ -95,7 +105,19 @@ void DXProceduralProject::BuildShaderTables()
 	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	{
-		
+		UINT numMissShaderRecords = RayType::Count;
+		UINT missShaderRecordSize = shaderIDSize; // No root arguments ????
+
+		// The RayGen shader table contains a single ShaderRecord: the one single raygen shader!
+		ShaderTable MissShaderTable(device, numMissShaderRecords, missShaderRecordSize, L"MissShaderTable");
+
+		// Push back the shader record, which does not need any root signatures.
+		MissShaderTable.push_back(ShaderRecord(missShaderIDs, missShaderRecordSize, nullptr, 0));
+		MissShaderTable.push_back(ShaderRecord(missShaderIDs + 1, missShaderRecordSize, nullptr, 0));
+
+		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
+		MissShaderTable.DebugPrint(shaderIdToStringMap);
+		m_missShaderTable = MissShaderTable.GetResource();
 	}
 
 	// Hit group shader table. This one is slightly different given that a hit group requires its own custom root signature.
@@ -133,6 +155,8 @@ void DXProceduralProject::BuildShaderTables()
 		//				in DXR-Pipeline.cpp. So if you did AABB, then Sphere, then Metaballs, then follow that order.
 		//			the primitive type is used to tell the shader what type of procedural geometry this is.
 		// Remember that hitGroupShaderIDs_AABBGeometry is a 2-array indexed like so [type of geometry][ray type]
+
+		// AABB geometry hit groups.
 		{
 			LocalRootSignature::AABB::RootArguments rootArgs;
 			UINT instanceIndex = 0;
