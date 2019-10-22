@@ -131,9 +131,12 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 {
 	Ray ray;
     ray.origin = cameraPosition;
-	float4 norm_points = { index[0], index[1], 1, 1 };
-	float4 dir = norm_poinsts * projectionToWorld;
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+	float2 screenPos = (index + 0.5f) / DispatchRaysDimensions().xy * 2.0 - 1.0;
+	screenPos.y = -screenPos.y; // D3D12 reverses y apparently
+	float4 norm_points = { screenPos, 0, 1 };
+	float4 dir = mul(norm_points, projectionToWorld);
+	dir.xyz /= dir.w;
+	ray.direction = normalize(dir.xyz - cameraPosition);
 
     return ray;
 }
