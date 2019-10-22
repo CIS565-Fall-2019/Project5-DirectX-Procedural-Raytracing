@@ -87,12 +87,12 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
 
-			XMFLOAT3 minPos = { basePosition.x + offsetIndex.x*stride.x + size.x / 2.0f,
-				basePosition.y + offsetIndex.y*stride.y + size.y / 2.0f,
-				basePosition.z + offsetIndex.z*stride.z + size.z / 2.0f };
-			XMFLOAT3 maxPos = { basePosition.x + offsetIndex.x*stride.x + size.x / 2.0f,
-				basePosition.y + offsetIndex.y*stride.y + size.y / 2.0f,
-				basePosition.z + offsetIndex.z*stride.z + size.z / 2.0f };
+			XMFLOAT3 minPos = { basePosition.x + offsetIndex.x*stride.x,
+				basePosition.y + offsetIndex.y*stride.y,
+				basePosition.z + offsetIndex.z*stride.z};
+			XMFLOAT3 maxPos = { basePosition.x + offsetIndex.x*stride.x + size.x,
+				basePosition.y + offsetIndex.y*stride.y + size.y,
+				basePosition.z + offsetIndex.z*stride.z + size.z};
 
 			D3D12_RAYTRACING_AABB aabb{ minPos.x, minPos.y, minPos.z, maxPos.x, maxPos.y, maxPos.z };
 			return aabb;

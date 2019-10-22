@@ -116,6 +116,7 @@ void DXProceduralProject::BuildShaderTables()
 		
 		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
 		missShaderTable.DebugPrint(shaderIdToStringMap);
+		m_missShaderTableStrideInBytes = missShaderTable.GetShaderRecordSize();
 		m_missShaderTable = missShaderTable.GetResource();
 	}
 

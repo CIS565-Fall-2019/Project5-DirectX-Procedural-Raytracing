@@ -147,7 +147,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// the AccelerationStructureBuffers struct so the top-level AS can use it! 
 	// Don't forget that this is the return value.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h
-	return AccelerationStructureBuffers{scratch,bottomLevelAS,NULL,bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes };
+	return AccelerationStructureBuffers{ scratch, bottomLevelAS, nullptr, bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes };
 }
 
 // TODO-2.6: Build the instance descriptor for each bottom-level AS you built before.
@@ -202,13 +202,11 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
 		instanceDesc.InstanceMask = 1;
-		instanceDesc.InstanceContributionToHitGroupIndex = 1;
+		instanceDesc.InstanceContributionToHitGroupIndex = ARRAYSIZE(c_hitGroupNames_TriangleGeometry);
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 		// Scale in XZ dimensions.
-		XMMATRIX mScale = XMMatrixScaling(1,1,1);
-		XMMATRIX mTranslation = XMMatrixTranslation(0.0f, 0.5f*c_aabbWidth, 0.0f);
-		XMMATRIX mTransform = mScale * mTranslation;
+		XMMATRIX mTransform = XMMatrixTranslation(0.0f, 0.5f*c_aabbWidth, 0.0f);
 
 		// Store the transform in the instanceDesc.
 		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
@@ -236,7 +234,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS &topLevelInputs = topLevelBuildDesc.Inputs;
 	topLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 	topLevelInputs.Flags = buildFlags;
-	topLevelInputs.NumDescs = 2;
+	topLevelInputs.NumDescs = BottomLevelASType::Count;
 	topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
 
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO topLevelPrebuildInfo = {};
@@ -339,7 +337,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	// Very similar to how you did this in BuildBottomLevelAS() except now you have to worry about topLevelASBuffers.instanceDesc.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h.
 	// Make sure to return the topLevelASBuffers before you exit the function.
-	return AccelerationStructureBuffers{ scratch,topLevelAS,instanceDescsResource,topLevelPrebuildInfo.ResultDataMaxSizeInBytes };
+	return AccelerationStructureBuffers{ scratch, topLevelAS, instanceDescsResource, topLevelPrebuildInfo.ResultDataMaxSizeInBytes };
 }
 
 // TODO-2.6: This will wrap building the Acceleration Structure! This is what we will call when building our scene.
