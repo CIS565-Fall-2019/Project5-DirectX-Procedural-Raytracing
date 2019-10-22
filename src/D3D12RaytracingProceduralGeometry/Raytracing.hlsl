@@ -41,7 +41,9 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return 0.0f;
+    float factor = dot(incidentLightRay, normal);
+    factor = min(max(factor, 0.0f), 1.0f);
+    return factor;
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -51,6 +53,7 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
+	float3 reflectDirection = reflect(incidentLightRay, normal);
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
@@ -68,6 +71,10 @@ float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal
 float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInShadow,
 	in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
 {
+	if (isInShadow){
+		return float4(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+   
 	// Ambient component
 	// Fake AO: Darken faces with normal facing downwards/away from the sky a little bit
 	float4 ambientColor = g_sceneCB.lightAmbientColor;
@@ -135,14 +142,37 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
-	return false;
+
+    if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+    {
+        return float4(0, 0, 0, 0);
+    }
+    RayDesc rayDesc;
+    rayDesc.Origin = ray.origin;
+    rayDesc.Direction = ray.direction;
+    rayDesc.TMin = 0;
+    rayDesc.TMax = 10000;
+
+    ShadowRayPayload rayPayload = { true };
+
+    return false;
+                
+    TraceRay(g_scene,
+        RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+        TraceRayParameters::InstanceMask,
+        TraceRayParameters::HitGroup::Offset[RayType::Shadow],//1
+        TraceRayParameters::HitGroup::GeometryStride,
+        TraceRayParameters::MissShader::Offset[RayType::Shadow],//1
+        rayDesc, rayPayload);
+	return rayPayload.hit;
+                
 }
 
 //***************************************************************************
 //********************------ Ray gen shader -------**************************
 //***************************************************************************
 
-// TODO-3.1: Complete the ray generation shader.
+// TDO-3.1: Complete the ray generation shader.
 // (1) Generate a ray using the function GenerateCameraRay() in RaytracingShaderHelper.hlsli
 // (2) Trace a radiance ray using the generated ray to obtain a color
 // (3) Write that color to the render target
@@ -229,7 +259,33 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
+	float3 geoNormal = attr.normal;
+	float3 hitPosition = HitWorldPosition();
 
+    Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
+    bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+
+    // Reflected component ray.
+    float4 reflectedColor = float4(0, 0, 0, 0);
+    if (l_materialCB.reflectanceCoef > 0.001 )
+    {
+        // Trace a reflection ray from the intersection points using Snell's law. The reflect() HLSL built-in function does this for you!
+		// See https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
+        Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), geoNormal) };
+        float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
+
+        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), geoNormal, l_materialCB.albedo.xyz);
+        reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
+    }
+
+    // Calculate final color.
+    float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, geoNormal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+    float4 color = (phongColor + reflectedColor);
+
+
+	//TODO: apply visibility falloff
+
+    rayPayload.color = color;
 }
 
 //***************************************************************************
@@ -242,6 +298,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
+    rayPayload.color = float4(0.1f, 0.4f, 0.8f, 0.0f);
 
 }
 
@@ -249,7 +306,8 @@ void MyMissShader(inout RayPayload rayPayload)
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
-
+    rayPayload.hit = false;
+	return;
 }
 
 //***************************************************************************

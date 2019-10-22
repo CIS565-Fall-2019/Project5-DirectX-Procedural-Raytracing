@@ -91,11 +91,14 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 			//center coordinate for our (0, 0) index point
 			XMFLOAT3 baseCenter = { basePosition.x + c_aabbWidth / 2.0f,
 									basePosition.y + c_aabbWidth / 2.0f,
-									basePosition.z + c_aabbWidth / 2.0f};
+									basePosition.z  + c_aabbWidth / 2.0f};
 			XMFLOAT3 myCenter = baseCenter;// + offsetIndex * stride
+			myCenter.x += stride.x * (aabbGrid.x - 1) / 2.0f;
+		    myCenter.y += stride.y * (aabbGrid.y - 1) / 2.0f;
+			myCenter.z += stride.z * (aabbGrid.z - 1) / 2.0f;
 			myCenter.x += offsetIndex.x * stride.x;
 			myCenter.y += offsetIndex.y * stride.y;
-			myCenter.x += offsetIndex.z * stride.z;
+			myCenter.z += offsetIndex.z * stride.z;
 			aabb.MaxX = myCenter.x + size.x / 2.0f;
 			aabb.MaxY = myCenter.y + size.y / 2.0f;
 			aabb.MaxZ = myCenter.z + size.z / 2.0f;
@@ -113,14 +116,14 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		{
 			using namespace AnalyticPrimitive;
 			m_aabbs[offset + AABB] = InitializeAABB(XMFLOAT3(0.5f, 0.0f, 0.0f), XMFLOAT3(2.0f, 3.0f, 2.0f));
-			m_aabbs[offset + Spheres] = InitializeAABB(XMFLOAT3(1.0f, 0.75f, -0.5f), XMFLOAT3(3, 3, 3));
+			m_aabbs[offset + Spheres] = InitializeAABB(XMFLOAT3(1.0f, 0.75f, -0.5f), XMFLOAT3(3.0f, 3.0f, 3.0f));
 			offset += AnalyticPrimitive::Count;
 		}
 
 		// Volumetric primitives.
 		{
 			using namespace VolumetricPrimitive;
-			m_aabbs[offset + Metaballs] = InitializeAABB(XMINT3(-1, 0, 0), XMFLOAT3(6, 6, 6));
+			m_aabbs[offset + Metaballs] = InitializeAABB(XMINT3(-1.0f, 0.0f, 0.0f), XMFLOAT3(6.0f, 6.0f, 6.0f));
 			offset += VolumetricPrimitive::Count;
 		}
 
@@ -129,7 +132,6 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
 		AllocateUploadBuffer(device, m_aabbs.data(), m_aabbs.size() * sizeof(m_aabbs[0]), &m_aabbBuffer.resource);
 
-		//UINT descriptorIndexAB = CreateBufferSRV(&m_aabbBuffer, m_aabbs.size(), sizeof(m_aabbs[0]));
 	}
 }
 

@@ -67,9 +67,9 @@ UINT DXProceduralProject::AllocateDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE* cpuDes
 		descriptorIndexToUse = m_descriptorsAllocated++;
 	}
 	*cpuDescriptor = CD3DX12_CPU_DESCRIPTOR_HANDLE(descriptorHeapCpuBase, descriptorIndexToUse, m_descriptorSize);
-	char buffer[50];
-	sprintf_s(buffer, "Allocated for index %d\n", descriptorIndexToUse);
-	OutputDebugStringA(buffer);
+	//char buffer[50];
+	//sprintf_s(buffer, "Allocated for index %d\n", descriptorIndexToUse);
+	//OutputDebugStringA(buffer);
 	return descriptorIndexToUse;
 }
 
