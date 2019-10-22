@@ -17,11 +17,14 @@ void DXProceduralProject::CreateRootSignatures()
 		// The range has the following data: type of resource accessed, the number of descriptors, and the base register the shader
 		// should look at to access these resources.
 		CD3DX12_DESCRIPTOR_RANGE ranges[2];
-		ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);  // 1 output texture
+		ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);  // type of descriptor is UAV, 1 output texture, use register 0 to get resources
 
 		// TODO-2.2: In range index 1 (the second range), initialize 2 SRV resources at register 1: indices and vertices of triangle data.
                 // This will effectively put the indices at register 1, and the vertices at register 2.
-        
+        //should we init ranges[1] and [2] ?  -- yes
+        ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); //type of descriptor is SRV, 1 descriptor for indices, get resources from register 1
+        ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2); //type of descriptor is SRV, 1 descriptor for vertices, get resources from register 2
+
 
 		// TODO-2.2: Initialize all the parameters of the GlobalRootSignature in their appropriate slots.
 		//		* See GlobalRootSignature in RaytracingSceneDefines.h to understand what they are.
@@ -39,6 +42,16 @@ void DXProceduralProject::CreateRootSignatures()
                 //      t registers --> SRV
                 //      b registers --> CBV
 		CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignature::Slot::Count];
+
+        //fill up the root parameters here
+        //how do we change descriptor to the root_parameter type
+        rootParameters[GlobalRootSignature::Slot::OutputView].InitAsDescriptorTable(1,&ranges[0]);
+        rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(1, &ranges[2]);
+        rootParameters[GlobalRootSignature::Slot::AccelerationStructure].InitAsShaderResourceView(0); //register 0 of the SRV registers?
+        rootParameters[GlobalRootSignature::Slot::SceneConstant].InitAsConstantBufferView(0);//register 0 of the CBV registers
+        rootParameters[GlobalRootSignature::Slot::AABBattributeBuffer].InitAsShaderResourceView(3); //register 3 of the SRV registers
+        //do we need to init Count? -- nope
+
 
 		// Finally, we bundle up all the descriptors you filled up and tell the device to create this global root signature!
 		CD3DX12_ROOT_SIGNATURE_DESC globalRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
@@ -67,7 +80,11 @@ void DXProceduralProject::CreateRootSignatures()
                 //      to register 1, this overlap is allowed since we are talking about *local* root signatures 
 		//      --> the values they hold will depend on the shader function the local signature is bound to!
 		{
-			
+            namespace RootSignatureSlots = LocalRootSignature::AABB::Slot;
+            CD3DX12_ROOT_PARAMETER rootParameters[RootSignatureSlots::Count];
+            //should we initAsConstants or constantBufferView? as triangle is using initAsConstants
+            rootParameters[RootSignatureSlots::MaterialConstant].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 1);
+            rootParameters[RootSignatureSlots::GeometryIndex].InitAsConstantBufferView(2); //registers 2 of the CBVs, but what is different between use InitAsconstants or bufferview
 		}
 	}
 }

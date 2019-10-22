@@ -12,6 +12,7 @@ void DXProceduralProject::InitializeScene()
 	// Setup materials.
 	{
 		// Function pointer that sets up material properties for a procedural primitive
+        // we can modify the data if we want to add more objects or colors in 
 		auto SetAttributes = [&](
 			UINT primitiveIndex,
 			const XMFLOAT4& albedo,
@@ -111,10 +112,18 @@ void DXProceduralProject::CreateConstantBuffers()
 //		structured buffers are for structs that have dynamic data (e.g lights in a scene, or AABBs in this case)
 void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
+    //currently we have 1 light and 2 AABBs in the scene?
 
+    auto device = m_deviceResources->GetD3DDevice();
+    auto frameCount = m_deviceResources->GetBackBufferCount();
+
+    //create the scene based on the number of AABB? -- is the light also counted in that vector?
+    //light seems to be stored in SceneConstantBuffer, do we still need to consider here?
+    m_aabbPrimitiveAttributeBuffer.Create(device, m_aabbs.size(), frameCount, L"Scene structured AABBs Buffer");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
+// why camera stored in constant buffer? it is also a dynamic changed object
 void DXProceduralProject::UpdateCameraMatrices()
 {
 	auto frameIndex = m_deviceResources->GetCurrentFrameIndex();
@@ -164,7 +173,18 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// You can infer what the bottom level AS space to local space transform should be.
 		// The intersection shader tests in this project work with local space, but the geometries are provided in bottom level 
 		// AS space. So this data will be used to convert back and forth from these spaces.
+
+        //first we get the size of structured buffer
+        UINT m_aabbPrimitiveAttributeBufferSize = m_aabbPrimitiveAttributeBuffer.NumInstances();
+        //update each element in m_aabbPrimitiveAttributeBuffer
+        for (UINT idx = 0; idx < m_aabbPrimitiveAttributeBufferSize; ++idx)
+        {
+            auto element = &m_aabbPrimitiveAttributeBuffer[idx];
+            element->localSpaceToBottomLevelAS = mScale * mRotation * mTranslation;
+            element->bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, element->localSpaceToBottomLevelAS);
+        }
 	};
+
 
 	UINT offset = 0;
 	// Analytic primitives.

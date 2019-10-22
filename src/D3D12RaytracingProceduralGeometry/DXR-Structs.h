@@ -122,7 +122,7 @@ template <class T>
 class StructuredBuffer : public GpuUploadBuffer
 {
 	T* m_mappedBuffers;
-	std::vector<T> m_staging;
+	std::vector<T> m_staging; //accessors?
 	UINT m_numInstances;
 
 public:
@@ -146,6 +146,7 @@ public:
 
 	// Accessors
 	T& operator[](UINT elementIndex) { return m_staging[elementIndex]; }
+    //why NumElementsPerInstance() and NumInstances() return the same value but diff type?
 	size_t NumElementsPerInstance() { return m_staging.size(); }
 	UINT NumInstances() { return m_staging.size(); }
 	size_t InstanceSize() { return NumElementsPerInstance() * sizeof(T); }
