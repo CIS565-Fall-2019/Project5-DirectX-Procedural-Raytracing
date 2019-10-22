@@ -16,7 +16,7 @@
 #include "stdafx.h"
 #include "DXProceduralProject.h"
 
-#define CPU_CODE_COMPLETE 0
+#define CPU_CODE_COMPLETE 1
 
 _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
