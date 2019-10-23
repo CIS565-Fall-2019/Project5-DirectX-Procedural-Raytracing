@@ -21,7 +21,7 @@ void DXProceduralProject::CreateRootSignatures()
 
 		// TODO-2.2: In range index 1 (the second range), initialize 2 SRV resources at register 1: indices and vertices of triangle data.
                 // This will effectively put the indices at register 1, and the vertices at register 2.
-        
+		ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1);
 
 		// TODO-2.2: Initialize all the parameters of the GlobalRootSignature in their appropriate slots.
 		//		* See GlobalRootSignature in RaytracingSceneDefines.h to understand what they are.
@@ -39,6 +39,11 @@ void DXProceduralProject::CreateRootSignatures()
                 //      t registers --> SRV
                 //      b registers --> CBV
 		CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignature::Slot::Count];
+		rootParameters[GlobalRootSignature::Slot::OutputView].InitAsDescriptorTable(1, &ranges[0]);
+		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(1, &ranges[1]);
+		rootParameters[GlobalRootSignature::Slot::AccelerationStructure].InitAsShaderResourceView(0);
+		rootParameters[GlobalRootSignature::Slot::SceneConstant].InitAsConstantBufferView(0);
+		rootParameters[GlobalRootSignature::Slot::AABBattributeBuffer].InitAsShaderResourceView(3);
 
 		// Finally, we bundle up all the descriptors you filled up and tell the device to create this global root signature!
 		CD3DX12_ROOT_SIGNATURE_DESC globalRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
@@ -67,7 +72,14 @@ void DXProceduralProject::CreateRootSignatures()
                 //      to register 1, this overlap is allowed since we are talking about *local* root signatures 
 		//      --> the values they hold will depend on the shader function the local signature is bound to!
 		{
-			
+			namespace RootSignatureSlots = LocalRootSignature::AABB::Slot;
+			CD3DX12_ROOT_PARAMETER rootParameters[RootSignatureSlots::Count];
+			rootParameters[RootSignatureSlots::MaterialConstant].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 1);
+			rootParameters[RootSignatureSlots::GeometryIndex].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 2);
+
+			CD3DX12_ROOT_SIGNATURE_DESC localRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
+			localRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+			SerializeAndCreateRaytracingRootSignature(localRootSignatureDesc, &m_raytracingLocalRootSignature[LocalRootSignature::Type::AABB]);
 		}
 	}
 }
