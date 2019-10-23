@@ -127,7 +127,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// Consider reading about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
 	bottomLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
-	bottomLevelBuildDesc.SourceAccelerationStructureData = bottomLevelAS->GetGPUVirtualAddress();
+	bottomLevelBuildDesc.DestAccelerationStructureData = bottomLevelAS->GetGPUVirtualAddress();
 
 
 	// Fill up the command list with a command that tells the GPU how to build the bottom-level AS.
