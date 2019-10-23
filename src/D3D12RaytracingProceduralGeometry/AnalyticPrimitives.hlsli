@@ -169,12 +169,22 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	float3 center = float3(-0.2, 0, -0.2);
 	float radius = 0.7f;
 
+    float3 center2 = float3(0.8, 0, 0.8);
+    float radius2 = 0.8f;
+
+    float3 center3 = float3(0.3, 0.8, 0.3);
+    float radius3 = 0.5f;
+
 	thit = RayTCurrent();
 
-	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
+	float tmax, thit1, thit2, thit3;
+    thit1 = thit2 = thit3 = 1000.0f;
+	if (RaySphereIntersectionTest(ray, thit1, tmax, attr, center, radius) || 
+        RaySphereIntersectionTest(ray, thit2, tmax, attr, center2, radius2) ||
+        RaySphereIntersectionTest(ray, thit3, tmax, attr, center3, radius3))
 	{
-		return true;
+        thit = min(thit1, min(thit2, thit3));
+        return true;
 	}
 
 	return false;

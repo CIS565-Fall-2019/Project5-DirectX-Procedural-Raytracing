@@ -22,7 +22,11 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+    float dist = distance(position, blob.center);
+    if (dist > blob.radius) { return 0.0f; }
+
+    float ratio = (blob.radius - dist) / blob.radius;
+    return 6.0f* pow(ratio, 5.0f) - 15.0f * pow(ratio, 4.0f) + 10.0f * pow(ratio, 3.0f);
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -83,6 +87,16 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+
+    for (int b = 0; b < N_METABALLS; b++)
+    {
+        float tempMin, tempMax;
+        if (RaySolidSphereIntersectionTest(ray, tempMin, tempMax, blobs[b].center, blobs[b].radius))
+        {
+            tmin = min(tmin, tempMin);
+            tmax = max(tmax, tempMax);
+        }
+    }
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -102,6 +116,34 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 {
 	thit = 0.0f;
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
+
+    Metaball blobs[N_METABALLS];
+    InitializeAnimatedMetaballs(blobs, elapsedTime, 100.0f);
+
+    float tmin, tmax;
+    TestMetaballsIntersection(ray, tmin, tmax, blobs);
+    if (tmax < -10000) { return false; } // We didn't hit any of the metaballs
+
+    float inc = (tmax - tmin) / 128.0f;
+    float tcurr = tmin;
+    for (int i = 0; i < 128; i++)
+    {
+        float3 pos = ray.origin + ray.direction * tcurr;
+        float currPot = CalculateMetaballsPotential(pos, blobs);
+        if (currPot > 0.001f)
+        {
+            float3 nor = CalculateMetaballsNormal(pos, blobs);
+            if (is_a_valid_hit(ray, tcurr, nor))
+            {
+                thit = tcurr;
+                attr.normal = nor;
+                return true;
+            }
+        }
+
+        tcurr += inc;
+    }
+
     return false;
 }
 
