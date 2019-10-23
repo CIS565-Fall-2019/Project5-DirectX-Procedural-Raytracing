@@ -45,7 +45,7 @@ void DXProceduralProject::CreateRootSignatures()
 		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(1, &ranges[1]);
 		rootParameters[GlobalRootSignature::Slot::AccelerationStructure].InitAsShaderResourceView(0);
 		rootParameters[GlobalRootSignature::Slot::SceneConstant].InitAsConstantBufferView(0);
-		rootParameters[GlobalRootSignature::Slot::AABBAttributeBuffer].InitAsShaderResourceView(3);
+		rootParameters[GlobalRootSignature::Slot::AABBattributeBuffer].InitAsShaderResourceView(3);
 
 		// Finally, we bundle up all the descriptors you filled up and tell the device to create this global root signature!
 		CD3DX12_ROOT_SIGNATURE_DESC globalRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
