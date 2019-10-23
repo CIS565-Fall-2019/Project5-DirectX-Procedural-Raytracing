@@ -170,26 +170,39 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	float radius = 0.7f;
 	float3 center1 = float3(0.5, 0.5, 0.5);
 	float radius1 = 0.25f;
-	float3 center2 = float3(0.5, 0.5, -0.5);
+	float3 center2 = float3(-0.85, -0.75, 0.75);
 	float radius2 = 0.1f;
 
 	thit = RayTCurrent();
 
-	float tmax;
+	bool intersect = false;
+	float tmax, tmax_temp, thit_temp;
+	ProceduralPrimitiveAttributes attr_temp;
+
 	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
 	{
-		return true;
+		intersect = true;
 	}
-	else if (RaySphereIntersectionTest(ray, thit, tmax, attr, center1, radius1))
+	if (RaySphereIntersectionTest(ray, thit_temp, tmax_temp, attr_temp, center1, radius1))
 	{
-		return true;
+		if ((intersect && thit > thit_temp) || !intersect) {
+				tmax = tmax_temp;
+				attr = attr_temp;
+				thit = thit_temp;
+		}
+		intersect = true;
 	}
-	else if (RaySphereIntersectionTest(ray, thit, tmax, attr, center2, radius2))
+	if (RaySphereIntersectionTest(ray, thit_temp, tmax_temp, attr_temp, center2, radius2))
 	{
-		return true;
+		if ((intersect && thit > thit_temp) || !intersect) {
+			tmax = tmax_temp;
+			attr = attr_temp;
+			thit = thit_temp;
+		}
+		intersect = true;
 	}
 
-	return false;
+	return intersect;
 }
 
 #endif // ANALYTICPRIMITIVES_H
