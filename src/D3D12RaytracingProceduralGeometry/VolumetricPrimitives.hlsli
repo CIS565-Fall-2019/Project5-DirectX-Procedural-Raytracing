@@ -5,6 +5,7 @@
 #define VOLUMETRICPRIMITIVESLIBRARY_H
 
 #include "RaytracingShaderHelper.hlsli"
+#include "AnalyticPrimitives.hlsli"
 
 // LOOKAT-1.9.4: Shockingly, a metaball is just a sphere!
 struct Metaball
@@ -22,7 +23,8 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	float dis = distance(position, blob.center);
+    return 6.0f * pow(dis, 5.0f) - 15.0f * pow(dis, 4.0f) + 10.0f  * pow(dis, 3.0f);
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -83,6 +85,21 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+
+	float ttmp1;
+	float ttmp2;
+	for (int i = 0; i < N_METABALLS; i++) {
+		if (RaySolidSphereIntersectionTest(ray, ttmp1, ttmp2, blobs[i].center, blobs[i].radius))
+		{
+			if (tmin > ttmp1) {
+				tmin = ttmp1;
+			}
+			if (tmax < ttmp2) {
+				tmax = ttmp2;
+			}
+		}
+	}
+	return;
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,8 +117,20 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f);
+	float tmin, tmax;
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+	float step = (tmax - tmin) / 128.0f;
+	for (int i = 1; i <= 128; i++) {
+		float3 position = ray.origin + (tmin + i * step) * ray.direction;
+		if (CalculateMetaballsPotential(position, blobs) > 0.5f) {
+			attr.normal = CalculateMetaballsNormal(position, blobs);
+			thit = tmin + i * step;
+			if (is_a_valid_hit(ray, thit, attr.normal))
+				return true;
+		}
+	}
     return false;
 }
 

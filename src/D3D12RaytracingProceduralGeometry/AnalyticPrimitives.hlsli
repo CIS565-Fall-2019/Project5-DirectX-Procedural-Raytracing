@@ -166,17 +166,44 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	float3 center = float3(-0.2, 0, -0.2);
-	float radius = 0.7f;
+	float3 center1 = float3(-0.2, 0, -0.2);
+	float radius1 = 0.7f;
 
-	thit = RayTCurrent();
+	float3 center2 = float3(-0.4, 0, 0.2);
+	float radius2 = 0.3f;
 
+	float3 center3 = float3(0.6, 0, 0.8);
+	float radius3 = 0.1f;
+	float ttmp = RayTCurrent();
+	ProceduralPrimitiveAttributes attrtmp;
+	bool flag = false;
 	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
+	if (RaySphereIntersectionTest(ray, ttmp, tmax, attrtmp, center1, radius1))
 	{
-		return true;
+		if (thit > ttmp) {
+			thit = ttmp;
+			attr = attrtmp;
+			flag = true;
+		}
 	}
-
+	if (RaySphereIntersectionTest(ray, ttmp, tmax, attrtmp, center2, radius2))
+	{
+		if (thit > ttmp) {
+			thit = ttmp;
+			attr = attrtmp;
+			flag = true;
+		}
+	}
+	if (RaySphereIntersectionTest(ray, ttmp, tmax, attrtmp, center3, radius3))
+	{
+		if (thit > ttmp) {
+			thit = ttmp;
+			attr = attrtmp;
+			flag = true;
+		}
+	}
+	if(flag)
+		return is_a_valid_hit(ray, thit, attr.normal);
 	return false;
 }
 
