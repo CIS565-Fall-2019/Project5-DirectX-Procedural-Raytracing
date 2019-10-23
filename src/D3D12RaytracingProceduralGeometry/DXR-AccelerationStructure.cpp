@@ -31,6 +31,25 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// The number of elements of a D3D12 resource can be accessed from GetDesc().Width (e.g m_indexBuffer.resource->GetDesc().Width)
 		auto& geometryDesc = geometryDescs[BottomLevelASType::Triangle][0];
 		geometryDesc = {};
+
+		// D3D12_RAYTRACING_GEOMETRY_DESC has a bunch of fields so take it one at a time
+		geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES; // Straighforward, this is a triangle
+		geometryDesc.Flags = geometryFlags; // Same flags as above? AABB below does the same so sure.
+		
+		// Assign Index Values
+		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress(); // Get GPU addr of this resource
+		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width / sizeof(Index);
+		geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT; // Index is UINT16
+
+		// Now assign Vertex values. Just like above.
+		// Only diff is the buffer gets its data in start and stride (vertex length)
+		// Since I guess the vertex can be a complex type
+		geometryDesc.Triangles.VertexBuffer.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
+		geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
+		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width / sizeof(Vertex);
+		geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT; // Each vertex is a xyz of 32bit ints
+		                                                                   // But each vertex includes vertex + normals
+		                                                                   // But stride accounts for that.
 		
 	}
 
@@ -49,7 +68,16 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Remember to use m_aabbBuffer to get the AABB geometry data you previously filled in.
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
-		
+		for (UINT prim = 0; prim < IntersectionShaderType::TotalPrimitiveCount; prim++) {
+			auto& geometryDesc = geometryDescs[BottomLevelASType::AABB][prim];
+			auto offset = prim * sizeof(D3D12_RAYTRACING_AABB);
+
+			// Get start address from the buffer we just filled
+			geometryDesc.AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + offset;
+
+			// Everything else was filled and copied above, so I think thats the only thing unique to each
+			// AABB. Simpler than triangle because we smush it all into that buffer.
+		}
 	}
 }
 
@@ -68,7 +96,12 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// Again, these tell the AS where the actual geometry data is and how it is laid out.
 	// TODO-2.6: fill the bottom-level inputs. Consider using D3D12_ELEMENTS_LAYOUT_ARRAY as the DescsLayout.
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS &bottomLevelInputs = bottomLevelBuildDesc.Inputs;
-
+	bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	bottomLevelInputs.Flags = buildFlags; // Passed in as arg
+	bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL; // This is a BLAS
+	bottomLevelInputs.NumDescs = static_cast<UINT>(geometryDescs.size()); // Passed in as arg
+	// AS takes a union of different types, here we have geometryDescs to work with
+	bottomLevelInputs.pGeometryDescs = geometryDescs.data();
 
 	// Query the driver for resource requirements to build an acceleration structure. We've done this for you.
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO bottomLevelPrebuildInfo = {};
@@ -108,6 +141,8 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// TODO-2.6: Now that you have the scratch and actual bottom-level AS desc, pass their GPU addresses to the bottomLevelBuildDesc.
 	// Consider reading about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
+	bottomLevelBuildDesc.DestAccelerationStructureData = bottomLevelAS->GetGPUVirtualAddress();
+	bottomLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
 
 
 	// Fill up the command list with a command that tells the GPU how to build the bottom-level AS.
@@ -127,7 +162,12 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// the AccelerationStructureBuffers struct so the top-level AS can use it! 
 	// Don't forget that this is the return value.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h
-	return AccelerationStructureBuffers{};
+	AccelerationStructureBuffers asb = {};
+	asb.accelerationStructure = bottomLevelAS;
+	asb.scratch = scratch;
+	asb.ResultDataMaxSizeInBytes = bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes;
+	// Theres also a instanceDesc member, but that is ONLY for TLAS.
+	return asb;
 }
 
 // TODO-2.6: Build the instance descriptor for each bottom-level AS you built before.
@@ -179,7 +219,28 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 	//		Where do you think procedural shader records would start then? Hint: right after.
 	// * Make each instance hover above the ground by ~ half its width
 	{
+		D3D12_RAYTRACING_INSTANCE_DESC a; // Just for reference...
 
+		// Start off just like triangles above
+		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
+		instanceDesc = {};
+		instanceDesc.InstanceMask = 1;
+
+		// 0 is triangle radiance, 1 is triangle shadow, 2 is aabb start
+		// Could probably not hardcode this
+		instanceDesc.InstanceContributionToHitGroupIndex = 2;
+
+		// Like triangle!
+		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
+
+		// Now the transform. Hover above the ground by half its width...
+		// Don't scale here or rotate, so transform matrix == translation
+		const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(0.0f, 0.5f, 0.0f));
+		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
+		XMMATRIX mTransform = mTranslation;
+
+		// Store the transform in the instanceDesc.
+		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
 	}
 
 	// Upload all these instances to the GPU, and make sure the resouce is set to instanceDescsResource.

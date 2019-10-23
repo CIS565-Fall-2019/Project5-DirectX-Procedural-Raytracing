@@ -29,6 +29,24 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 
 	// TODO-2.3: AABB geometry hit groups. Very similar to triangles, except now you have to *also* loop over the primitive types.
 	{
+		for (UINT primType = 0; primType < IntersectionShaderType::Count; primType++) {
+			for (UINT rayType = 0; rayType < RayType::Count; rayType++) {
+				auto hitGroup = raytracingPipeline->CreateSubobject<CD3D12_HIT_GROUP_SUBOBJECT>();
+
+				// Like above, if this is a radiance ray, get the shader
+				if (rayType == RayType::Radiance) {
+					hitGroup->SetClosestHitShaderImport(c_closestHitShaderNames[GeometryType::AABB]);
+				}
+
+				hitGroup->SetHitGroupExport(c_hitGroupNames_AABBGeometry[primType][rayType]);
+				hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
+
+				// Also include the intersection shader based on the primitive
+				hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[primType]);
+
+				// Anyhit shaders? Need to implement them.
+			}
+		}
 
 	}
 }
@@ -54,6 +72,18 @@ void DXProceduralProject::CreateLocalRootSignatureSubobjects(CD3D12_STATE_OBJECT
 	// TODO-2.3: AABB geometry hitgroup/local root signature association.
 	// Very similar to triangles, except now one for each primitive type.
 	{
-		
+		auto localRootSignature = raytracingPipeline->CreateSubobject<CD3D12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
+
+		// Get the AABB local root signature
+		localRootSignature->SetRootSignature(m_raytracingLocalRootSignature[LocalRootSignature::Type::AABB].Get());
+
+		// Associate the shaders
+		auto rootSignatureAssociation = raytracingPipeline->CreateSubobject<CD3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+		rootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
+
+		// Associate for each primitive type
+		for (UINT primType = 0; primType < IntersectionShaderType::Count; primType++) {
+			rootSignatureAssociation->AddExports(c_hitGroupNames_AABBGeometry[primType]);
+		}
 	}
 }

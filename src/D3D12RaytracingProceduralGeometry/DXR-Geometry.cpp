@@ -33,12 +33,12 @@ void DXProceduralProject::BuildPlaneGeometry()
 	{
 		3,1,0,
 		2,1,3,
-
 	};
 
 	// Cube vertices positions and corresponding triangle normals.
 	Vertex vertices[] =
 	{
+		// Position...................Normal......................
 		{ XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) }, // vertex 0: position 0, normal 0
 		{ XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) }, // vertex 1: position 1, normal 1
 		{ XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) }, // vertex 2..
@@ -87,6 +87,19 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
 			D3D12_RAYTRACING_AABB aabb{};
+			// Minimum positions will be the base plus the offset of the
+			// object plus the size of the stride. This is like
+			// hopping to the right position in an array using size of
+			// the elements.
+			aabb.MinX = basePosition.x + offsetIndex.x * stride.x;
+			aabb.MinY = basePosition.y + offsetIndex.y * stride.y;
+			aabb.MinZ = basePosition.z + offsetIndex.z * stride.z;
+
+			// Max is the same as above, but also add in the size.
+			aabb.MaxX = basePosition.x + offsetIndex.x * stride.x + size.x;
+			aabb.MaxY = basePosition.y + offsetIndex.y * stride.y + size.y;
+			aabb.MaxZ = basePosition.z + offsetIndex.z * stride.z + size.z;
+
 			return aabb;
 		};
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);
@@ -110,12 +123,17 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-	
+		AllocateUploadBuffer(device, 
+			m_aabbs.data(), m_aabbs.size() * sizeof(D3D12_RAYTRACING_AABB), // Get the data from the CPU side buffer...
+			&m_aabbBuffer.resource, // And put in the GPU resource.
+			L"m_aabbBufferResouce"); // And give it a fun name
 	}
 }
 
 // TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
-
+	// The hardest part of this project :(
+	BuildPlaneGeometry();
+	BuildProceduralGeometryAABBs();
 }
