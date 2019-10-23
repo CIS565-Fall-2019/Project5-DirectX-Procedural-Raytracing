@@ -86,7 +86,13 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// This should take into account the basePosition and the stride defined above.
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
-			D3D12_RAYTRACING_AABB aabb{};
+			D3D12_RAYTRACING_AABB aabb{
+			basePosition.x + offsetIndex.x * stride.x,
+			basePosition.y + offsetIndex.y * stride.y,
+			basePosition.z + offsetIndex.z * stride.z,
+			basePosition.x + offsetIndex.x * stride.x + size.x, 
+			basePosition.x + offsetIndex.x * stride.x + size.y,
+			basePosition.x + offsetIndex.x * stride.x + size.z };
 			return aabb;
 		};
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);
@@ -110,12 +116,14 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-	
+		AllocateUploadBuffer(device, m_aabbs.data(), m_aabbs.size()*size(m_abbs[0]), &m_aabbBuffer.resource);
+
 	}
 }
 
 // TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
-
+	BuildPlaneGeometry();
+	BuildProceduralGeometryAABBs();
 }
