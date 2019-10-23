@@ -32,8 +32,11 @@ void DXProceduralProject::BuildShaderTables()
 		// TODO-2.7: Miss shaders.
 		// Similar to the raygen shader, but now we  have 1 for each ray type (radiance, shadow)
 		// Don't forget to update shaderIdToStringMap.
-		missShaderIDs[0] = nullptr;
-		missShaderIDs[1] = nullptr;
+		missShaderIDs[0] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[0]);
+		missShaderIDs[1] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[1]);
+        //update shaderIdToStringMap
+        shaderIdToStringMap[missShaderIDs[0]] = c_missShaderNames[0];
+        shaderIdToStringMap[missShaderIDs[1]] = c_missShaderNames[1];
 
 		// Hitgroup shaders for the Triangle. We have 2: one for radiance ray, and another for the shadow ray.
 		for (UINT i = 0; i < RayType::Count; i++)
@@ -43,6 +46,16 @@ void DXProceduralProject::BuildShaderTables()
 		}
 
 		// TODO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
+        // analytics and volumetric
+        for (UINT PrimitiveType = 0; PrimitiveType < IntersectionShaderType::Count; ++PrimitiveType)
+        {
+            //ray and shadow ray
+            for (UINT idx = 0; idx < RayType::Count; idx++)
+            {
+                hitGroupShaderIDs_AABBGeometry[PrimitiveType][idx] = stateObjectProperties->GetShaderIdentifier(c_hitGroupNames_AABBGeometry[PrimitiveType][idx]);
+                shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[PrimitiveType][idx]] = c_hitGroupNames_AABBGeometry[PrimitiveType][idx];
+            }
+        }
 		
 	};
 
@@ -93,16 +106,28 @@ void DXProceduralProject::BuildShaderTables()
 	}
 
 	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
-	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
+	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity! -- what is debugPrint?
 	{
-		
+        UINT numShaderRecords = 2;
+        UINT shaderRecordSize = shaderIDSize; // No root arguments -- so no need to add localrootsignature
+
+        // The miss shader table contains two ShaderRecords: one for radiance and one for shadow!
+        ShaderTable missShaderTable(device, numShaderRecords, shaderRecordSize, L"MissShaderTable");
+
+        // Push back the shader record, which does not need any root signatures.
+        missShaderTable.push_back(ShaderRecord(missShaderIDs[0], shaderRecordSize, nullptr, 0)); //radiance
+        missShaderTable.push_back(ShaderRecord(missShaderIDs[1], shaderRecordSize, nullptr, 0)); //shadow
+
+        // Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
+        missShaderTable.DebugPrint(shaderIdToStringMap);
+        m_missShaderTable = missShaderTable.GetResource();
 	}
 
 	// Hit group shader table. This one is slightly different given that a hit group requires its own custom root signature.
 	// You defined the root signatures in DXR-Pipeline.cpp, and you can refresh your memory as to what these local root signatures
 	// hold by looking at RaytracingSceneDefines.h.
 	{
-		// # shader records = # triangle shader records + # AABB shader records = 2 + (# AABB types) * 2
+		// # shader records = # triangle shader records + # AABB shader records = 2 + (# AABB types) * 2 = 6 for now
 		UINT numShaderRecords = RayType::Count + IntersectionShaderType::TotalPrimitiveCount * RayType::Count;
 
 		// Note how the shader record size now also accounts for the local root signature size
@@ -130,7 +155,7 @@ void DXProceduralProject::BuildShaderTables()
 		// Hint 2:	the primitive instance constant buffer is 1 instance index and 1 primitive type.
 		//			the instance index is used to index into m_aabbPrimitiveAttributeBuffer. This is unique per object in the scene.
 		//				this should follow the *same* order you used to build the instance buffers in UpdateAABBPrimitiveAttributes()
-		//				in DXR-Pipeline.cpp. So if you did AABB, then Sphere, then Metaballs, then follow that order.
+		//				in DXR-DynamicBuffers.cpp. So if you did AABB, then Sphere, then Metaballs, then follow that order. -- I don't know the exact order, might be I am wrong in dynamic buffer?
 		//			the primitive type is used to tell the shader what type of procedural geometry this is.
 		// Remember that hitGroupShaderIDs_AABBGeometry is a 2-array indexed like so [type of geometry][ray type]
 		{

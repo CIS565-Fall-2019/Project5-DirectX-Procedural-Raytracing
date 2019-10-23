@@ -29,7 +29,33 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 
 	// TODO-2.3: AABB geometry hit groups. Very similar to triangles, except now you have to *also* loop over the primitive types.
 	{
-		//how do we loop over primitive types?
+		//how do we loop over primitive types? -- how do we determine which primitive of this belonging to? or should we just go through them all?
+        //analytic
+        for (UINT IntersectionShaderTypeCount = 0; IntersectionShaderTypeCount < IntersectionShaderType::Count; ++IntersectionShaderTypeCount)
+        {
+            auto primitiveType = static_cast<IntersectionShaderType::Enum>(IntersectionShaderTypeCount);
+            
+            //analytics will loop twice while the volumetric only once -- is that the only different?
+            for (UINT primitiveTypeCount = 0; primitiveTypeCount < IntersectionShaderType::PerPrimitiveTypeCount(primitiveType); primitiveTypeCount++)
+            {
+                for (UINT rayType = 0; rayType < RayType::Count; rayType++)
+                {
+                    auto hitGroup = raytracingPipeline->CreateSubobject<CD3D12_HIT_GROUP_SUBOBJECT>();
+                    if (rayType == RayType::Radiance)
+                    {
+                        // We import the closest hit shader name
+                        hitGroup->SetClosestHitShaderImport(c_closestHitShaderNames[GeometryType::AABB]);
+                        //how do we know the type of its intersection shader?
+                        hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[IntersectionShaderTypeCount]);
+                    }
+
+                    // We tell the hitgroup that it should export into the correct shader hit group name, with the correct type
+                    // for analytics, we have 2 intersection shaders, will that affect?
+                    hitGroup->SetHitGroupExport(c_hitGroupNames_AABBGeometry[IntersectionShaderTypeCount][rayType]); //we have the exact index of hitgroup element from IntersectionShaderTypeCount
+                    hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
+                }
+            }
+        }
 	}
 }
 
@@ -54,6 +80,17 @@ void DXProceduralProject::CreateLocalRootSignatureSubobjects(CD3D12_STATE_OBJECT
 	// TODO-2.3: AABB geometry hitgroup/local root signature association.
 	// Very similar to triangles, except now one for each primitive type.
 	{
-		
+        auto localRootSignature = raytracingPipeline->CreateSubobject<CD3D12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
+
+        // This is the AABB root signature
+        localRootSignature->SetRootSignature(m_raytracingLocalRootSignature[LocalRootSignature::Type::AABB].Get());
+
+        // Shader association
+        auto rootSignatureAssociation = raytracingPipeline->CreateSubobject<CD3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+        rootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
+        //here we should export two hitgroups
+        //c_hitGroupNames_AABBGeometry[IntersectionShaderTypeCount]
+        rootSignatureAssociation->AddExports(c_hitGroupNames_AABBGeometry[IntersectionShaderType::AnalyticPrimitive]);
+        rootSignatureAssociation->AddExports(c_hitGroupNames_AABBGeometry[IntersectionShaderType::VolumetricPrimitive]);
 	}
 }

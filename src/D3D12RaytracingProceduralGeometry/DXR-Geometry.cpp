@@ -61,7 +61,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 
 	// Set up AABBs on a grid.
 	{
-		// 9x3 slots = 9 slots. Note that one procedural geometry can take up multiple slots.
+		// 3x3 slots = 9 slots. Note that one procedural geometry can take up multiple slots.
 		// You could have a small sphere that takes up 1 slot, and another that is giant and takes up 4 slots.
 		XMINT3 aabbGrid = XMINT3(3, 1, 3);
 
@@ -78,15 +78,27 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 
 		// The stride is "how much to move" for the next slot. This is basically the size of a slot + it's separation from its direct
 		// neighbor
-		XMFLOAT3 stride = XMFLOAT3(c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance);
+		XMFLOAT3 stride = XMFLOAT3(c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance, c_aabbWidth + c_aabbDistance); //(4£¬4£¬4)
 		
 		// TODO-2.5: Lookup the DXR API for the D3D12_RAYTRACING_AABB struct and fill up this lamda function that creates
 		// and returns an D3D12_RAYTRACING_AABB for you.
 		// Note that you are only filling an axis-aligned bounding box.
 		// This should take into account the basePosition and the stride defined above.
+
+        //base point is the center of the AABB grid. stride is how much we need to move to find next slot (there is gap between slot to slot)
+
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
 			D3D12_RAYTRACING_AABB aabb{};
+            //but why not use -(aabbGrid.x * c_aabbWidth + (aabbGrid.x - 1) * c_aabbDistance) as the min and origin(0,0,0) as the max point?
+            // using basePoin + aabbGrid.xyz - 1 * stride will make the box larger than what should be
+            // each AABB is a slot in the grid, which starts by base_position + offsetIndex * stride, and end by the start_point + size
+            aabb.MinX = basePosition.x + offsetIndex.x * stride.x;
+            aabb.MinY = basePosition.y + offsetIndex.y * stride.y;
+            aabb.MinZ = basePosition.z + offsetIndex.z * stride.z;
+            aabb.MaxX = aabb.MinX + size.x;
+            aabb.MaxY = aabb.MinY + size.y;
+            aabb.MaxZ = aabb.MinZ + size.z;
 			return aabb;
 		};
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);
@@ -110,12 +122,14 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-	
+        //use m_aabbs point as the void *
+        AllocateUploadBuffer(device, &m_aabbs, sizeof(m_aabbs), &m_aabbBuffer.resource);
 	}
 }
 
 // TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
-
+    BuildPlaneGeometry();
+    BuildProceduralGeometryAABBs();
 }

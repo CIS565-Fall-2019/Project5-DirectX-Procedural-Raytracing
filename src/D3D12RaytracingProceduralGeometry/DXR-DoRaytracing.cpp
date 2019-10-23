@@ -22,7 +22,9 @@ void DXProceduralProject::DoRaytracing()
 	commandList->SetComputeRootConstantBufferView(GlobalRootSignature::Slot::SceneConstant, m_sceneCB.GpuVirtualAddress(frameIndex));
 
 	// TODO-2.8: do a very similar operation for the m_aabbPrimitiveAttributeBuffer
-	
+    // should we use CBV or SRV for the primitive attribute? I think it is just material, so using CBV is fine
+    m_aabbPrimitiveAttributeBuffer.CopyStagingToGpu(frameIndex);
+    commandList->SetComputeRootConstantBufferView(GlobalRootSignature::Slot::AABBattributeBuffer, m_aabbPrimitiveAttributeBuffer.GpuVirtualAddress(frameIndex));
 
 	// Bind the descriptor heaps.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -45,14 +47,17 @@ void DXProceduralProject::DoRaytracing()
 		commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::AccelerationStructure, m_topLevelAS->GetGPUVirtualAddress());
 	}
 
-	// TODO-2.8: Bind the Index/Vertex buffer (basically m_indexBuffer. Think about why this isn't m_vertexBuffer too. Hint: CreateRootSignatures() in DXR-Pipeline.cpp.)
+	// TODO-2.8: Bind the Index/Vertex buffer (basically m_indexBuffer. Think about why this isn't m_vertexBuffer too. Hint: CreateRootSignatures() in DXR-RootSignature.cpp.)
+        //because the vertex buffer is a global signature which every shader can access to
 	// This should be done by telling the commandList to SetComputeRoot*(). You just have to figure out what * is.
 	// Example: in the case of GlobalRootSignature::Slot::SceneConstant above, we used SetComputeRootConstantBufferView()
-	// Hint: look at CreateRootSignatures() in DXR-Pipeline.cpp.
-	
+	// Hint: look at CreateRootSignatures() in DXR-RootSignature.cpp.
+    commandList->SetComputeRootDescriptorTable(GlobalRootSignature::Slot::VertexBuffers, m_indexBuffer.gpuDescriptorHandle); //we use the index buffer to bind vertex buffer?
+
 
 	// TODO-2.8: Bind the OutputView (basically m_raytracingOutputResourceUAVGpuDescriptor). Very similar to the Index/Vertex buffer.
-	
+    // outputView doesn't have a buffer
+    commandList->SetComputeRootDescriptorTable(GlobalRootSignature::Slot::OutputView, m_raytracingOutputResourceUAVGpuDescriptor);
 
 	// This will define a `DispatchRays` function that takes in a command list, a pipeline state, and a descriptor
 	// This will set the hooks using the shader tables built before and call DispatchRays on the command list
@@ -60,7 +65,8 @@ void DXProceduralProject::DoRaytracing()
 	{
 		// You will fill in a D3D12_DISPATCH_RAYS_DESC (which is dispatchDesc).
 		// TODO-2.8: fill in dispatchDesc->HitGroupTable. Look up the struct D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE 
-		
+        // how do we utilize the stateObject to populate hitGroup, missShader and RayGenerationShader?
+        //dispatchDesc->HitGroupTable.StartAddress = stateObject;
 
 		// TODO-2.8: now fill in dispatchDesc->MissShaderTable
 		
