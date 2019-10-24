@@ -52,9 +52,10 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
+	float3 V = g_sceneCB.cameraPosition.xyz - HitWorldPosition();
 	float3 reflectedRay = normalize(reflect(incidentLightRay, normal));
-	float4 phong = pow(saturate(dot(reflectedRay, -incidentLightRay)), specularPower);
-	return phong;
+	float phong = pow(saturate(dot(reflectedRay, V)), specularPower);
+	return phong*g_sceneCB.lightAmbientColor;
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -72,7 +73,7 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
 {
 	float3 pos = HitWorldPosition();
-	float3 incidentLightRay = g_sceneCB.lightPosition.xyz - pos;
+	float3 incidentLightRay = pos - g_sceneCB.lightPosition.xyz;
 
 	// Ambient component
 	// Fake AO: Darken faces with normal facing downwards/away from the sky a little bit
@@ -82,12 +83,23 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-	float4 diffuseColor = g_sceneCB.lightDiffuseColor;
-	diffuseCoef = CalculateDiffuseCoefficient(incidentLightRay, normal);
+	// Diffuse component
+	float4 diffuseColor = diffuseCoef * CalculateDiffuseCoefficient(incidentLightRay, normal) * albedo;
+	float4 diffuseColorMin = albedo - g_sceneCB.lightDiffuseColor;
+	float4 diffuseColorMax = albedo - g_sceneCB.lightDiffuseColor * diffuseCoef;
+	diffuseColor = lerp(diffuseColorMin, diffuseColorMax, CalculateDiffuseCoefficient(incidentLightRay, normal));
 
+	// Specular component
 	float4 specularColor = CalculateSpecularCoefficient(incidentLightRay, normal, specularPower);
+	//specularColor = float4(0, 0, 0, 0);
 
-	float4 color = ambientColor;
+	if (isInShadow) {
+		specularColor = float4(0, 0, 0, 0);
+		diffuseColor /= 2.0f;
+	}
+
+
+	float4 color = ambientColor + diffuseColor + specularColor;
 
 	return color;
 }
@@ -196,7 +208,7 @@ void MyRaygenShader()
 //***************************************************************************
 
 XMFLOAT4 falloff(XMFLOAT4 color) {
-	float t = (RayTCurrent() - RayTMin()) / 100.0;
+	float t = (RayTCurrent() ) / 10000.0f;
 	return lerp(color, BackgroundColor, t);
 }
 
@@ -252,7 +264,7 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
 
-	rayPayload.color = color;
+	rayPayload.color = falloff(color);
 }
 
 // TODO: Write the closest hit shader for a procedural geometry.
@@ -296,7 +308,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
 	float4 color = (phongColor + reflectedColor);
 
-	rayPayload.color = color;
+	rayPayload.color = falloff(color);
 }
 
 //***************************************************************************
@@ -376,7 +388,7 @@ void MyIntersectionShader_VolumetricPrimitive()
 	// (2) pass on some attributes used by the closest hit shader to do some shading (e.g: normal vector)
 	float thit;
 	ProceduralPrimitiveAttributes attr;
-	if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, RayTCurrent()))
+	if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime))
 	{
 		PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
 

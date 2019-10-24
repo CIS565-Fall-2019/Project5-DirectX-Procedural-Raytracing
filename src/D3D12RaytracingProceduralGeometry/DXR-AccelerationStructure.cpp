@@ -147,7 +147,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// the AccelerationStructureBuffers struct so the top-level AS can use it! 
 	// Don't forget that this is the return value.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h
-	return AccelerationStructureBuffers{ scratch, bottomLevelAS, nullptr, bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes };
+	return AccelerationStructureBuffers{ scratch, bottomLevelAS, NULL, bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes };
 }
 
 // TODO-2.6: Build the instance descriptor for each bottom-level AS you built before.

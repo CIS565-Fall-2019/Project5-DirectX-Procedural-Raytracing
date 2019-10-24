@@ -24,7 +24,10 @@ float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
 	float potential = 0.0f;
 	float x = distance(position, blob.center) / blob.radius;
-	if (x < 1) {
+	if (x == 0) {
+		potential = 1.0f;
+	}
+	else if (x < 1) {
 		potential = 6 * pow(x, 5) - 15 * pow(x, 4) + 10 * pow(x, 3);
 	}
 
@@ -87,10 +90,15 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 // Remember that a metaball is just a solid sphere. Didn't we already do this somewhere else?
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
-	for (int i = 0; i < N_METABALLS; i++) {
-		Metaball blob = blobs[i];
-		RaySolidSphereIntersectionTest(ray, tmin, tmax, blob.center, blob.radius);
-		//if (RaySolidSphereIntersectionTest(ray, tmin, tmax, blob.center, blob.radius)) {}
+	tmin = INFINITY;
+	tmax = -INFINITY;
+
+	for (UINT i = 0; i < N_METABALLS; i++) {
+		float tmin_temp, tmax_temp;
+		if (RaySolidSphereIntersectionTest(ray, tmin_temp, tmax_temp, blobs[i].center, blobs[i].radius)) {
+			tmin = min(tmin, tmin_temp);
+			tmax = max(tmax, tmax_temp);
+		}
 	}
 }
 
@@ -110,16 +118,21 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
 	Metaball blobs[N_METABALLS];
-	InitializeAnimatedMetaballs(blobs, elapsedTime, 2);
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 5.0f);
 
 	float tmin, tmax;
 	TestMetaballsIntersection(ray, tmin, tmax, blobs);
-	for (int i = 0; i < 128; i++) {
-		float t = float(i)*(tmax-tmin)/128.0f + tmin;
+
+	int numSteps = 128;
+	float threshold = 0.04;
+	for (int i = 0; i <= numSteps; i++) {
+		float t = (tmax - tmin)*float(i)/float(numSteps) + tmin;
 		float3 position = ray.origin + t * ray.direction;
 		float potential = CalculateMetaballsPotential(position, blobs);
 		float3 normal = CalculateMetaballsNormal(position, blobs);
-		if (potential > 0.4 && is_a_valid_hit(ray, t, normal)) {
+		if (potential > threshold && is_a_valid_hit(ray, t, normal)) {
+			thit = t;
+			attr.normal = normal;
 			return true;
 		}
 	}
