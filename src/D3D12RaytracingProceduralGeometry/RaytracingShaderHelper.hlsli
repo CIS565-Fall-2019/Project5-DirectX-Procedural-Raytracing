@@ -130,8 +130,20 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
 	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+    ray.origin = cameraPosition;
+
+	uint3 dimScreen = DispatchRaysDimensions();
+	float2 normalizedCoord;
+	normalizedCoord.x = index.x / (1 .0f * dimScreen.x);
+	normlaizedCoord.y = index.y / (1.0f * dimScreen.y);
+
+	normalizedCoord.x = (normalizedCoord.x - 0.5f) * 2.0f;
+	normalizedCoord.y = (0.5f - normalizedCoord.y) * 2.0f;
+
+	ray.direction = normalize(float3(normalizedCoord.x, normalizedCoord.y, 1.0f));
+	float4 ray4Dimension = normalize(float4(ray.direction,1.0f));
+	float4 pointWorld = mul(projectionToWorld, ray4Dimension);
+	ray.direction = normalize(float3(pointWorld.x, pointWorld.y, pointWorld.z));
 
     return ray;
 }
