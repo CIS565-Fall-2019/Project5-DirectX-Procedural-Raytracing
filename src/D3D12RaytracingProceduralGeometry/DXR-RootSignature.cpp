@@ -40,10 +40,9 @@ void DXProceduralProject::CreateRootSignatures()
                 //      b registers --> CBV
 		CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignature::Slot::Count];
 
-		// need registerSpace to be different based on UAV/SRV/CBV?
 		rootParameters[GlobalRootSignature::Slot::OutputView].InitAsDescriptorTable(1, &ranges[0]);
 		rootParameters[GlobalRootSignature::Slot::AccelerationStructure].InitAsShaderResourceView(0);
-		rootParameters[GlobalRootSignature::Slot::SceneConstant].InitAsConstants(SizeOfInUint32(SceneConstantBuffer), 0);
+		rootParameters[GlobalRootSignature::Slot::SceneConstant].InitAsConstantBufferView(0);
 		rootParameters[GlobalRootSignature::Slot::AABBattributeBuffer].InitAsShaderResourceView(3);
 		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(1, &ranges[1]);
 

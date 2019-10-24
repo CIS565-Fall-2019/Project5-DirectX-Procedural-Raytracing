@@ -22,7 +22,7 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    float dist = distance(position, blob.center);
+	float dist = distance(position, blob.center);
     if (dist > blob.radius) { return 0.0f; }
 
     float ratio = (blob.radius - dist) / blob.radius;
@@ -118,19 +118,19 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
 
     Metaball blobs[N_METABALLS];
-    InitializeAnimatedMetaballs(blobs, elapsedTime, 100.0f);
+    InitializeAnimatedMetaballs(blobs, elapsedTime, 20.0f);
 
     float tmin, tmax;
     TestMetaballsIntersection(ray, tmin, tmax, blobs);
     if (tmax < -10000) { return false; } // We didn't hit any of the metaballs
 
-    float inc = (tmax - tmin) / 128.0f;
+    float inc = (tmax - tmin) / 127.0f;
     float tcurr = tmin;
     for (int i = 0; i < 128; i++)
     {
         float3 pos = ray.origin + ray.direction * tcurr;
         float currPot = CalculateMetaballsPotential(pos, blobs);
-        if (currPot > 0.001f)
+        if (currPot > 0.2f)
         {
             float3 nor = CalculateMetaballsNormal(pos, blobs);
             if (is_a_valid_hit(ray, tcurr, nor))

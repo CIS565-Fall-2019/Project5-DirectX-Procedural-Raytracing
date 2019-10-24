@@ -71,7 +71,7 @@ float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration
     float interpolant = fmod(elapsedTime, cycleDuration) / cycleDuration;
     interpolant = sin(3.1415 * interpolant);
     
-    return smoothstep(0, 1, interpolant);
+	return smoothstep(0, 1, interpolant);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -134,9 +134,10 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 {
 	Ray ray;
     ray.origin = cameraPosition;
-    float ndcx = (index.x / DispatchRaysDimensions().x) * 2.0f - 1.0f;
-    float ndcy = (index.y / DispatchRaysDimensions().y) * 2.0f - 1.0f;
-    float4 castPos = mul(projectionToWorld, float4(ndcx, ndcy, 0.0, 1.0));
+    float ndcx = (float(index.x + 0.5f) / DispatchRaysDimensions().x) * 2.0f - 1.0f;
+    float ndcy = 1.0f - (float(index.y + 0.5f) / DispatchRaysDimensions().y) * 2.0f;
+    float4 castPos = mul(float4(ndcx, ndcy, 1.0, 1.0), projectionToWorld);
+	castPos /= castPos.w;
 	ray.direction = normalize(castPos.xyz - cameraPosition);
 
     return ray;
@@ -147,7 +148,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-    float3 cosTheta = abs(dot(N, I));
+	float3 cosTheta = abs(dot(N, I));
     float3 approx = f0 + (1 - f0) * pow((1 - cosTheta), 5);
     
     return approx;

@@ -52,7 +52,7 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
     float3 reflectedRay = normalize(reflect(normalize(incidentLightRay), normalize(normal)));
-    return pow(abs(dot(normalize(incidentLightRay), reflectedRay)), specularPower);
+    return pow(abs(dot(normalize(WorldRayDirection()), reflectedRay)), specularPower);
 }
 
 // TODO-3.5: Phong lighting model = ambient + diffuse + specular components.
@@ -77,12 +77,13 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-    float3 lightRay = normalize(g_sceneCB.lightPosition.xyz - HitWorldPosition());
+	float3 lightRay = normalize(g_sceneCB.lightPosition.xyz - HitWorldPosition());
     // Diffuse component
-    float4 diffuseColor = albedo * diffuseCoef * CalculateDiffuseCoefficient(lightRay, normal);
+	float4 diffColor = g_sceneCB.lightDiffuseColor;
+    float4 diffuseColor = albedo * diffColor * diffuseCoef * CalculateDiffuseCoefficient(lightRay, normal);
 
     // Specular component
-    float4 specularColor = specularCoef * CalculateSpecularCoefficient(lightRay, normal, specularPower);
+    float4 specularColor = float4(1.0f, 1.0f, 1.0f, 1.0f) * specularCoef * CalculateSpecularCoefficient(lightRay, normal, specularPower);
 
     // Changes if in shadow
     if (isInShadow)
@@ -150,9 +151,10 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
-    if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+	return false;
+	/*if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
     {
-        return true;
+        return false;
     }
 
     // Set the ray's extents.
@@ -164,17 +166,17 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
     rayDesc.TMin = 0;
     rayDesc.TMax = 10000;
 
-    ShadowRayPayload rayPayload = { false };
+    ShadowRayPayload rayPayload = { true };
 
     TraceRay(g_scene,
         RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_FORCE_OPAQUE,
         TraceRayParameters::InstanceMask,
-        TraceRayParameters::HitGroup::Offset[RayType::Radiance],
+        TraceRayParameters::HitGroup::Offset[RayType::Shadow],
         TraceRayParameters::HitGroup::GeometryStride,
-        TraceRayParameters::MissShader::Offset[RayType::Radiance],
+        TraceRayParameters::MissShader::Offset[RayType::Shadow],
         rayDesc, rayPayload);
 
-    return rayPayload.hit;
+    return rayPayload.hit;*/
 }
 
 //***************************************************************************
@@ -250,10 +252,10 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
-    float t = 1.0f - min(RayTCurrent()/100.0f, 1.0f);
+    float t = 1.0f - min(RayTCurrent()/500.0f, 1.0f);
     float4 falloffColor = lerp(BackgroundColor, color, t);
 
-    rayPayload.color = falloffColor;
+	rayPayload.color = falloffColor;
 }
 
 // TODO: Write the closest hit shader for a procedural geometry.
@@ -292,7 +294,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
     float4 color = (phongColor + reflectedColor);
 
-    float t = 1.0f - min(RayTCurrent() / 100.0f, 1.0f);
+    float t = 1.0f - min(RayTCurrent() / 500.0f, 1.0f);
     float4 falloffColor = lerp(BackgroundColor, color, t);
 
     rayPayload.color = falloffColor;
@@ -381,7 +383,7 @@ void MyIntersectionShader_VolumetricPrimitive()
         attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
 
         // thit is invariant to the space transformation
-        ReportHit(thit, /*hitKind*/ 0, attr);
+        ReportHit(thit, 0, attr);
     }
 }
 #endif // RAYTRACING_HLSL
