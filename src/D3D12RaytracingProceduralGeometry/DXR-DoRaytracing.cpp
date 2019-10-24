@@ -64,21 +64,21 @@ void DXProceduralProject::DoRaytracing()
 		auto& hitgroup = dispatchDesc->HitGroupTable;
 		hitgroup = {};
 		hitgroup.StartAddress = m_hitGroupShaderTable->GetGPUVirtualAddress();
-		hitgroup.SizeInBytes = m_hitGroupShaderTableStrideInBytes * (RayType::Count + IntersectionShaderType::TotalPrimitiveCount * RayType::Count); // stride * num records
+		hitgroup.SizeInBytes = m_hitGroupShaderTable->GetDesc().Width;
 		hitgroup.StrideInBytes = m_hitGroupShaderTableStrideInBytes;
 
 		// TODO-2.8: now fill in dispatchDesc->MissShaderTable
 		auto& miss = dispatchDesc->MissShaderTable;
 		miss = {};
 		miss.StartAddress = m_missShaderTable->GetGPUVirtualAddress();
-		miss.SizeInBytes = m_missShaderTableStrideInBytes * 2; // stride * num records
+		miss.SizeInBytes = m_missShaderTable->GetDesc().Width;
 		miss.StrideInBytes = m_missShaderTableStrideInBytes;
 
 		// TODO-2.8: now fill in dispatchDesc->RayGenerationShaderRecord
 		auto& raygen = dispatchDesc->RayGenerationShaderRecord;
 		raygen = {};
 		raygen.StartAddress = m_rayGenShaderTable->GetGPUVirtualAddress();
-		raygen.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+		raygen.SizeInBytes = m_rayGenShaderTable->GetDesc().Width;;
 
 		// We do this for you. This will define how many threads will be dispatched. Basically like a blockDims in CUDA!
 		dispatchDesc->Width = m_width;

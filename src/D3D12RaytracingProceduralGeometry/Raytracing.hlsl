@@ -151,8 +151,7 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
-	return false;
-	/*if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+	if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
     {
         return false;
     }
@@ -176,7 +175,7 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
         TraceRayParameters::MissShader::Offset[RayType::Shadow],
         rayDesc, rayPayload);
 
-    return rayPayload.hit;*/
+    return rayPayload.hit;
 }
 
 //***************************************************************************
