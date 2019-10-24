@@ -129,9 +129,14 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 // as long as the direction of the ray is correct then the depth does not matter.
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
+	uint3 dimensions = DispatchRaysDimensions();
+	float4 normalized_device_coordinates = { (2.0f * (index.x - dimensions.x/2.0f)) / dimensions.x, (2.0f * (index.y - dimensions.y / 2.0f)) / dimensions.y, 1.0f, 1.0f };
+
+	float4 world_coordinates = mul(normalized_device_coordinates, projectionToWorld);
+
 	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+    ray.origin = cameraPosition;
+	ray.direction = normalize(float3(world_coordinates.x, world_coordinates.y, world_coordinates.z));
 
     return ray;
 }

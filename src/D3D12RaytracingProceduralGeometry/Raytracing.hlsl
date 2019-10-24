@@ -135,7 +135,32 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
-	return false;
+	if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+	{
+		return float4(0, 0, 0, 0);
+	}
+
+	// Set the ray's extents.
+	RayDesc rayDesc;
+	rayDesc.Origin = ray.origin;
+	rayDesc.Direction = ray.direction;
+	// Set TMin to a zero value to avoid aliasing artifacts along contact areas.
+	// Note: make sure to enable face culling so as to avoid surface face fighting.
+	rayDesc.TMin = 0;
+	rayDesc.TMax = 10000;
+
+	ShadowRayPayload shadowRayPayload = { false };
+
+	
+	TraceRay(g_scene,
+		RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+		TraceRayParameters::InstanceMask,
+		TraceRayParameters::HitGroup::Offset[RayType::Shadow],
+		TraceRayParameters::HitGroup::GeometryStride,
+		TraceRayParameters::MissShader::Offset[RayType::Shadow],
+		rayDesc, rayPayload);
+
+	return shadowRayPayload.hit;
 }
 
 //***************************************************************************
@@ -149,9 +174,11 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
-
+	uint2 index = (uint2)DispatchRaysIndex().xy;
+	Ray ray = GenerateCameraRay(index,  g_sceneCB.cameraPosition, g_sceneCB.projectionToWorld);
+	float4 color = TraceRadianceRay(ray, 0);
 	// Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    g_renderTarget[DispatchRaysIndex().xy] = color;
 }
 
 //***************************************************************************
@@ -240,14 +267,15 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-
+	rayPayload.color = BackgroundColor;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
-
+	rayPayload.hit = false;
+	return;
 }
 
 //***************************************************************************
@@ -299,6 +327,24 @@ void MyIntersectionShader_AnalyticPrimitive()
 [shader("intersection")]
 void MyIntersectionShader_VolumetricPrimitive()
 {
+	Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+	AnalyticPrimitive::Enum primitiveType = (AnalyticPrimitive::Enum) l_aabbCB.primitiveType;
 
+	// The point of the intersection shader is to:
+	// (1) find out what is the t at which the ray hits the procedural
+	// (2) pass on some attributes used by the closest hit shader to do some shading (e.g: normal vector)
+	float thit;
+	ProceduralPrimitiveAttributes attr;
+	if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime))
+	{
+		PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+
+		// Make sure the normals are stored in BLAS space and not the local space
+		attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+		attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+
+		// thit is invariant to the space transformation
+		ReportHit(thit, /*hitKind*/ 0, attr);
+	}
 }
 #endif // RAYTRACING_HLSL

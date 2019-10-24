@@ -22,7 +22,16 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	if (position == blob.center) {
+		return 1.0f;
+	}
+	float dist = distance(position, blob.center);
+	if (dist >= blob.radius) {
+		return 0.0f;
+	}
+	float ratio = dist / radius;
+	float potential = 6 * pow(ratio, 5) - 15 * pow(ratio, 4) + 10 * pow(ratio, 3);
+    return potential;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
