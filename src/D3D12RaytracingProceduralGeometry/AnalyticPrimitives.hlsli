@@ -103,7 +103,7 @@ float3 CalculateNormalForARaySphereHit(in Ray ray, in float thit, float3 center)
 }
 
 // Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects a hollow sphere.
-bool RaySphereIntersectionTest(in Ray ray, out float thit, out float tmax, in ProceduralPrimitiveAttributes attr, in float3 center = float3(0, 0, 0), in float radius = 1)
+bool RaySphereIntersectionTest(in Ray ray, out float thit, out float tmax, out ProceduralPrimitiveAttributes attr, in float3 center = float3(0, 0, 0), in float radius = 1)
 {
     float t0, t1; // solutions for t if the ray intersects 
 
@@ -165,19 +165,36 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 // You can hardcode the local centers/radii of the spheres, just try to maintain them between 1 and -1 (and > 0 for the radii).
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
+	const int N = 3;
 	// Define the spheres in local space (within the aabb)
-	float3 center = float3(-0.2, 0, -0.2);
-	float radius = 0.7f;
+	float3 centers[N] =
+	{
+		float3(-0.2, 0, -0.2),
+		float3(0.1, 0.1, 0.0),
+		float3(0.35,0.35, 0.0)
+	};
+
+	float  radii[N] = { 0.8f, 0.4f, 0.35f };
+	bool hitFound = false;
 
 	thit = RayTCurrent();
 
+	float temp_thit;
 	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
+	ProceduralPrimitiveAttributes temp_attr;
+	for (int i = 0; i < N; i++)
 	{
-		return true;
+		if (RaySphereIntersectionTest(ray, temp_thit, tmax, temp_attr, centers[i, radii[i]))
+		{
+			if (temp_thit < thit)
+			{
+				thit = temp_thit;
+				attr = temp_attr;
+				hitFound = true;
+			}
+		}
 	}
-
-	return false;
+	return hitFound;
 }
 
 #endif // ANALYTICPRIMITIVES_H
