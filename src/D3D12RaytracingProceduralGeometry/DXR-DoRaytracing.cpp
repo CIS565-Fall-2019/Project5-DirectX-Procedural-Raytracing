@@ -66,12 +66,17 @@ void DXProceduralProject::DoRaytracing()
 		// You will fill in a D3D12_DISPATCH_RAYS_DESC (which is dispatchDesc).
 		// TODO-2.8: fill in dispatchDesc->HitGroupTable. Look up the struct D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE 
         // how do we utilize the stateObject to populate hitGroup, missShader and RayGenerationShader?
-        //dispatchDesc->HitGroupTable.StartAddress = stateObject;
+        //D3D12_Shader_Identifier_size_in_bytes + maxrootargumentsSize
+        //everyone group should have a hitgroup shader -- triangles * rayType count + primitiveType * rayType count
+        dispatchDesc->HitGroupTable.StartAddress = m_hitgroupshadertable.GetGPUVirtualAddress();
 
 		// TODO-2.8: now fill in dispatchDesc->MissShaderTable
-		
+		//m_missShaderTable
+		dispatchDesc->
 
 		// TODO-2.8: now fill in dispatchDesc->RayGenerationShaderRecord
+		//m_RayGenerationShaderTable
+		//only start address and size
 		
 
 		// We do this for you. This will define how many threads will be dispatched. Basically like a blockDims in CUDA!

@@ -123,7 +123,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
         //use m_aabbs point as the void *
-        AllocateUploadBuffer(device, &m_aabbs, sizeof(m_aabbs), &m_aabbBuffer.resource);
+        AllocateUploadBuffer(device, m_aabbs.data(), m_aabbs.size() * sizeof(m_aabbs[0]), &m_aabbBuffer.resource);
 	}
 }
 

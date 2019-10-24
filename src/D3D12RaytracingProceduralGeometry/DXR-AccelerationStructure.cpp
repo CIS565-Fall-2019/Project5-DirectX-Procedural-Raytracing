@@ -42,8 +42,8 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
         geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
         geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width / sizeof(Vertex);
         geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
-        //geometryDesc.Triangles.VertexBuffer.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
-        //geometryDesc.Triangles.VertexBuffer.StrideInBytes = m_vertexBuffer.resource->GetDesc().Alignment ;
+        geometryDesc.Triangles.VertexBuffer.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
+        geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex) ;
 	}
 
 	{
@@ -63,12 +63,12 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
 
-        for (UINT idx = 0; idx < geometryDescs.size(); ++idx)
+        for (UINT idx = 0; idx < IntersectionShaderType::TotalPrimitiveCount; ++idx)
         {
             auto& geometryDesc = geometryDescs[BottomLevelASType::AABB][idx];
             //only need to fill out the virtual address, do we need to add stride? which I think is necessary
             //geometryDesc.AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress();
-            geometryDesc.AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + aabbDescTemplate.AABBs.AABBs.StrideInBytes * idx;
+            geometryDesc.AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + sizeof(D3D12_RAYTRACING_AABB) * idx;
         }
 		
 	}
@@ -94,8 +94,8 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
     bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL; //set up bottom level AS
     bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
     bottomLevelInputs.NumDescs = geometryDescs.size();
-    //union, how should we know which fits? -- we only have object, we should use pGeometry? -- will the rest be automatically loaded as we input the NumDescs?
-    //bottomLevelInputs.pGeometryDescs = &geometryDescs[0];
+    //union, how should we know which fits? -- we only have object, we should use pGeometry? -- will the rest be automatically loaded as we input the NumDescs?   
+    bottomLevelInputs.pGeometryDescs = &geometryDescs[0];
 
 
 	// Query the driver for resource requirements to build an acceleration structure. We've done this for you.
@@ -138,8 +138,8 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
 
     //should the actual bottom-level AS desc be the destination?
-    bottomLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
-    bottomLevelBuildDesc.DestAccelerationStructureData = bottomLevelAS->GetGPUVirtualAddress();
+    bottomLevelBuildDesc.ScratchAccelerationStructureData = scratch.Get()->GetGPUVirtualAddress();
+    bottomLevelBuildDesc.DestAccelerationStructureData = bottomLevelAS.Get()->GetGPUVirtualAddress();
 
 	// Fill up the command list with a command that tells the GPU how to build the bottom-level AS.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -216,11 +216,29 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 
     //not sure how to do this part
 	{
+		const XMUINT3 NUM_AABB = XMUINT3(3, 1, 3);
+		const XMFLOAT3 fWidth = XMFLOAT3(
+			NUM_AABB.x * c_aabbWidth + (NUM_AABB.x - 1) * c_aabbDistance,
+			NUM_AABB.y * c_aabbWidth + (NUM_AABB.y - 1) * c_aabbDistance,
+			NUM_AABB.z * c_aabbWidth + (NUM_AABB.z - 1) * c_aabbDistance);
+		const XMVECTOR vWidth = XMLoadFloat3(&fWidth);
+
         auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
         instanceDesc = {};
         instanceDesc.InstanceMask = 1; // If the value is zero, then the instance will never be included, so typically this should be set to some non-zero value. 
         instanceDesc.InstanceContributionToHitGroupIndex = GeometryType::Enum::Count; //triagles and AABBs, we can add more if we want 
         instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
+
+
+        const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(-0.5f, 0.0f, -0.5f));
+
+		// Scale in XZ dimensions.
+		XMMATRIX mScale = XMMatrixScaling(fWidth.x, fWidth.y, fWidth.z);
+		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
+		XMMATRIX mTransform = mScale * mTranslation;
+
+		// Store the transform in the instanceDesc.
+		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
 	}
 
 	// Upload all these instances to the GPU, and make sure the resource is set to instanceDescsResource.
@@ -244,9 +262,9 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	// Consider using D3D12_ELEMENTS_LAYOUT_ARRAY as a DescsLayout since we are using an array of bottom-level AS.
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS &topLevelInputs = topLevelBuildDesc.Inputs;
     topLevelInputs.Flags = buildFlags;
-    topLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL; //set up bottom level AS
+    topLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL; //set up bottom level AS
     topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-    topLevelInputs.NumDescs = BottomLevelASType::Count;
+    topLevelInputs.NumDescs = NUM_BLAS;
     //union, how should we know which fits? -- we only have object, we should use pGeometry? -- will the rest be automatically loaded as we input the NumDescs?
     //topLevelInputs.pGeometryDescs = &bottomLevelAS[0];
 
@@ -331,8 +349,8 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 
 	// TODO-2.6: fill in the topLevelBuildDesc. Read about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
-    topLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
-    topLevelBuildDesc.DestAccelerationStructureData = topLevelAS->GetGPUVirtualAddress();
+    topLevelBuildDesc.ScratchAccelerationStructureData = scratch.Get()->GetGPUVirtualAddress();
+    topLevelBuildDesc.DestAccelerationStructureData = topLevelAS.Get()->GetGPUVirtualAddress();
 
 	// Build acceleration structure.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -379,7 +397,7 @@ void DXProceduralProject::BuildAccelerationStructures()
     for (UINT idx = 0; idx < BottomLevelASType::Count; ++idx)
     {
         //what build flag should we use or just default?
-        bottomLevelAS[idx] = BuildBottomLevelAS(geometryDescs[idx]);
+        bottomLevelAS[idx] = BuildBottomLevelAS(geometryDescs[idx], D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE);
     }
 
 	// Batch all resource barriers for bottom-level AS builds.
@@ -393,7 +411,7 @@ void DXProceduralProject::BuildAccelerationStructures()
 
 	// TODO-2.6: Build top-level AS. Hint, you already made a function that does this.
 	AccelerationStructureBuffers topLevelAS;
-    topLevelAS = BuildTopLevelAS(bottomLevelAS);
+    topLevelAS = BuildTopLevelAS(bottomLevelAS, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE);
 
 	// Kick off acceleration structure construction.
 	m_deviceResources->ExecuteCommandList();
@@ -406,10 +424,10 @@ void DXProceduralProject::BuildAccelerationStructures()
 	// to find what member variables should be set.
     //store pointer is enough? I think we still release the buffer, probably we should copy to;
     //memcpy(m_topLevelAS, &topLevelAS, topLevelAS.ResultDataMaxSizeInBytes);
-    m_topLevelAS = &topLevelAS;
+    m_topLevelAS = topLevelAS.accelerationStructure;
     for (UINT idx = 0; idx < BottomLevelASType::Count; ++idx)
     {
-        m_bottomLevelAS[idx] = &bottomLevelAS[idx];
+        m_bottomLevelAS[idx] = bottomLevelAS[idx].accelerationStructure;
     }
 
 }

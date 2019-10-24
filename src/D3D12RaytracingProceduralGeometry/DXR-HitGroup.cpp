@@ -33,27 +33,21 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
         //analytic
         for (UINT IntersectionShaderTypeCount = 0; IntersectionShaderTypeCount < IntersectionShaderType::Count; ++IntersectionShaderTypeCount)
         {
-            auto primitiveType = static_cast<IntersectionShaderType::Enum>(IntersectionShaderTypeCount);
-            
-            //analytics will loop twice while the volumetric only once -- is that the only different?
-            for (UINT primitiveTypeCount = 0; primitiveTypeCount < IntersectionShaderType::PerPrimitiveTypeCount(primitiveType); primitiveTypeCount++)
+            for (UINT rayType = 0; rayType < RayType::Count; rayType++)
             {
-                for (UINT rayType = 0; rayType < RayType::Count; rayType++)
+                auto hitGroup = raytracingPipeline->CreateSubobject<CD3D12_HIT_GROUP_SUBOBJECT>();
+        		//how do we know the type of its intersection shader?
+            	hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[IntersectionShaderTypeCount]);
+                if (rayType == RayType::Radiance)
                 {
-                    auto hitGroup = raytracingPipeline->CreateSubobject<CD3D12_HIT_GROUP_SUBOBJECT>();
-                    if (rayType == RayType::Radiance)
-                    {
-                        // We import the closest hit shader name
-                        hitGroup->SetClosestHitShaderImport(c_closestHitShaderNames[GeometryType::AABB]);
-                        //how do we know the type of its intersection shader?
-                        hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[IntersectionShaderTypeCount]);
-                    }
-
-                    // We tell the hitgroup that it should export into the correct shader hit group name, with the correct type
-                    // for analytics, we have 2 intersection shaders, will that affect?
-                    hitGroup->SetHitGroupExport(c_hitGroupNames_AABBGeometry[IntersectionShaderTypeCount][rayType]); //we have the exact index of hitgroup element from IntersectionShaderTypeCount
-                    hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
+                    // We import the closest hit shader name
+                    hitGroup->SetClosestHitShaderImport(c_closestHitShaderNames[GeometryType::AABB]);
                 }
+
+                // We tell the hitgroup that it should export into the correct shader hit group name, with the correct type
+                // for analytics, we have 2 intersection shaders, will that affect?
+                hitGroup->SetHitGroupExport(c_hitGroupNames_AABBGeometry[IntersectionShaderTypeCount][rayType]); //we have the exact index of hitgroup element from IntersectionShaderTypeCount
+                hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
             }
         }
 	}
