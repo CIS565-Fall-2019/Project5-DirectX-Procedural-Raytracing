@@ -103,7 +103,20 @@ void DXProceduralProject::BuildShaderTables()
 	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	{
-		
+		UINT numShaderRecords = RayType::Count; // one for each ray
+		UINT shaderRecordSize = shaderIDSize; // No root arguments
+
+		// The RayGen shader table contains a single ShaderRecord: the one single raygen shader!
+		ShaderTable missShaderTable(device, numShaderRecords, shaderRecordSize, L"MissShaderTable");
+
+		// Push back a shader record for each ray type
+		for (int i = 0; i < numShaderRecords; i++) {
+			missShaderTable.push_back(ShaderRecord(missShaderIDs[i], shaderRecordSize, nullptr, 0));
+		}
+
+		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
+		missShaderTable.DebugPrint(shaderIdToStringMap);
+		m_missShaderTable = missShaderTable.GetResource();
 	}
 
 	// Hit group shader table. This one is slightly different given that a hit group requires its own custom root signature.
@@ -142,6 +155,7 @@ void DXProceduralProject::BuildShaderTables()
 		//			the primitive type is used to tell the shader what type of procedural geometry this is.
 		// Remember that hitGroupShaderIDs_AABBGeometry is a 2-array indexed like so [type of geometry][ray type]
 		{
+			// .....I guess this is already done?
 			LocalRootSignature::AABB::RootArguments rootArgs;
 			UINT instanceIndex = 0;
 
