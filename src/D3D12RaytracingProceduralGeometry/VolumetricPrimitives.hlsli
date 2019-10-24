@@ -92,6 +92,17 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+	
+	for (UINT i = 0; i < N_METABALLS; i++) {
+		float curr_thit, curr_tmax;
+		if (RaySolidSphereIntersectionTest(ray, curr_thit, curr_tmax, blobs[i].center, blobs[i].radius)) {
+			tmin = min(tmin, curr_thit);
+			tmax = max(tmax, curr_tmax);
+		}
+	}
+	// Since it's a solid sphere, clip intersection points to ray extents.
+	tmin = max(tmin, RayTMin());
+	tmax = min(tmax, RayTCurrent());
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -109,8 +120,29 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 14.0f);
+
+	float tmin, tmax;
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+
+	UINT MAXIMUM_STEPS = 128;
+	float t = tmin;
+	float step = (tmax - tmin) / MAXIMUM_STEPS;
+	float threshold = 0.3f;
+	while (t < tmax) {
+		float3 pos = ray.origin + t * ray.direction;
+		float total_potential = CalculateMetaballsPotential(pos, blobs);
+		if (total_potential > threshold) {
+			float3 normal = CalculateMetaballsNormal(pos, blobs);
+			if (is_a_valid_hit(ray, t, normal)) {
+				thit = t;
+				attr.normal = normal;
+				return true;
+			}
+		}
+		t += step;
+	}
     return false;
 }
 
