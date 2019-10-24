@@ -22,7 +22,17 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	if (position == blob.center)
+		return 1.0f;
+
+	float dist = distance(position, blob.center);
+	if (dist >= blob.radius)
+		return 0.0f;
+
+	float x = dist / blob.radius;
+	float value = 6.0f * pow(x, 5.0f) - 15.0f * pow(x, 4 .0f) + 10 * pow(x, 3 .0f);
+    
+	return value;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -81,8 +91,27 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 // Remember that a metaball is just a solid sphere. Didn't we already do this somewhere else?
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
+	
 	tmin = INFINITY;
     tmax = -INFINITY;
+
+	
+	for (int i = 0; i < N_METABALLS; i++)
+	{
+		float tminTemp, tmaxTemp;
+		if (RaySolidSphereIntersectionTest(ray, tminTemp, tmaxTemp, blob[i].center, blob[i].radius))
+		{
+			if (tminTemp < tmin)
+				tmin = tminTemp;
+			if (tmaxTemp > tmax)
+				tmax = tmaxTemp;
+		}
+	}
+
+	// Since it's a solid sphere, clip intersection points to ray extents.
+	tmin = max(tmin, RayTMin());
+	tmax = min(tmax, RayTCurrent());
+
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,6 +129,36 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f)
+
+	float tmin, tmax;  
+
+	FindIntersectingMetaballs(ray, tmin, tmax, blobs);
+
+	uint steps = 128;
+	float tPoint = tmin;
+	float tStride = (tmax - tmin) / (steps * 1.0f); 
+	float potential = 0.0f;
+	float threshold = 0.25f;
+
+	while (tPoint <= tmax) {
+		float netPotential = 0.0f;
+		float3 position = ray.origin + tPoint * ray.direction;
+		netPotential = CalculateMetaballsPotential(position,blobs);
+		if (netPotential > threshold)
+		{
+			float3 normal = CalculateMetaballsNormal(position,blobs);
+			if (is_a_valid_hit(ray, tPoint, normal)) {
+				thit = tPoint;
+				attr.normal = normal;
+				return true;
+			}
+
+		}
+		
+		tPoint += tStride;
+	}
 	thit = 0.0f;
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
     return false;
