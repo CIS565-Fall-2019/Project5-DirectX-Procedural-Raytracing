@@ -114,7 +114,7 @@ void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 	auto device = m_deviceResources->GetD3DDevice();
 	auto frameCount = m_deviceResources->GetBackBufferCount();
 
-	m_aabbPrimitiveAttributeBuffer.Create(device, frameCount, 1, L"aabb Primitive Attribute Buffer");
+	m_aabbPrimitiveAttributeBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"aabb Primitive Attribute Buffer");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
@@ -167,7 +167,11 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// You can infer what the bottom level AS space to local space transform should be.
 		// The intersection shader tests in this project work with local space, but the geometries are provided in bottom level 
 		// AS space. So this data will be used to convert back and forth from these spaces.
-		return mScale * mRotation * mTranslation;
+
+        //wtf
+        auto element = m_aabbPrimitiveAttributeBuffer[primitiveIndex];
+		element.localSpaceToBottomLevelAS = mScale * mRotation * mTranslation;
+        element.bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, element.localSpaceToBottomLevelAS);
 	};
 
 	UINT offset = 0;

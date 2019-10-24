@@ -5,7 +5,7 @@
 #define RAYTRACINGSHADERHELPER_H
 
 #include "RayTracingHlslCompat.h"
-#include "Corecrt_math.h"
+//#include "corecrt_math.h"
 
 #define INFINITY (1.0/0.0)
 
@@ -137,7 +137,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 	Ray ray;
     ray.origin = cameraPosition;
 	float4 p_ndc = float4(2.0f * index[0] / 1280.0f - 1.0f, 1.0f - 2.0f * index[1] / 720.0f, 1.0f, 1.0f);
-	ray.direction = normalize((projectionToWorld * p_ndc).xyz - cameraPosition);
+	ray.direction = normalize(mul(projectionToWorld, p_ndc).xyz - cameraPosition);
 
     return ray;
 }
@@ -147,7 +147,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow((1.0f - dot(N, I), 5.0f);
+	return f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow(1.0f - dot(N, I), 5.0f);
 }
 
 #endif // RAYTRACINGSHADERHELPER_H

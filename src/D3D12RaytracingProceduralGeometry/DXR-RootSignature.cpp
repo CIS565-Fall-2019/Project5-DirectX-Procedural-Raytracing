@@ -75,6 +75,7 @@ void DXProceduralProject::CreateRootSignatures()
 			namespace RootSignatureSlots = LocalRootSignature::AABB::Slot;
 			CD3DX12_ROOT_PARAMETER rootParameters[RootSignatureSlots::Count];
 			rootParameters[RootSignatureSlots::MaterialConstant].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 1);
+            //wtf
 			rootParameters[RootSignatureSlots::GeometryIndex].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 2);
 
 			CD3DX12_ROOT_SIGNATURE_DESC localRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);

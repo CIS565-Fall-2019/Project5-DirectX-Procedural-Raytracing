@@ -83,7 +83,8 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 // Remember that a metaball is just a solid sphere. Didn't we already do this somewhere else?
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
-	tmin = INFINITY;
+    //wtf
+	/*tmin = INFINITY;
     tmax = -INFINITY;
 
 	float ttmp1;
@@ -99,7 +100,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 			}
 		}
 	}
-	return;
+	return;*/
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -117,7 +118,8 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	Metaball blobs[N_METABALLS];
+    //wtf
+	/*Metaball blobs[N_METABALLS];
 	InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f);
 	float tmin, tmax;
 	TestMetaballsIntersection(ray, tmin, tmax, blobs);
@@ -130,7 +132,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 			if (is_a_valid_hit(ray, thit, attr.normal))
 				return true;
 		}
-	}
+	}*/
     return false;
 }
 
