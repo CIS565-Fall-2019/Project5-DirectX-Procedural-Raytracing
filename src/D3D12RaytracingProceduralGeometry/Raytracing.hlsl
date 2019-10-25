@@ -41,7 +41,7 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return 0.0f;
+    return saturate(dot(-incidentLightRay, normal));
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -51,7 +51,10 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	return float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float3 reflectedRay = normalize(reflect(incidentLightRay, normal)); // Normalized reflected ray
+    float3 reverseRayDirection = normalize(-WorldRayDirection()); // Normalized reverse ray direction
+    float clampedDotProduct = saturate(dot(reflectedRay, reverseRayDirection)); // Clamped dot product
+    return pow(clampedDotProduct, specularPower); // Is it float or float4?
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -76,7 +79,22 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-	return ambientColor;
+    // Diffuse
+    float3 incidentLightRay = normalize(HitWorldPosition() - g_sceneCB.lightPosition.xyz);
+    float lambCoeff = CalculateDiffuseCoefficient(incidentLightRay, normal);
+    float shadowColor = isInShadow ? InShadowRadiance : 1.0;
+    float4 diffuseColor = diffuseCoef * lambCoeff * g_sceneCB.lightDiffuseColor * albedo * shadowColor;
+
+    // Specular 
+    // Black if Shadow
+    float4 specularColor = float4(0, 0, 0, 0);
+    if (!isInShadow)
+    {
+        float4 specCoeff = CalculateSpecularCoefficient(incidentLightRay, normal, specularPower);
+        specularColor = specularCoef * specCoeff * float4(1, 1, 1, 1);
+    }
+
+	return ambientColor + diffuseColor + specularColor;
 }
 
 //***************************************************************************
@@ -174,7 +192,7 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 void MyRaygenShader()
 {
 	uint2 index = uint2(DispatchRaysIndex().xy);
-	Ray ray = GenerateCameraRay(index, g_sceneCB.cameraPosition, g_sceneCB.projectionToWorld);
+	Ray ray = GenerateCameraRay(index, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
 	float4 reflectionColor = TraceRadianceRay(ray, 0);
 	// Write the color to the render target
 	g_renderTarget[DispatchRaysIndex().xy] = reflectionColor;
@@ -235,7 +253,8 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
-
+    float t = RayTCurrent();
+    color = lerp(color, BackgroundColor, 1.0 - exp(-0.01*t*t*t));
     rayPayload.color = color;
 }
 
@@ -253,8 +272,37 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
+    float3 hitPosition = HitWorldPosition();
+    Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
+    bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+    // Reflected component ray.
+    float4 reflectedColor = float4(0, 0, 0, 0);
+    if (l_materialCB.reflectanceCoef > 0.001)
+    {
+        // Trace a reflection ray from the intersection points using Snell's law. The reflect() HLSL built-in function does this for you!
+        // See https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
+        Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), attr.normal) };
+        float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
 
+        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), attr.normal, l_materialCB.albedo.xyz);
+        reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
+    }
+
+    // Calculate final color.
+    float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+    float4 color = (phongColor + reflectedColor);
+
+    // TODO: Apply a visibility falloff.
+    // If the ray is very very very far away, tends to sample the background color rather than the color you computed.
+    // This is to mimic some form of distance fog where farther objects appear to blend with the background.
+    // Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
+    // Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
+    //		   When t is big, we want the background color to be more pronounced.
+    float t = RayTCurrent();
+    color = lerp(color, BackgroundColor, 1.0 - exp(-0.01*t*t*t));
+    rayPayload.color = color;
 }
+
 
 //***************************************************************************
 //**********************------ Miss shaders -------**************************

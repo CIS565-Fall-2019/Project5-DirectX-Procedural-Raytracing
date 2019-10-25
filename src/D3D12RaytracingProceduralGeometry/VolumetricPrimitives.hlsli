@@ -23,7 +23,7 @@ struct Metaball
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
 	float distance = length(position - blob.center);
-	if (distane >= blob.radius)
+	if (distance >= blob.radius)
 		return 0.0f;
 
 	float r = blob.radius;
@@ -129,14 +129,14 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	float step_size = (tmax - tmin) / 128;
 	float t = tmin;
 	while (t < tmax) {
-		float pos = ray.origin + t * ray.direction;
+		float3 pos = ray.origin + t * ray.direction;
 		float potential = CalculateMetaballsPotential(pos, blobs);
 		if (potential > Threshold) {
 			float3 sur_normal = CalculateMetaballsNormal(pos, blobs);
 			if (is_a_valid_hit(ray, t, sur_normal))
 			{
 				thit = t;
-				attr.normal = normal;
+				attr.normal = sur_normal;
 				return true;
 			}
 		}

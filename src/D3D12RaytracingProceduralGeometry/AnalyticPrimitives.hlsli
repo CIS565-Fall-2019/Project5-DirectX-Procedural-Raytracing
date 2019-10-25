@@ -184,7 +184,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	ProceduralPrimitiveAttributes temp_attr;
 	for (int i = 0; i < N; i++)
 	{
-		if (RaySphereIntersectionTest(ray, temp_thit, tmax, temp_attr, centers[i, radii[i]))
+		if (RaySphereIntersectionTest(ray, temp_thit, tmax, temp_attr, centers[i, radii[i]]))
 		{
 			if (temp_thit < thit)
 			{
