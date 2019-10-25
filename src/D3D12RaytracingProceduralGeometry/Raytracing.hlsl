@@ -41,7 +41,10 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return 0.0f;
+	float diffuseTerm = dot(normalize(normal), normalize(incidentLightRay));
+	diffuseTerm = clamp(diffuseTerm, 0, 1);
+
+	return diffuseTerm;
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -76,7 +79,23 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-	return ambientColor;
+	float3 lightDirection = normalize(g_sceneCB.lightPosition.xyz - HitWorldPosition());
+
+	// Diffuse component
+	float diffuseCoefficient = CalculateDiffuseCoefficient(lightDirection, normal);
+	float4 diffuseColor = diffuseCoef * albedo * diffuseCoefficient;
+	if (isInShadow) {
+		diffuseColor *= InShadowRadiance;
+	}
+
+	// Specular component
+	float4 specularColor = float4(0, 0, 0, 0);
+	if (!isInShadow) {
+		float specularCoefficient = CalculateSpecularCoefficient(lightDirection, normal, specularPower);
+		specularColor = specularCoef * specularCoefficient;
+	}
+
+	return ambientColor + diffuseColor + specularColor;
 }
 
 //***************************************************************************
@@ -137,7 +156,7 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
 	if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
 	{
-		false;
+		return false;
 	}
 
 	// Set the ray's extents.
@@ -149,7 +168,7 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 	rayDesc.TMin = 0;
 	rayDesc.TMax = 10000;
 
-	ShadowRayPayload shadowRayPayload = { false };
+	ShadowRayPayload shadowRayPayload = { true };
 
 	TraceRay(g_scene,
 		RAY_FLAG_CULL_BACK_FACING_TRIANGLES || RAY_FLAG_FORCE_OPAQUE || RAY_FLAG_SKIP_CLOSEST_HIT_SHADER || RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
@@ -174,7 +193,7 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 void MyRaygenShader()
 {
 	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition, g_sceneCB.projectionToWorld);
-	float4 color = TraceRadianceRay(ray, 3);
+	float4 color = TraceRadianceRay(ray, 0);
 
 	// Write the color to the render target
 	g_renderTarget[DispatchRaysIndex().xy] = color;
@@ -295,7 +314,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-	rayPayload.color = float4(0, 0, 0, 1); // return white for debug purposes lol
+	rayPayload.color = BackgroundColor;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?

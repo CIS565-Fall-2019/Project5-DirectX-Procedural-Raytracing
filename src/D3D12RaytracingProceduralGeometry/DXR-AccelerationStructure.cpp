@@ -218,7 +218,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		XMMATRIX mTransform = mScale * mTranslation;
 
 		// Store the transform in the instanceDesc.
-		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
+		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTranslation);
 	}
 
 	// Upload all these instances to the GPU, and make sure the resource is set to instanceDescsResource.
