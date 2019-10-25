@@ -149,9 +149,23 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
+	// Snneaky shortcut from the end of this function. Probably noot at all sneaky
+	uint2 idx = DispatchRaysIndex().xy;
+
+	// (1) Generate a ray using the function GenerateCameraRay() in RaytracingShaderHelper.hlsli
+	Ray r = GenerateCameraRay(
+		idx, // Index is uint2, though it can be up to uint3
+		g_sceneCB.cameraPosition.xyz, // Use the buffers we set up before!
+		g_sceneCB.projectionToWorld // Same, use this!
+	);
+
+	// (2) Trace a radiance ray using the generated ray to obtain a color
+	// Set recursion to 0 becuase this is our inital ray.
+	// Other shaders will not have this set to 0
+	float4 rayColor = TraceRadianceRay(r, 0); // See above function!
 
 	// Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	g_renderTarget[DispatchRaysIndex().xy] = rayColor;
 }
 
 //***************************************************************************

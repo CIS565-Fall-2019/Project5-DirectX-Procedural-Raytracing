@@ -68,7 +68,20 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+	float cyclePos = elapsedTime;
+	
+	// Subtract durations until we are under
+	while (cyclePos > cycleDuration) { cyclePos -= cycleDuration; }
+
+	// Think of it as going from 0 to 2, but if greater than 1 subtract the excess.
+	// Like folding in on itself
+	float cyclePercent = cyclePos / cycleDuration;
+	float interpolant = cyclePercent * 2;
+	if (interpolant > 1) {
+		interpolant -= interpolant - 1;
+	}
+
+	return smoothstep(0, 1, interpolant);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -129,9 +142,27 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 // as long as the direction of the ray is correct then the depth does not matter.
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
+	// Index is our assigned pixel, which is also our ray index.
+	// We need to divide this by width/height to get a position beteen -1,-1 and 1,1
+	// So easy: get it to 0,0 and 1,1. Then -0.5 and double it?
+	float2 screenDim;
+	screenDim.x = DispatchRaysDimensions().x;
+	screenDim.y = DispatchRaysDimensions().y;
+
+	float2 pos = index / screenDim;
+	pos -= 0.5;
+	pos *= 2;
+
+	// Now take that position and flip the y axis cause the DirectX screen geos from top to bottom
+	pos.y = -pos.y;
+
+	// Transform to world position from camera position
+	float4 worldPos = mul(float4(pos, 1, 1), projectionToWorld);
+
 	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+	ray.origin = cameraPosition; // All rays start at camera!
+	// Direction is the vector from origin to the worldpos
+	ray.direction = normalize(worldPos - ray.origin);
 
     return ray;
 }
