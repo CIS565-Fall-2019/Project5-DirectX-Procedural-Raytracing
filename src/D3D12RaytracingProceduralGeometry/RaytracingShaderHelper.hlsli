@@ -145,9 +145,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 	// Index is our assigned pixel, which is also our ray index.
 	// We need to divide this by width/height to get a position beteen -1,-1 and 1,1
 	// So easy: get it to 0,0 and 1,1. Then -0.5 and double it?
-	float2 screenDim;
-	screenDim.x = DispatchRaysDimensions().x;
-	screenDim.y = DispatchRaysDimensions().y;
+	float2 screenDim = DispatchRaysDimensions().xy;
 
 	float2 pos = index / screenDim;
 	pos -= 0.5;
@@ -156,13 +154,23 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 	// Now take that position and flip the y axis cause the DirectX screen geos from top to bottom
 	pos.y = -pos.y;
 
+	// Create a position vector to multiply with the projection mat
+	float4 posvec = float4(pos, 0, 1); // Depth is 0, we dont care
+
 	// Transform to world position from camera position
-	float4 worldPos = mul(float4(pos, 1, 1), projectionToWorld);
+	float4 worldPos = mul(posvec, projectionToWorld);
+
+	// "Each component of the vertex coordinate is divided by its 
+	// w component giving smaller vertex coordinates the further 
+	// away a vertex is from the viewer." - https://learnopengl.com/Getting-started/Coordinate-Systems
+	// I still don't get it, but it fixes my bugs.
+	worldPos.x /= worldPos.w;
+	worldPos.y /= worldPos.w;
+	worldPos.z /= worldPos.w;
 
 	Ray ray;
 	ray.origin = cameraPosition; // All rays start at camera!
-	// Direction is the vector from origin to the worldpos
-	ray.direction = normalize(worldPos - ray.origin);
+	ray.direction = normalize(worldPos.xyz - ray.origin); // Direction is the vector from origin to the worldpos
 
     return ray;
 }
