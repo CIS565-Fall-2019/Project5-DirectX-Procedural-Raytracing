@@ -34,7 +34,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 		geometryDesc.Flags = geometryFlags;
 
-		geometryDesc.Triangles.Transform3x4 = NULL;
+		//geometryDesc.Triangles.Transform3x4 = NULL;
 		geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
 		geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width / sizeof(Index);
@@ -45,7 +45,6 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		vertVirtualAddressAndStride.StrideInBytes = sizeof(Vertex);
 		geometryDesc.Triangles.VertexBuffer = vertVirtualAddressAndStride;
 		// ???
-		
 	}
 
 	{
@@ -63,11 +62,10 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Remember to use m_aabbBuffer to get the AABB geometry data you previously filled in.
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
-		for (UINT aabbType = 0; aabbType < IntersectionShaderType::TotalPrimitiveCount; aabbType++) {
-			geometryDescs[BottomLevelASType::AABB][aabbType].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress();
+		for (UINT prim = 0; prim < IntersectionShaderType::TotalPrimitiveCount; prim++) {
+			geometryDescs[BottomLevelASType::AABB][prim].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + prim * sizeof(D3D12_RAYTRACING_AABB);
 		}
 		// ????
-		
 	}
 }
 
@@ -247,7 +245,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	topLevelInputs.Flags = buildFlags;
 	topLevelInputs.NumDescs = BottomLevelASType::Count;
 	topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-	topLevelInputs.InstanceDescs = bottomLevelAS->instanceDesc->GetGPUVirtualAddress();
+	//topLevelInputs.InstanceDescs = bottomLevelAS->instanceDesc->GetGPUVirtualAddress();
 
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO topLevelPrebuildInfo = {};
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -330,6 +328,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
 	topLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
 	topLevelBuildDesc.DestAccelerationStructureData = topLevelAS->GetGPUVirtualAddress();
+	topLevelInputs.InstanceDescs = instanceDescsResource->GetGPUVirtualAddress();
 
 	// Build acceleration structure.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -389,8 +388,7 @@ void DXProceduralProject::BuildAccelerationStructures()
 	commandList->ResourceBarrier(BottomLevelASType::Count, resourceBarriers);
 
 	// TODO-2.6: Build top-level AS. Hint, you already made a function that does this.
-	AccelerationStructureBuffers topLevelAS;
-	topLevelAS = BuildTopLevelAS(bottomLevelAS);
+	AccelerationStructureBuffers topLevelAS = BuildTopLevelAS(bottomLevelAS);
 
 	// Kick off acceleration structure construction.
 	m_deviceResources->ExecuteCommandList();
@@ -406,14 +404,5 @@ void DXProceduralProject::BuildAccelerationStructures()
 		m_bottomLevelAS[i] = bottomLevelAS[i].accelerationStructure;
 	}
 
-	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
-	{
-		/*UINT numBufferElements = static_cast<UINT>(topLevelAS.accelerationStructure.ResultDataMaxSizeInBytes) / sizeof(UINT32);
-		m_fallbackTopLevelAccelerationStructurePointer = CreateFallbackWrappedPointer(topLevelAS.accelerationStrucements);*/
-	}
-	else // DirectX Raytracing
-	{
-		m_topLevelAS = topLevelAS.accelerationStructure;
-	}
-	
+	m_topLevelAS = topLevelAS.accelerationStructure;
 }

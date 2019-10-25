@@ -134,8 +134,8 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 
 	uint3 dim = DispatchRaysDimensions(); // width, height, depth
 	
-	float xNDC = 2.f*(index.x / dim.x) - 1;
-	float yNDC = 1.f - (index.y / dim.y) * 2.f;
+	float xNDC = 2.f * (index.x / dim.x) - 1.f;
+	float yNDC = 1.f - 2.f * (index.y / dim.y);
 
 	float4 worldPos = mul(projectionToWorld, float4(xNDC, yNDC, 0.f, 1.f));
 

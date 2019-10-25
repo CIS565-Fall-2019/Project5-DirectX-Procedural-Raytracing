@@ -86,14 +86,13 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// This should take into account the basePosition and the stride defined above.
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
-			// ????
 			D3D12_RAYTRACING_AABB aabb{
-				basePosition.x + offsetIndex.x,
-				basePosition.y + offsetIndex.y,
-				basePosition.z + offsetIndex.z,
-				basePosition.x + offsetIndex.x + stride.x * size.x,
-				basePosition.y + offsetIndex.y + stride.y * size.y,
-				basePosition.z + offsetIndex.z + stride.z * size.z,
+				basePosition.x + stride.x * offsetIndex.x,
+				basePosition.y + stride.y * offsetIndex.y,
+				basePosition.z + stride.z * offsetIndex.z,
+				basePosition.x + size.x + stride.x * offsetIndex.x,
+				basePosition.y + size.y + stride.y * offsetIndex.y,
+				basePosition.z + size.z + stride.z * offsetIndex.z,
 
 			};
 			return aabb;
@@ -119,7 +118,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-		AllocateUploadBuffer(device, m_aabbs.data(), sizeof(m_aabbs.data()), &m_aabbBuffer.resource);
+		AllocateUploadBuffer(device, m_aabbs.data(), sizeof(m_aabbs[0]) * m_aabbs.size(), &m_aabbBuffer.resource);
 	
 	}
 }
