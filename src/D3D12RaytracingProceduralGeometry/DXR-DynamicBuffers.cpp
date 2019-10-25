@@ -112,7 +112,7 @@ void DXProceduralProject::CreateConstantBuffers()
 void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
 	auto device = m_deviceResources->GetD3DDevice();
-	auto bufferSize = 1;
+	auto bufferSize = m_deviceResources->GetBackBufferCount();
 	int nElements = m_aabbs.size();
 
 	m_aabbPrimitiveAttributeBuffer.Create(device,nElements,bufferSize, L"AABB Primitive Buffer");
@@ -169,7 +169,10 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// The intersection shader tests in this project work with local space, but the geometries are provided in bottom level 
 		// AS space. So this data will be used to convert back and forth from these spaces.
 		XMMATRIX inter1 = XMMatrixMultiply(mScale, mRotation); 
-		XMMATRIX inter2 = XMMatrixMultiply(inter1, mTranslation);
+		XMMATRIX transform = XMMatrixMultiply(inter1, mTranslation);
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = transform;
+        //m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = transform;
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, transform);
 	};
 
 	UINT offset = 0;

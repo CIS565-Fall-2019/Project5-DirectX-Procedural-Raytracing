@@ -51,9 +51,9 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 //			with respect to the normal of the hit position.
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
-{ 
+{
     float3 reflectedLightRay = normalize(reflect(-incidentLightRay, normal));
-	return pow(saturate(dot(reflectedLightRay, normalize(-WorldRayDirection()))), specularPower);
+    return pow(saturate(dot(reflectedLightRay, normalize(-WorldRayDirection()))), specularPower);
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -82,21 +82,21 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
     float3 lightPosition = g_sceneCB.lightPosition.xyz;
 
     // Diffuse Component
-    diffuseCoef = CalculateDiffuseCoefficient(normalize(lightPosition - hitPoint),normal);
-  
+    diffuseCoef = CalculateDiffuseCoefficient(normalize(lightPosition - hitPoint), normal);
+
     float4 diffuseColor = g_sceneCB.lightDiffuseColor * albedo * diffuseCoef;
     if (isInShadow)
         diffuseColor *= InShadowRadiance;
 
     //Specular Coefficient
     specularCoef = CalculateSpecularCoefficient(normalize(lightPosition - hitPoint), normal, specularPower);
-    float4 specularColor = float4(1.0f,1.0f,1.0f,1.0f);
+    float4 specularColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
     specularColor *= specularCoef;
 
     if (isInShadow)
         specularColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	return ambientColor + diffuseColor + specularColor;
+    return ambientColor + diffuseColor + specularColor;
 }
 
 //***************************************************************************
@@ -155,31 +155,33 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
-	if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
-	{
-		return false;
-	}
+    
+    if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+    {
+        return false;
+    }
 
-	// Set the ray's extents.
-	RayDesc rayDesc;
-	rayDesc.Origin = ray.origin;
-	rayDesc.Direction = ray.direction;
-	// Set TMin to a zero value to avoid aliasing artifacts along contact areas.
-	// Note: make sure to enable face culling so as to avoid surface face fighting.
-	rayDesc.TMin = 0;
-	rayDesc.TMax = 10000;
+    // Set the ray's extents.
+    RayDesc rayDesc;
+    rayDesc.Origin = ray.origin;
+    rayDesc.Direction = ray.direction;
+    // Set TMin to a zero value to avoid aliasing artifacts along contact areas.
+    // Note: make sure to enable face culling so as to avoid surface face fighting.
+    rayDesc.TMin = 0;
+    rayDesc.TMax = 10000;
 
-	ShadowRayPayload rayPayload = { true };
+    ShadowRayPayload rayPayload = { true };
 
-	TraceRay(g_scene,
-		RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
-		TraceRayParameters::InstanceMask,
-		TraceRayParameters::HitGroup::Offset[RayType::Shadow],
-		TraceRayParameters::HitGroup::GeometryStride,
-		TraceRayParameters::MissShader::Offset[RayType::Shadow],
-		rayDesc, rayPayload);
+    TraceRay(g_scene,
+        RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+        TraceRayParameters::InstanceMask,
+        TraceRayParameters::HitGroup::Offset[RayType::Shadow],
+        TraceRayParameters::HitGroup::GeometryStride,
+        TraceRayParameters::MissShader::Offset[RayType::Shadow],
+        rayDesc, rayPayload);
 
-	return rayPayload.hit;
+    return rayPayload.hit;
+
 }
 
 //***************************************************************************
@@ -193,8 +195,8 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
-	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy,g_sceneCB.cameraPosition, g_sceneCB.projectionToWorld);
-	float4 shadeColor = TraceRadianceRay(ray, 0);
+    Ray ray = GenerateCameraRay((uint2)DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
+    float4 shadeColor = TraceRadianceRay(ray, 0);
 	// Write the color to the render target
     g_renderTarget[DispatchRaysIndex().xy] = shadeColor;
 }
@@ -254,9 +256,8 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
-
     float t = RayTCurrent();
-    color = lerp(color, BackgroundColor,1 -exp(-0.000001*pow(t,3.0f)));
+    color = lerp(color, BackgroundColor, 1 - exp(-0.000001*pow(t, 3.0f)));
     rayPayload.color = color;
 }
 
@@ -310,14 +311,14 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-	rayPayload.color = BackgroundColor;
+    rayPayload.color = BackgroundColor;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
-	rayPayload.hit = false;
+    rayPayload.hit = false;
 }
 
 //***************************************************************************
@@ -369,21 +370,21 @@ void MyIntersectionShader_AnalyticPrimitive()
 [shader("intersection")]
 void MyIntersectionShader_VolumetricPrimitive()
 {
-	Ray localRay = GetRayInAABBPrimitiveLocalSpace();
-	VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
+    Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+    VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
 
-	float thit;
-	ProceduralPrimitiveAttributes attr;
-	if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr,g_sceneCB.elapsedTime))
-	{
-		PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+    float thit;
+    ProceduralPrimitiveAttributes attr;
+    if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime))
+    {
+        PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
 
-		// Make sure the normals are stored in BLAS space and not the local space
-		attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
-		attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+        // Make sure the normals are stored in BLAS space and not the local space
+        attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+        attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
 
-		// thit is invariant to the space transformation
-		ReportHit(thit, /*hitKind*/ 0, attr);
-	}
+        // thit is invariant to the space transformation
+        ReportHit(thit, /*hitKind*/ 0, attr);
+    }
 }
 #endif // RAYTRACING_HLSL

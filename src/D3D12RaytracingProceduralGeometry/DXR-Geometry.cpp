@@ -91,8 +91,8 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 			basePosition.y + offsetIndex.y * stride.y,
 			basePosition.z + offsetIndex.z * stride.z,
 			basePosition.x + offsetIndex.x * stride.x + size.x, 
-			basePosition.x + offsetIndex.x * stride.x + size.y,
-			basePosition.x + offsetIndex.x * stride.x + size.z };
+			basePosition.y + offsetIndex.y * stride.y + size.y,
+			basePosition.z + offsetIndex.z * stride.z + size.z };
 			return aabb;
 		};
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);
