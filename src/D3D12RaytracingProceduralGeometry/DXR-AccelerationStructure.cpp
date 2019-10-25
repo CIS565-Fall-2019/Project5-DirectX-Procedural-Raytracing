@@ -392,8 +392,8 @@ void DXProceduralProject::BuildAccelerationStructures()
 	for (auto bottomLevelCount = 0; bottomLevelCount < BottomLevelASType::Count; bottomLevelCount++)
 		m_bottomLevelAS[bottomLevelCount] = bottomLevelAS[bottomLevelCount].accelerationStructure;
 
-	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
-		m_fallbackTopLevelAccelerationStructurePointer = m_topLevelAS.~ComPtr;
-	else
-		m_topLevelAS = topLevelAS.accelerationStructure;
+	//if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
+	//	m_fallbackTopLevelAccelerationStructurePointer = m_topLevelAS.~ComPtr;
+	//else
+	m_topLevelAS = topLevelAS.accelerationStructure;
 }

@@ -22,7 +22,7 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-	if (position == blob.center)
+	if (position.x == blob.center.x && position.y == blob.center.y && position.z == blob.center.z)
 		return 1.0f;
 
 	float dist = distance(position, blob.center);
@@ -30,7 +30,7 @@ float CalculateMetaballPotential(in float3 position, in Metaball blob)
 		return 0.0f;
 
 	float x = dist / blob.radius;
-	float value = 6.0f * pow(x, 5.0f) - 15.0f * pow(x, 4 .0f) + 10 * pow(x, 3 .0f);
+	float value = 6.0f * pow(x, 5.0f) - 15.0f * pow(x, 4.0f) + 10 * pow(x, 3.0f);
     
 	return value;
 }
@@ -99,7 +99,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 	for (int i = 0; i < N_METABALLS; i++)
 	{
 		float tminTemp, tmaxTemp;
-		if (RaySolidSphereIntersectionTest(ray, tminTemp, tmaxTemp, blob[i].center, blob[i].radius))
+		if (RaySolidSphereIntersectionTest(ray, tminTemp, tmaxTemp, blobs[i].center, blobs[i].radius))
 		{
 			if (tminTemp < tmin)
 				tmin = tminTemp;
@@ -130,11 +130,11 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
 	Metaball blobs[N_METABALLS];
-	InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f)
+    InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f);
 
 	float tmin, tmax;  
 
-	FindIntersectingMetaballs(ray, tmin, tmax, blobs);
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
 
 	uint steps = 128;
 	float tPoint = tmin;

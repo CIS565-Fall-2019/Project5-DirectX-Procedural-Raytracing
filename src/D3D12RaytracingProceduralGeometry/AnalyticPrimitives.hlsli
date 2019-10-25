@@ -176,7 +176,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	float tmin = thit;
 	float tmax;
 	ProceduralPrimitiveAttributes attrmin;
-	for (i = 0; i < 3; i++)
+	for (uint i = 0; i < 3; i++)
 	{
 
 		ProceduralPrimitiveAttributes attr2;
