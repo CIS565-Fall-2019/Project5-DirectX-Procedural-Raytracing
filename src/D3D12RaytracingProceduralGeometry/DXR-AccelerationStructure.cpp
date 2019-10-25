@@ -95,7 +95,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
     bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
     bottomLevelInputs.NumDescs = geometryDescs.size();
     //union, how should we know which fits? -- we only have object, we should use pGeometry? -- will the rest be automatically loaded as we input the NumDescs?   
-    bottomLevelInputs.pGeometryDescs = &geometryDescs[0];
+    bottomLevelInputs.pGeometryDescs = geometryDescs.data();
 
 
 	// Query the driver for resource requirements to build an acceleration structure. We've done this for you.
@@ -347,12 +347,15 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 		m_fallbackTopLevelAccelerationStructurePointer = CreateFallbackWrappedPointer(topLevelAS.Get(), numBufferElements);
 	}
 
-    //TODO-2.6(Mark), set up the last element instanceDescs of topLevelBuildDesc here after we populate instanceDescsResource
-    topLevelInputs.InstanceDescs = instanceDescsResource.Get()->GetGPUVirtualAddress();
+
 
 	// TODO-2.6: fill in the topLevelBuildDesc. Read about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
     topLevelBuildDesc.ScratchAccelerationStructureData = scratch.Get()->GetGPUVirtualAddress();
+
+	//TODO-2.6(Mark), set up the last element instanceDescs of topLevelBuildDesc here after we populate instanceDescsResource
+	topLevelInputs.InstanceDescs = instanceDescsResource.Get()->GetGPUVirtualAddress();
+
     topLevelBuildDesc.DestAccelerationStructureData = topLevelAS.Get()->GetGPUVirtualAddress();
 
 	// Build acceleration structure.
@@ -376,6 +379,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
     return_AccelerationStructureBuffers.scratch = scratch;
     return_AccelerationStructureBuffers.accelerationStructure = topLevelAS;
     return_AccelerationStructureBuffers.ResultDataMaxSizeInBytes = topLevelPrebuildInfo.ResultDataMaxSizeInBytes;
+	return_AccelerationStructureBuffers.instanceDesc = instanceDescsResource;
 	return return_AccelerationStructureBuffers;
 }
 

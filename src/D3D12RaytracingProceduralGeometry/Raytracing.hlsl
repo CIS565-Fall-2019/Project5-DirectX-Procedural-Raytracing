@@ -75,7 +75,6 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float4 ambientColorMax = g_sceneCB.lightAmbientColor;
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
-
 	return ambientColor;
 }
 
@@ -135,31 +134,32 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
-    if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
-    {
-        return float4(0, 0, 0, 0);
-    }
+ //   if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+ //   {
+ //       return float4(0, 0, 0, 0);
+ //   }
 
-    // Set the ray's extents.
-    RayDesc shadowRayDesc;
-    shadowRayDesc.Origin = ray.origin;
-    shadowRayDesc.Direction = ray.direction;
+ //   // Set the ray's extents.
+ //   RayDesc shadowRayDesc;
+ //   shadowRayDesc.Origin = ray.origin;
+ //   shadowRayDesc.Direction = ray.direction;
 
-    shadowRayDesc.TMin = 0;
-    shadowRayDesc.TMax = 10000;
+ //   shadowRayDesc.TMin = 0;
+ //   shadowRayDesc.TMax = 10000;
 
-    ShadowRayPayload shadowRayPayload = { false };
+ //   ShadowRayPayload shadowRayPayload = { false };
 
-    //helped by Jiangping Xu
-    TraceRay(g_scene,
-        RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
-        TraceRayParameters::InstanceMask,
-        TraceRayParameters::HitGroup::Offset[RayType::Shadow],
-        TraceRayParameters::HitGroup::GeometryStride,
-        TraceRayParameters::MissShader::Offset[RayType::Shadow],
-        shadowRayDesc, shadowRayPayload);
+ //   //helped by Jiangping Xu
+ //   TraceRay(g_scene,
+ //       RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
+ //       TraceRayParameters::InstanceMask,
+ //       TraceRayParameters::HitGroup::Offset[RayType::Shadow],
+ //       TraceRayParameters::HitGroup::GeometryStride,
+ //       TraceRayParameters::MissShader::Offset[RayType::Shadow],
+ //       shadowRayDesc, shadowRayPayload);
 
-	return shadowRayPayload.hit;
+	//return shadowRayPayload.hit;
+	return false;
 }
 
 //***************************************************************************
@@ -265,14 +265,14 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-    rayPayload.color = BackgroundColor;
+    //rayPayload.color = BackgroundColor;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
-    rayPayload.hit = false;
+    //rayPayload.hit = false;
 }
 
 //***************************************************************************
