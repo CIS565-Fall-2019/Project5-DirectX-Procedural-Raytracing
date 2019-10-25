@@ -24,6 +24,7 @@ struct Metaball
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
 	float dis = distance(position, blob.center);
+    dis = max((1.0f - dis / blob.radius), 0.0f);
     return 6.0f * pow(dis, 5.0f) - 15.0f * pow(dis, 4.0f) + 10.0f  * pow(dis, 3.0f);
 }
 
@@ -100,6 +101,8 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 			}
 		}
 	}
+    tmin = max(tmin, RayTMin());
+    tmax = min(tmax, RayTCurrent());
 	return;
 }
 
@@ -119,7 +122,8 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
     //wtf
-	/*Metaball blobs[N_METABALLS];
+    /*
+	Metaball blobs[N_METABALLS];
 	InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f);
 	float tmin, tmax;
 	TestMetaballsIntersection(ray, tmin, tmax, blobs);
@@ -132,7 +136,8 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 			if (is_a_valid_hit(ray, thit, attr.normal))
 				return true;
 		}
-	}*/
+	}
+    */
     return false;
 }
 

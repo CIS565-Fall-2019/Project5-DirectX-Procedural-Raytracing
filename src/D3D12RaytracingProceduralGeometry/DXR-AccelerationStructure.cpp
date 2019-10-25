@@ -199,32 +199,28 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 	//		Where do you think procedural shader records would start then? Hint: right after.
 	// * Make each instance hover above the ground by ~ half its width
 	{
-		/*
-		const XMUINT3 NUM_AABB = XMUINT3(3, 1, 3);
-		const XMFLOAT3 fWidth = XMFLOAT3(
-			NUM_AABB.x * c_aabbWidth + (NUM_AABB.x - 1) * c_aabbDistance,
-			NUM_AABB.y * c_aabbWidth + (NUM_AABB.y - 1) * c_aabbDistance,
-			NUM_AABB.z * c_aabbWidth + (NUM_AABB.z - 1) * c_aabbDistance);
-		const XMVECTOR vWidth = XMLoadFloat3(&fWidth);
-		*/
+		
+        const XMUINT3 NUM_AABB = XMUINT3(1, 1, 1);
+        const XMFLOAT3 fWidth = XMFLOAT3(
+            NUM_AABB.x * c_aabbWidth + (NUM_AABB.x - 1) * c_aabbDistance,
+            NUM_AABB.y * c_aabbWidth + (NUM_AABB.y - 1) * c_aabbDistance,
+            NUM_AABB.z * c_aabbWidth + (NUM_AABB.z - 1) * c_aabbDistance);
+        const XMVECTOR vWidth = XMLoadFloat3(&fWidth);
+		
 
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
 		instanceDesc.InstanceMask = 1;
 		instanceDesc.InstanceContributionToHitGroupIndex = GeometryType::Enum::Count * RayType::Count;
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
+        
+        const XMVECTOR vBasePosition = c_aabbWidth * XMLoadFloat3(&XMFLOAT3(0.0f, 0.5f, 0.0f));
 
-        //wtf
-		//const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(-0.5f, 0.0f, -0.5f));
-
-		// Scale in XZ dimensions.
-		XMMATRIX mScale = XMMatrixScaling(c_aabbWidth, c_aabbWidth, c_aabbWidth);
-		XMMATRIX mTranslation = XMMatrixTranslation(0, c_aabbWidth * 0.5f, 0);
-		XMMATRIX mTransform = mScale * mTranslation;
-
-
-		// Store the transform in the instanceDesc.
-		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
+        // To see about the scaling later on 
+        //XMMATRIX mScale = XMMatrixScaling(fWidth.x, fWidth.y, fWidth.z);
+        XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
+        XMMATRIX mTransform = mTranslation;
+        XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
 	}
 
 	// Upload all these instances to the GPU, and make sure the resouce is set to instanceDescsResource.

@@ -205,6 +205,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	}
 	if(flag)
 		return is_a_valid_hit(ray, thit, attr.normal);
+    return false;
 }
 
 #endif // ANALYTICPRIMITIVES_H
