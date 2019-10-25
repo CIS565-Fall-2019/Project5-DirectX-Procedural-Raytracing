@@ -31,18 +31,20 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 	{
 		for (UINT rayType = 0; rayType < RayType::Count; rayType++)
 		{
-			auto hitGroup = raytracingPipeline->CreateSubobject<CD3D12_HIT_GROUP_SUBOBJECT>();
-			if (rayType == RayType::Radiance)
-			{
-				// We import the closest hit shader name
-				hitGroup->SetClosestHitShaderImport(c_closestHitShaderNames[GeometryType::AABB]);
-			}
+			for (UINT intersectionType = 0; intersectionType < IntersectionShaderType::Count; intersectionType++) {
+				auto hitGroup = raytracingPipeline->CreateSubobject<CD3D12_HIT_GROUP_SUBOBJECT>();
+				if (rayType == RayType::Radiance)
+				{
+					// We import the closest hit shader name
+					hitGroup->SetClosestHitShaderImport(c_closestHitShaderNames[GeometryType::AABB]);
+				}
 
-			// We tell the hitgroup that it should export into the correct shader hit group name, with the correct type
-			for (UINT primitiveType = 0; primitiveType < GeometryType::Count; primitiveType++) {
-				hitGroup->SetHitGroupExport(c_hitGroupNames_AABBGeometry[primitiveType][rayType]);
+				// We tell the hitgroup that it should export into the correct shader hit group name, with the correct type
+				hitGroup->SetHitGroupExport(c_hitGroupNames_AABBGeometry[intersectionType][rayType]);
+				
+				hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
 			}
-			hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
+			
 		}
 	}
 }
@@ -76,8 +78,8 @@ void DXProceduralProject::CreateLocalRootSignatureSubobjects(CD3D12_STATE_OBJECT
 		// Shader association
 		auto rootSignatureAssociation = raytracingPipeline->CreateSubobject<CD3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
 		rootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
-		for (UINT primitiveType = 0; primitiveType < GeometryType::Count; primitiveType++) {
-			rootSignatureAssociation->AddExports(c_hitGroupNames_AABBGeometry[primitiveType]);
-		}		
+		for (UINT intersectionType = 0; intersectionType < IntersectionShaderType::Count; intersectionType++) {
+			rootSignatureAssociation->AddExports(c_hitGroupNames_AABBGeometry[intersectionType]);
+		}
 	}
 }

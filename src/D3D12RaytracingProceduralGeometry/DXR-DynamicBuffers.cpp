@@ -114,7 +114,7 @@ void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 	auto device = m_deviceResources->GetD3DDevice();
 	auto frameCount = m_deviceResources->GetBackBufferCount();
 
-	m_aabbPrimitiveAttributeBuffer.Create(device, m_aabbs.size(), frameCount, L"Scene Constant Buffer"); // Is the size thing correct?
+	m_aabbPrimitiveAttributeBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"AABB Primitive Attributes Buffer"); // Is the size thing correct?
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.

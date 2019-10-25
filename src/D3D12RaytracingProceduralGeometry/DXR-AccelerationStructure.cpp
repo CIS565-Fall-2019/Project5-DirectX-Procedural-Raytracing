@@ -36,12 +36,12 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
 		geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width / sizeof(Index);
+		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width / sizeof(Vertex);
 		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress();
 		D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE vaas = {};
 		vaas.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
-		vaas.StrideInBytes = sizeof(Vertex);
+		vaas.StrideInBytes = sizeof(Vertex); // Question
 		geometryDesc.Triangles.VertexBuffer = vaas;
-		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width / sizeof(Vertex);
 		geometryDesc.Triangles.Transform3x4 = NULL;
 
 		
