@@ -22,14 +22,14 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-	if (position == blob.center) {
+	/*if (position == blob.center) {
 		return 1.0f;
-	}
+	}*/
 	float dist = distance(position, blob.center);
 	if (dist >= blob.radius) {
 		return 0.0f;
 	}
-	float ratio = dist / radius;
+	float ratio = dist / blob.radius;
 	float potential = 6 * pow(ratio, 5) - 15 * pow(ratio, 4) + 10 * pow(ratio, 3);
     return potential;
 }

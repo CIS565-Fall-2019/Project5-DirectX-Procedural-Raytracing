@@ -174,7 +174,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	float tmax;
 	float curr_thit = thit;
 	ProceduralPrimitiveAttributes curr_attr;
-	boot hit = false;
+	bool hit = false;
 	for (int i = 0; i < 3; i++) {
 		if (RaySphereIntersectionTest(ray, curr_thit, tmax, curr_attr, centers[i], radii[i]))
 		{
