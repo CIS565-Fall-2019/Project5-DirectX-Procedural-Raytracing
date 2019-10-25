@@ -67,7 +67,7 @@ void DXProceduralProject::InitializeScene()
 		m_up = XMVector3Normalize(XMVector3Cross(direction, right));
 
 		// Rotate camera around Y axis.
-		XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(45.0f));
+		XMMATRIX rotate = DirectX::XMMatrixRotationY(XMConvertToRadians(45.0f));
 		m_eye = XMVector3Transform(m_eye, rotate);
 		m_up = XMVector3Transform(m_up, rotate);
 
@@ -82,14 +82,14 @@ void DXProceduralProject::InitializeScene()
 		XMFLOAT4 lightDiffuseColor;
 
 		lightPosition = XMFLOAT4(0.0f, 18.0f, -20.0f, 0.0f);
-		m_sceneCB->lightPosition = XMLoadFloat4(&lightPosition);
+		m_sceneCB->lightPosition = DirectX::XMLoadFloat4(&lightPosition);
 
 		lightAmbientColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
-		m_sceneCB->lightAmbientColor = XMLoadFloat4(&lightAmbientColor);
+		m_sceneCB->lightAmbientColor = DirectX::XMLoadFloat4(&lightAmbientColor);
 
 		float d = 0.8f;
 		lightDiffuseColor = XMFLOAT4(d, d, d, 1.0f);
-		m_sceneCB->lightDiffuseColor = XMLoadFloat4(&lightDiffuseColor);
+		m_sceneCB->lightDiffuseColor = DirectX::XMLoadFloat4(&lightDiffuseColor);
 	}
 }
 
@@ -111,7 +111,11 @@ void DXProceduralProject::CreateConstantBuffers()
 //		structured buffers are for structs that have dynamic data (e.g lights in a scene, or AABBs in this case)
 void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
+	auto device = m_deviceResources->GetD3DDevice();
+	auto frameCount = m_deviceResources->GetBackBufferCount();
+	auto instanceCount = IntersectionShaderType::TotalPrimitiveCount;
 
+	m_aabbPrimitiveAttributeBuffer.Create(device, instanceCount, frameCount, L"Scene AABB Primitive Attribute Buffer");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
@@ -121,10 +125,10 @@ void DXProceduralProject::UpdateCameraMatrices()
 
 	m_sceneCB->cameraPosition = m_eye;
 	float fovAngleY = 45.0f;
-	XMMATRIX view = XMMatrixLookAtLH(m_eye, m_at, m_up);
-	XMMATRIX proj = XMMatrixPerspectiveFovLH(XMConvertToRadians(fovAngleY), m_aspectRatio, 0.01f, 125.0f);
+	XMMATRIX view = DirectX::XMMatrixLookAtLH(m_eye, m_at, m_up);
+	XMMATRIX proj = DirectX::XMMatrixPerspectiveFovLH(XMConvertToRadians(fovAngleY), m_aspectRatio, 0.01f, 125.0f);
 	XMMATRIX viewProj = view * proj;
-	m_sceneCB->projectionToWorld = XMMatrixInverse(nullptr, viewProj);
+	m_sceneCB->projectionToWorld = DirectX::XMMatrixInverse(nullptr, viewProj);
 }
 
 // TODO-2.1: Update the PrimitiveInstancePerFrameBuffer for every AABB stored in m_aabbPrimitiveAttributeBuffer[].
@@ -140,23 +144,23 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 {
 	auto frameIndex = m_deviceResources->GetCurrentFrameIndex();
 
-	XMMATRIX mIdentity = XMMatrixIdentity();
+	XMMATRIX mIdentity = DirectX::XMMatrixIdentity();
 
 	// Different scale matrices
-	XMMATRIX mScale15y = XMMatrixScaling(1, 1.5, 1);
-	XMMATRIX mScale15 = XMMatrixScaling(1.5, 1.5, 1.5);
-	XMMATRIX mScale2 = XMMatrixScaling(2, 2, 2);
+	XMMATRIX mScale15y = DirectX::XMMatrixScaling(1, 1.5, 1);
+	XMMATRIX mScale15 = DirectX::XMMatrixScaling(1.5, 1.5, 1.5);
+	XMMATRIX mScale2 = DirectX::XMMatrixScaling(2, 2, 2);
 
 	// Rotation matrix that changes over time
-	XMMATRIX mRotation = XMMatrixRotationY(-2 * animationTime);
+	XMMATRIX mRotation = DirectX::XMMatrixRotationY(-2 * animationTime);
 
 	
 	auto SetTransformForAABB = [&](UINT primitiveIndex, XMMATRIX& mScale, XMMATRIX& mRotation)
 	{
 		XMVECTOR vTranslation =
-			0.5f * (XMLoadFloat3(reinterpret_cast<XMFLOAT3*>(&m_aabbs[primitiveIndex].MinX))
-				+ XMLoadFloat3(reinterpret_cast<XMFLOAT3*>(&m_aabbs[primitiveIndex].MaxX))); // i.e middle of AABB.
-		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vTranslation);
+			0.5f * (DirectX::XMLoadFloat3(reinterpret_cast<XMFLOAT3*>(&m_aabbs[primitiveIndex].MinX))
+				+ DirectX::XMLoadFloat3(reinterpret_cast<XMFLOAT3*>(&m_aabbs[primitiveIndex].MaxX))); // i.e middle of AABB.
+		XMMATRIX mTranslation = DirectX::XMMatrixTranslationFromVector(vTranslation);
 
 		// TODO-2.1: Fill in this lambda function.
 		// It should create a transform matrix that is equal to scale * rotation * translation.
@@ -164,6 +168,10 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// You can infer what the bottom level AS space to local space transform should be.
 		// The intersection shader tests in this project work with local space, but the geometries are provided in bottom level 
 		// AS space. So this data will be used to convert back and forth from these spaces.
+		auto localToAS = mScale * mRotation * mTranslation;
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = mScale * mRotation * mTranslation;
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = DirectX::XMMatrixInverse(nullptr, localToAS);
+
 	};
 
 	UINT offset = 0;
