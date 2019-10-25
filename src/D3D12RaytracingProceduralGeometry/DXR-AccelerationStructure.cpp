@@ -354,6 +354,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	// Similar to the triangles above
 	topLevelBuildDesc.DestAccelerationStructureData = topLevelAS->GetGPUVirtualAddress();
 	topLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
+	topLevelInputs.InstanceDescs = instanceDescsResource->GetGPUVirtualAddress();
 
 	// Build acceleration structure.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
