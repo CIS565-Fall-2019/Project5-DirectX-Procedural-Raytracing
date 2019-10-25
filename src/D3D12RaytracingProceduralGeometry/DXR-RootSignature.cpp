@@ -21,8 +21,9 @@ void DXProceduralProject::CreateRootSignatures()
 
 		// TODO-2.2: In range index 1 (the second range), initialize 2 SRV resources at register 1: indices and vertices of triangle data.
                 // This will effectively put the indices at register 1, and the vertices at register 2.
+				// Init(*this, rangeType, numDescriptors, baseShaderRegister, registerSpace, offsetInDescriptorsFromTableStart);
+		ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1);  // 1 output texture
         
-
 		// TODO-2.2: Initialize all the parameters of the GlobalRootSignature in their appropriate slots.
 		//		* See GlobalRootSignature in RaytracingSceneDefines.h to understand what they are.
 		// - The OutputView should correspond to the UAV range descriptor above (descriptor table), bound to register 0 of the UAV registers.
@@ -39,6 +40,16 @@ void DXProceduralProject::CreateRootSignatures()
                 //      t registers --> SRV
                 //      b registers --> CBV
 		CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignature::Slot::Count];
+		
+		//Singnatures
+		//InitAsDescriptorTable(*this, numDescriptorRanges, pDescriptorRanges, visibility);
+		//InitAsShaderResourceView(*this, shaderRegister, registerSpace, visibility);
+		
+		rootParameters[GlobalRootSignature::Slot::OutputView].InitAsDescriptorTable(0, &ranges[0]);
+		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(1, &ranges[1]);
+		rootParameters[GlobalRootSignature::Slot::AccelerationStructure].InitAsShaderResourceView(0);
+		rootParameters[GlobalRootSignature::Slot::SceneConstant].InitAsConstantBufferView(0);
+		rootParameters[GlobalRootSignature::Slot::AABBattributeBuffer].InitAsShaderResourceView(3);
 
 		// Finally, we bundle up all the descriptors you filled up and tell the device to create this global root signature!
 		CD3DX12_ROOT_SIGNATURE_DESC globalRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
@@ -63,11 +74,20 @@ void DXProceduralProject::CreateRootSignatures()
 		// TODO-2.2: AABB geometry. Inspire yourself from the triangle local signature above to create an AABB local signature
 		// - Remember that the AABB holds 1 slot for Material Constants, and another 1 for the geometry instance.
 		// - See the AABB Definition in RaytracingSceneDefines.h to understand what this means.
+
 		// - Use registers 1 and 2 of the CBVs for the AABB. Yes, althought the triangle MaterialConstant *also* maps
                 //      to register 1, this overlap is allowed since we are talking about *local* root signatures 
 		//      --> the values they hold will depend on the shader function the local signature is bound to!
 		{
-			
+			namespace RootSignatureSlots = LocalRootSignature::AABB::Slot;
+			CD3DX12_ROOT_PARAMETER rootParameters[RootSignatureSlots::Count];
+
+			rootParameters[RootSignatureSlots::MaterialConstant].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 1);
+			rootParameters[RootSignatureSlots::GeometryIndex].InitAsConstants(SizeOfInUint32(PrimitiveInstanceConstantBuffer), 2);
+
+			CD3DX12_ROOT_SIGNATURE_DESC localRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
+			localRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+			SerializeAndCreateRaytracingRootSignature(localRootSignatureDesc, &m_raytracingLocalRootSignature[LocalRootSignature::Type::AABB]);
 		}
 	}
 }

@@ -111,15 +111,21 @@ void DXProceduralProject::CreateConstantBuffers()
 //		structured buffers are for structs that have dynamic data (e.g lights in a scene, or AABBs in this case)
 void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
+	auto device = m_deviceResources->GetD3DDevice();
+	auto frameCount = m_deviceResources->GetBackBufferCount();
 
+	//auto count = m_aabbs.size();
+	//Create(ID3D12Device* device, UINT numElements, UINT numInstances = 1, LPCWSTR resourceName = nullptr)
+	auto count = AnalyticPrimitive::Count + VolumetricPrimitive::Count;
+	m_aabbPrimitiveAttributeBuffer.Create(device, count, frameCount, L"Scene AABB Primitive Buffer");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
 void DXProceduralProject::UpdateCameraMatrices()
 {
 	auto frameIndex = m_deviceResources->GetCurrentFrameIndex();
-
 	m_sceneCB->cameraPosition = m_eye;
+
 	float fovAngleY = 45.0f;
 	XMMATRIX view = XMMatrixLookAtLH(m_eye, m_at, m_up);
 	XMMATRIX proj = XMMatrixPerspectiveFovLH(XMConvertToRadians(fovAngleY), m_aspectRatio, 0.01f, 125.0f);
@@ -150,7 +156,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	// Rotation matrix that changes over time
 	XMMATRIX mRotation = XMMatrixRotationY(-2 * animationTime);
 
-	
+	// lambda function - returns a refernce
 	auto SetTransformForAABB = [&](UINT primitiveIndex, XMMATRIX& mScale, XMMATRIX& mRotation)
 	{
 		XMVECTOR vTranslation =
@@ -161,9 +167,14 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// TODO-2.1: Fill in this lambda function.
 		// It should create a transform matrix that is equal to scale * rotation * translation.
 		// This matrix would transform the AABB from local space to bottom level AS space.
-		// You can infer what the bottom level AS space to local space transform should be.
+		// You can infer what the bottom level AS space to local space transform should be. (inverse?)
 		// The intersection shader tests in this project work with local space, but the geometries are provided in bottom level 
 		// AS space. So this data will be used to convert back and forth from these spaces.
+		XMMATRIX mTransform = XMMatrixMultiply( mScale, XMMatrixMultiply(mRotation,mTranslation) );
+
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = mTransform;
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, mTransform);
+
 	};
 
 	UINT offset = 0;

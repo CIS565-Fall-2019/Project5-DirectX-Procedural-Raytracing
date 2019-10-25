@@ -18,10 +18,11 @@ void DXProceduralProject::BuildShaderTables()
 
 	// A shader name look-up table for shader table debug print out.
 	unordered_map<void*, wstring> shaderIdToStringMap;
-
+	
 	// The state object can be thought of a pipeline state object that holds application shader information.
 	// Remember that we filled the RTPSO in CreateRaytracingPipelineStateObject in DXR-Pipeline.cpp.
 	// Given a pipeline state object, we can retrieve the properties that allows to access functions such as GetShaderIdentifier()
+
 	// TODO-2.7: fill in this lambda function that given a stateObjectProperties, will tell you all the shader ids used.
 	auto GetShaderIDs = [&](auto* stateObjectProperties)
 	{
@@ -32,8 +33,11 @@ void DXProceduralProject::BuildShaderTables()
 		// TODO-2.7: Miss shaders.
 		// Similar to the raygen shader, but now we  have 1 for each ray type (radiance, shadow)
 		// Don't forget to update shaderIdToStringMap.
-		missShaderIDs[0] = nullptr;
-		missShaderIDs[1] = nullptr;
+		missShaderIDs[0] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[0]);
+		shaderIdToStringMap[missShaderIDs[0]] = c_missShaderNames[0];
+		missShaderIDs[1] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[1]);
+		shaderIdToStringMap[missShaderIDs[1]] = c_missShaderNames[1];
+
 
 		// Hitgroup shaders for the Triangle. We have 2: one for radiance ray, and another for the shadow ray.
 		for (UINT i = 0; i < RayType::Count; i++)
@@ -43,7 +47,12 @@ void DXProceduralProject::BuildShaderTables()
 		}
 
 		// TODO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
-		
+		for (UINT primitive = 0; primitive < IntersectionShaderType::Count; primitive++) {
+			for (UINT i = 0; i < RayType::Count; i++){
+				hitGroupShaderIDs_AABBGeometry[primitive][i] = stateObjectProperties->GetShaderIdentifier(c_hitGroupNames_AABBGeometry[primitive][i]);
+				shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[primitive][i]] = c_hitGroupNames_AABBGeometry[primitive][i];
+			}
+		}
 	};
 
 	// Get shader identifiers using the lambda function defined above.
@@ -95,7 +104,21 @@ void DXProceduralProject::BuildShaderTables()
 	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	{
-		
+		UINT numShaderRecords = 2;
+		UINT shaderRecordSize = shaderIDSize; // No root arguments
+
+		// The RayGen shader table contains a single ShaderRecord: the one single raygen shader!
+		ShaderTable missShaderTable(device, numShaderRecords, shaderRecordSize, L" MissShaderTable");
+
+		// Push back the shader record, which does not need any root signatures.
+		for (int i = 0; i < RayType::Count; i++) {
+			missShaderTable.push_back(ShaderRecord(missShaderIDs[i], shaderRecordSize, nullptr, 0));
+		}
+
+		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
+		missShaderTable.DebugPrint(shaderIdToStringMap);
+		m_missShaderTable = missShaderTable.GetResource();
+		m_missShaderTableStrideInBytes = missShaderTable.GetShaderRecordSize();
 	}
 
 	// Hit group shader table. This one is slightly different given that a hit group requires its own custom root signature.
