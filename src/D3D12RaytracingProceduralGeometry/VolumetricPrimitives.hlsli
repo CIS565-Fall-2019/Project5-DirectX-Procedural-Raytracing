@@ -28,7 +28,7 @@ float CalculateMetaballPotential(in float3 position, in Metaball blob)
 		potential = 1.0f;
 	}
 	else if (x < 1) {
-		potential = 6 * pow(x, 5) - 15 * pow(x, 4) + 10 * pow(x, 3);
+		potential = 6 * pow(1-x, 5) - 15 * pow(1-x, 4) + 10 * pow(1-x, 3);
 	}
 
     return potential;
@@ -118,13 +118,13 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
 	Metaball blobs[N_METABALLS];
-	InitializeAnimatedMetaballs(blobs, elapsedTime, 5.0f);
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 7.0f);
 
 	float tmin, tmax;
 	TestMetaballsIntersection(ray, tmin, tmax, blobs);
 
 	int numSteps = 128;
-	float threshold = 0.04;
+	float threshold = 0.6;
 	for (int i = 0; i <= numSteps; i++) {
 		float t = (tmax - tmin)*float(i)/float(numSteps) + tmin;
 		float3 position = ray.origin + t * ray.direction;

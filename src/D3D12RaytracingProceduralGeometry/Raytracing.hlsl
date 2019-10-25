@@ -52,10 +52,10 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	float3 V = g_sceneCB.cameraPosition.xyz - HitWorldPosition();
+	float3 V = normalize(-WorldRayDirection());//g_sceneCB.cameraPosition.xyz - HitWorldPosition();
 	float3 reflectedRay = normalize(reflect(incidentLightRay, normal));
-	float phong = pow(saturate(dot(reflectedRay, V)), specularPower);
-	return phong*g_sceneCB.lightAmbientColor;
+	float4 phong = pow(saturate(dot(reflectedRay, V)), specularPower);
+	return saturate(phong);
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -72,8 +72,8 @@ float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal
 float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInShadow,
 	in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
 {
-	float3 pos = HitWorldPosition();
-	float3 incidentLightRay = pos - g_sceneCB.lightPosition.xyz;
+	float3 position = HitWorldPosition();
+	float3 incidentLightRay = position - g_sceneCB.lightPosition.xyz;
 
 	// Ambient component
 	// Fake AO: Darken faces with normal facing downwards/away from the sky a little bit
@@ -84,20 +84,19 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
 	// Diffuse component
-	float4 diffuseColor = diffuseCoef * CalculateDiffuseCoefficient(incidentLightRay, normal) * albedo;
+	float lambert = CalculateDiffuseCoefficient(incidentLightRay, normal);
+	float4 diffuseColor = diffuseCoef * lambert * albedo * g_sceneCB.lightDiffuseColor;
 	float4 diffuseColorMin = albedo - g_sceneCB.lightDiffuseColor;
 	float4 diffuseColorMax = albedo - g_sceneCB.lightDiffuseColor * diffuseCoef;
-	diffuseColor = lerp(diffuseColorMin, diffuseColorMax, CalculateDiffuseCoefficient(incidentLightRay, normal));
-
+	diffuseColor = lerp(diffuseColorMin, diffuseColorMax, lambert);
+	
 	// Specular component
-	float4 specularColor = CalculateSpecularCoefficient(incidentLightRay, normal, specularPower);
-	//specularColor = float4(0, 0, 0, 0);
+	float4 specularColor = specularCoef*CalculateSpecularCoefficient(incidentLightRay, normal, specularPower);
 
 	if (isInShadow) {
 		specularColor = float4(0, 0, 0, 0);
-		diffuseColor /= 2.0f;
+		diffuseColor *= InShadowRadiance;
 	}
-
 
 	float4 color = ambientColor + diffuseColor + specularColor;
 
@@ -208,8 +207,9 @@ void MyRaygenShader()
 //***************************************************************************
 
 XMFLOAT4 falloff(XMFLOAT4 color) {
-	float t = (RayTCurrent() ) / 10000.0f;
-	return lerp(color, BackgroundColor, t);
+	float t = RayTCurrent()/ (100.0f);
+	float f = 1.0f / (1.0f + exp(-t));
+	return lerp(color, BackgroundColor, f);
 }
 
 // LOOKAT-1.9.5: ClosestHitShader for a triangle.
