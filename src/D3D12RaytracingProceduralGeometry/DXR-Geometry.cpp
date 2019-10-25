@@ -87,12 +87,22 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
 			D3D12_RAYTRACING_AABB aabb{};
-			aabb.MinX = basePosition.x + offsetIndex.x * stride.x;
-			aabb.MinY = basePosition.y + offsetIndex.y * stride.y;
-			aabb.MinZ = basePosition.z + offsetIndex.z * stride.z;
-			aabb.MaxX = aabb.MinX + size.x;
-			aabb.MaxY = aabb.MinY + size.y;
-			aabb.MaxZ = aabb.MinZ + size.z;
+			XMFLOAT3 baseCenter = { basePosition.x + c_aabbWidth / 2.0f,
+									basePosition.y + c_aabbWidth / 2.0f,
+									basePosition.z + c_aabbWidth / 2.0f };
+			XMFLOAT3 myCenter = baseCenter;// + offsetIndex * stride
+			myCenter.x += stride.x * (aabbGrid.x - 1) / 2.0f;
+			myCenter.y += stride.y * (aabbGrid.y - 1) / 2.0f;
+			myCenter.z += stride.z * (aabbGrid.z - 1) / 2.0f;
+			myCenter.x += offsetIndex.x * stride.x;
+			myCenter.y += offsetIndex.y * stride.y;
+			myCenter.z += offsetIndex.z * stride.z;
+			aabb.MaxX = myCenter.x + size.x / 2.0f;
+			aabb.MaxY = myCenter.y + size.y / 2.0f;
+			aabb.MaxZ = myCenter.z + size.z / 2.0f;
+			aabb.MinX = myCenter.x - size.x / 2.0f;
+			aabb.MinY = myCenter.y - size.y / 2.0f;
+			aabb.MinZ = myCenter.z - size.z / 2.0f;
 			return aabb;
 		};
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);
@@ -116,7 +126,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-		AllocateUploadBuffer(device, m_aabbs.data(), sizeof(m_aabbs) * sizeof(m_aabbs[0]), &m_aabbBuffer.resource);
+		AllocateUploadBuffer(device, m_aabbs.data(), m_aabbs.size() * sizeof(m_aabbs[0]), &m_aabbBuffer.resource);
 	}
 }
 

@@ -84,7 +84,7 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
     //wtf
-	/*tmin = INFINITY;
+	tmin = INFINITY;
     tmax = -INFINITY;
 
 	float ttmp1;
@@ -100,7 +100,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 			}
 		}
 	}
-	return;*/
+	return;
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.

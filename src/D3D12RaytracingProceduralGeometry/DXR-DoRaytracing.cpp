@@ -62,17 +62,19 @@ void DXProceduralProject::DoRaytracing()
 	{
 		// You will fill in a D3D12_DISPATCH_RAYS_DESC (which is dispatchDesc).
 		// TODO-2.8: fill in dispatchDesc->HitGroupTable. Look up the struct D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE 
-		dispatchDesc->HitGroupTable.StartAddress = m_hitGroupShaderTable.Get()->GetGPUVirtualAddress();
-		dispatchDesc->HitGroupTable.StrideInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES + LocalRootSignature::MaxRootArgumentsSize();
-		dispatchDesc->HitGroupTable.SizeInBytes = dispatchDesc->HitGroupTable.StrideInBytes * (RayType::Count + IntersectionShaderType::TotalPrimitiveCount * RayType::Count);
+		dispatchDesc->HitGroupTable.StartAddress = m_hitGroupShaderTable->GetGPUVirtualAddress();
+		dispatchDesc->HitGroupTable.StrideInBytes = m_hitGroupShaderTableStrideInBytes;
+		dispatchDesc->HitGroupTable.SizeInBytes = m_hitGroupShaderTable->GetDesc().Width;
 		// TODO-2.8: now fill in dispatchDesc->MissShaderTable
+		//m_missShaderTable
 		dispatchDesc->MissShaderTable.StartAddress = m_missShaderTable.Get()->GetGPUVirtualAddress();
-		dispatchDesc->MissShaderTable.StrideInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-		dispatchDesc->MissShaderTable.SizeInBytes = dispatchDesc->HitGroupTable.StrideInBytes * 2;
-
+		dispatchDesc->MissShaderTable.StrideInBytes = m_missShaderTableStrideInBytes;
+		dispatchDesc->MissShaderTable.SizeInBytes = m_missShaderTable->GetDesc().Width;
 		// TODO-2.8: now fill in dispatchDesc->RayGenerationShaderRecord
+		//m_RayGenerationShaderTable
+		//only start address and size
 		dispatchDesc->RayGenerationShaderRecord.StartAddress = m_rayGenShaderTable.Get()->GetGPUVirtualAddress();
-		dispatchDesc->RayGenerationShaderRecord.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+		dispatchDesc->RayGenerationShaderRecord.SizeInBytes = m_rayGenShaderTable->GetDesc().Width;
 
 		// We do this for you. This will define how many threads will be dispatched. Basically like a blockDims in CUDA!
 		dispatchDesc->Width = m_width;

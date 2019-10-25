@@ -170,7 +170,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 
         //wtf
         auto element = m_aabbPrimitiveAttributeBuffer[primitiveIndex];
-		element.localSpaceToBottomLevelAS = mScale * mRotation * mTranslation;
+		element.localSpaceToBottomLevelAS = XMMatrixMultiply(XMMatrixMultiply(mScale, mRotation), mTranslation);
         element.bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, element.localSpaceToBottomLevelAS);
 	};
 

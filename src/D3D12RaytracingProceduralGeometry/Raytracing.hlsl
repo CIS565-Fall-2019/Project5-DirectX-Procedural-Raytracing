@@ -41,7 +41,7 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return 0.0f;
+	return 1.0f;
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -51,7 +51,7 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	return float4(0.0f, 0.0f, 0.0f, 0.0f);
+	return float4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -76,13 +76,13 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float4 ambientColorMax = g_sceneCB.lightAmbientColor;
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
-    /*
+
 	float4 diffuseColor = g_sceneCB.lightDiffuseColor;
 	float3 lightDir = normalize(g_sceneCB.lightPosition - HitWorldPosition());
-	diffuseColor = diffuseCoef * diffuseColor * dot(normal, lightDir);
+	diffuseColor = diffuseCoef * diffuseColor * abs(dot(normal, lightDir));
 	
 	float4 specularColor = float4(g_sceneCB.reflectance, g_sceneCB.reflectance, g_sceneCB.reflectance, 1.0f);
-	specularColor = specularColor * specularCoef * pow(dot(normalize(g_sceneCB.cameraPosition - HitWorldPosition()), reflect(-lightDir, normal)), specularPower);
+	specularColor = specularColor * specularCoef * pow(abs(dot(normalize(g_sceneCB.cameraPosition - HitWorldPosition()), reflect(-lightDir, normal))), specularPower);
 	float4 finalColor;
 	if(isInShadow) {
 		finalColor = ambientColor + diffuseColor * InShadowRadiance;
@@ -90,8 +90,7 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 		finalColor = ambientColor + diffuseColor + specularColor;
 	}
 
-	return finalColor;*/
-    return ambientColor;
+	return ambientColor;
 }
 
 //***************************************************************************
@@ -151,25 +150,25 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
     //wtf
-	//RayDesc rayDesc;
- //   rayDesc.Origin = ray.origin;
- //   rayDesc.Direction = ray.direction;
- //   // Set TMin to a zero value to avoid aliasing artifacts along contact areas.
- //   // Note: make sure to enable face culling so as to avoid surface face fighting.
- //   rayDesc.TMin = 0;
- //   rayDesc.TMax = 10000;
+	RayDesc rayDesc;
+    rayDesc.Origin = ray.origin;
+    rayDesc.Direction = ray.direction;
+    // Set TMin to a zero value to avoid aliasing artifacts along contact areas.
+    // Note: make sure to enable face culling so as to avoid surface face fighting.
+    rayDesc.TMin = 0;
+    rayDesc.TMax = 10000;
 
- //   ShadowRayPayload rayPayload = {false};
+    ShadowRayPayload rayPayload = {false};
 
- //   TraceRay(g_scene,
- //       RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
- //       TraceRayParameters::InstanceMask,
- //       TraceRayParameters::HitGroup::Offset[RayType::Radiance],
- //       TraceRayParameters::HitGroup::GeometryStride,
- //       TraceRayParameters::MissShader::Offset[RayType::Radiance],
- //       rayDesc, rayPayload);
-	//return rayPayload.hit;
-    return false;
+    TraceRay(g_scene,
+        RAY_FLAG_CULL_BACK_FACING_TRIANGLES,/* | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,*/
+        TraceRayParameters::InstanceMask,
+        TraceRayParameters::HitGroup::Offset[RayType::Shadow],
+        TraceRayParameters::HitGroup::GeometryStride,
+        TraceRayParameters::MissShader::Offset[RayType::Shadow],
+        rayDesc, rayPayload);
+	return rayPayload.hit;
+    //return false;
 }
 
 //***************************************************************************
@@ -183,9 +182,9 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
-	Ray r = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
+	Ray r = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition, g_sceneCB.projectionToWorld);
 	// Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = TraceRadianceRay(r, 3);
+    g_renderTarget[DispatchRaysIndex().xy] = TraceRadianceRay(r, 0);
 }
 
 //***************************************************************************
@@ -243,9 +242,9 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
-	float t = RayTCurrent() - 20.0f;
+	float t = RayTCurrent() - 10000.0f;
 	if(t > 0.0f) {
-		t = min(t / 50.0f, 1.0f);
+		t = min(t / 10000.0f, 1.0f);
 		rayPayload.color = lerp(color, float4(0.05f, 0.5f, 0.55f, 1.0f), t);
 	} else {
 		rayPayload.color = color;
@@ -299,9 +298,9 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
-	float t = RayTCurrent() - 20.0f;
+	float t = RayTCurrent() - 10000.0f;
 	if(t > 0.0f) {
-		t = min(t / 50.0f, 1.0f);
+		t = min(t / 10000.0f, 1.0f);
 		rayPayload.color = lerp(color, float4(0.05f, 0.5f, 0.55f, 1.0f), t);
 	} else {
 		rayPayload.color = color;
@@ -319,7 +318,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 void MyMissShader(inout RayPayload rayPayload)
 {
     //wtf
-	//rayPayload.color = float4(0.05f, 0.5f, 0.55f, 1.0f);
+	rayPayload.color = float4(0.05f, 0.5f, 0.55f, 1.0f);
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
@@ -327,7 +326,7 @@ void MyMissShader(inout RayPayload rayPayload)
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
     //wtf
-	//rayPayload.hit = false;
+	rayPayload.hit = false;
 }
 
 //***************************************************************************
@@ -380,22 +379,22 @@ void MyIntersectionShader_AnalyticPrimitive()
 void MyIntersectionShader_VolumetricPrimitive()
 {
     //wtf
-	//Ray localRay = GetRayInAABBPrimitiveLocalSpace();
- //   VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
+	Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+    VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
 
- //   float thit;
- //   ProceduralPrimitiveAttributes attr;
- //   if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime))
- //   {
- //       PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+    float thit;
+    ProceduralPrimitiveAttributes attr;
+    if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime))
+    {
+        PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
 
-	//	// Make sure the normals are stored in BLAS space and not the local space
- //       attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
- //       attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+		// Make sure the normals are stored in BLAS space and not the local space
+        attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+        attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
 
-	//	// thit is invariant to the space transformation
- //       ReportHit(thit, /*hitKind*/ 0, attr);
- //   }
+		// thit is invariant to the space transformation
+        ReportHit(thit, /*hitKind*/ 0, attr);
+    }
     
 }
 #endif // RAYTRACING_HLSL
