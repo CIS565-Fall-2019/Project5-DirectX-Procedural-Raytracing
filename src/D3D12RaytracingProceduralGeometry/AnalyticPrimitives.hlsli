@@ -181,12 +181,10 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
     float sphere_thit = 0.0f;
     float sphere_tmax = 0.0f;
     ProceduralPrimitiveAttributes sphere_attr;
-    float curr_t = RayTMax();
+    float curr_t = RayTCurrent();
     ProceduralPrimitiveAttributes curr_attr;
 
     bool t_flag = false;
-    RaySphereIntersectionTest(ray, sphere2_thit, sphere2_tmax, sphere2_attr, sphere2_center, sphere2_radius);
-    RaySphereIntersectionTest(ray, sphere3_thit, sphere3_tmax, sphere3_attr, sphere3_center, sphere3_radius);
 
 	if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere1_center, sphere1_radius))
 	{
@@ -219,7 +217,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
     }
 
     //assign the value to out
-    thit = curr_thit;
+    thit = curr_t;
     attr = curr_attr;
 
     //validate the thit and normal

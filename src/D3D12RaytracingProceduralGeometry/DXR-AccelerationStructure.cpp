@@ -226,7 +226,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
         auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
         instanceDesc = {};
         instanceDesc.InstanceMask = 1; // If the value is zero, then the instance will never be included, so typically this should be set to some non-zero value. 
-        instanceDesc.InstanceContributionToHitGroupIndex = GeometryType::Enum::Count; //triagles and AABBs, we can add more if we want 
+        instanceDesc.InstanceContributionToHitGroupIndex = GeometryType::Enum::Count * RayType::Count; //triagles and AABBs, we can add more if we want 
         instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 
