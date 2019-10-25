@@ -23,7 +23,7 @@ DXProceduralProject::DXProceduralProject(UINT width, UINT height, std::wstring n
 	m_forceComputeFallback(false)
 {
 	m_forceComputeFallback = false;
-	SelectRaytracingAPI(RaytracingAPI::FallbackLayer);
+	SelectRaytracingAPI(RaytracingAPI::DirectXRaytracing);
 	UpdateForSizeChange(width, height);
 }
 
