@@ -38,11 +38,13 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width / sizeof(Index);
 		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width / sizeof(Vertex);
 		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress();
-		D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE vaas = {};
-		vaas.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
-		vaas.StrideInBytes = sizeof(Vertex); // Question
-		geometryDesc.Triangles.VertexBuffer = vaas;
-		geometryDesc.Triangles.Transform3x4 = NULL;
+		//D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE vaas = {};
+		//vaas.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
+		//vaas.StrideInBytes = sizeof(Vertex); // Question
+		//geometryDesc.Triangles.VertexBuffer = vaas;
+		geometryDesc.Triangles.VertexBuffer.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
+		geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex); // Question
+		//geometryDesc.Triangles.Transform3x4 = NULL;
 
 		
 	}
@@ -207,7 +209,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
 		instanceDesc.InstanceMask = 1;
-		instanceDesc.InstanceContributionToHitGroupIndex = 2;
+		instanceDesc.InstanceContributionToHitGroupIndex = BottomLevelASType::AABB * RayType::Count; // Check numbers here
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 		// Calculate transformation matrix.
@@ -218,10 +220,10 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		// Scale in XZ dimensions.
 		XMMATRIX mScale = XMMatrixScaling(c_aabbWidth, c_aabbWidth, c_aabbWidth);
 		XMMATRIX mTranslation = XMMatrixTranslationFromVector(translationVec);
-		XMMATRIX mTransform = mScale * mTranslation;
+		//XMMATRIX mTransform = mTranslation;
 
 		// Store the transform in the instanceDesc.
-		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
+		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTranslation);
 	}
 
 	// Upload all these instances to the GPU, and make sure the resouce is set to instanceDescsResource.
@@ -248,7 +250,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	topLevelInputs.Flags = buildFlags;
 	topLevelInputs.NumDescs = BottomLevelASType::Count;
 	topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-	topLevelInputs.InstanceDescs = bottomLevelAS->instanceDesc->GetGPUVirtualAddress();
+	//topLevelInputs.InstanceDescs = bottomLevelAS->instanceDesc->GetGPUVirtualAddress();
 
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO topLevelPrebuildInfo = {};
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -333,6 +335,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
 	topLevelBuildDesc.DestAccelerationStructureData = topLevelAS->GetGPUVirtualAddress();
 	topLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
+	topLevelInputs.InstanceDescs = instanceDescsResource->GetGPUVirtualAddress();
 
 	// Build acceleration structure.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
