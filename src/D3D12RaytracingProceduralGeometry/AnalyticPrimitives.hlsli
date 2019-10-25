@@ -166,26 +166,39 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	float3 centers[3] = { float3(-0.2, 0, -0.2), float3(-0.5, 0.5, -0.5), float3(0.2, 0, 0.2) };
-	float radii[3] = { 0.7f, 0.3f, 0.5f };
+	//float3 centers[3] = { float3(-0.2, 0, -0.2), float3(-0.5, 0.5, -0.5), float3(0.2, 0, 0.2) };
+	//float radii[3] = { 0.7f, 0.3f, 0.5f };
+
+	//thit = RayTCurrent();
+
+	//float tmax;
+	//float curr_thit = thit;
+	//ProceduralPrimitiveAttributes curr_attr;
+	//bool hit = false;
+	//for (int i = 0; i < 3; i++) {
+	//	if (RaySphereIntersectionTest(ray, curr_thit, tmax, curr_attr, centers[i], radii[i]))
+	//	{
+	//		if (curr_thit < thit) {
+	//			thit = curr_thit;
+	//			attr = curr_attr;
+	//		}
+	//		hit = true;
+	//	}
+	//}
+	//return hit;
+		// Define the spheres in local space (within the aabb)
+	float3 center = float3(-0.2, 0, -0.2);
+	float radius = 0.7f;
 
 	thit = RayTCurrent();
 
 	float tmax;
-	float curr_thit = thit;
-	ProceduralPrimitiveAttributes curr_attr;
-	bool hit = false;
-	for (int i = 0; i < 3; i++) {
-		if (RaySphereIntersectionTest(ray, curr_thit, tmax, curr_attr, centers[i], radii[i]))
-		{
-			if (curr_thit < thit) {
-				thit = curr_thit;
-				attr = curr_attr;
-			}
-			hit = true;
-		}
+	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
+	{
+		return true;
 	}
-	return hit;
+
+	return false;
 }
 
 #endif // ANALYTICPRIMITIVES_H
