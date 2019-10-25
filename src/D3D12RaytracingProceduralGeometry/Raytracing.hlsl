@@ -135,7 +135,29 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
-	return false;
+	if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+	{
+		return false;
+	}
+
+	RayDesc rayDesc;
+	rayDesc.Origin = ray.origin;
+	rayDesc.Direction = ray.direction;
+	rayDesc.TMin = 0;
+	rayDesc.TMax = 10000;
+
+	ShadowRayPayload rayPayload = { true };
+
+	TraceRay(g_scene,
+		RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+		TraceRayParameters::InstanceMask,
+		TraceRayParameters::HitGroup::Offset[RayType::Shadow],
+		TraceRayParameters::HitGroup::GeometryStride,
+		TraceRayParameters::MissShader::Offset[RayType::Shadow],
+		rayDesc, rayPayload);
+
+
+	return rayPayload.hit;
 }
 
 //***************************************************************************
@@ -149,9 +171,11 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
-
+	uint2 index = DispatchRaysIndex().xy;
+	Ray ray = GenerateCameraRay(index, g_sceneCB.cameraPosition, g_sceneCB.projectionToWorld);
+	float4 color = TraceRadianceRay(ray, 0);
 	// Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    g_renderTarget[DispatchRaysIndex().xy] = color;
 }
 
 //***************************************************************************
@@ -240,14 +264,14 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-
+	rayPayload.color = BackgroundColor;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
-
+	rayPayload.hit = false;
 }
 
 //***************************************************************************

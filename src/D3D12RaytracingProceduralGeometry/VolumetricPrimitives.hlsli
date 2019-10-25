@@ -22,7 +22,14 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	if (position.x == blob.center.x && position.y == blob.center.y && position.z == blob.center.z) return 1.0f;
+
+	float d = distance(blob.center, position);
+	if (d > blob.radius) return 0.0f;
+
+	float x = d / blob.radius;
+	float potential = 6.0f * pow(x, 5) - 15.0 * pow(x, 4) + 10.0 * pow(x, 3);
+	return potential;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -83,6 +90,18 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+
+	float tminCurr, tmaxCurr;
+	for (int i = 0; i < N_METABALLS; i++) {
+		
+		if (RaySolidSphereIntersectionTest(ray, tminCurr, tmaxCurr, blobs[i].center, blobs[i].radius)) {
+			if (tminCurr < tmin) tmin = tminCurr;
+			if (tmaxCurr > tmax) tmax = tmaxCurr;
+		}
+	}
+
+	tmin = tminCurr;
+	tmax = tmaxCurr;
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
