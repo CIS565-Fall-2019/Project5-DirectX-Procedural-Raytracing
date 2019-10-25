@@ -23,7 +23,7 @@ void DXProceduralProject::DoRaytracing()
 
 	// TODO-2.8: do a very similar operation for the m_aabbPrimitiveAttributeBuffer
 	m_aabbPrimitiveAttributeBuffer.CopyStagingToGpu(frameIndex);
-	commandList->SetComputeRootConstantBufferView(
+	commandList->SetComputeRootShaderResourceView(
 		GlobalRootSignature::Slot::AABBattributeBuffer, 
 		m_aabbPrimitiveAttributeBuffer.GpuVirtualAddress(frameIndex)
 	);
