@@ -23,7 +23,9 @@ DXProceduralProject::DXProceduralProject(UINT width, UINT height, std::wstring n
 	m_forceComputeFallback(false)
 {
 	m_forceComputeFallback = false;
-	SelectRaytracingAPI(RaytracingAPI::FallbackLayer);
+	//SelectRaytracingAPI(RaytracingAPI::FallbackLayer);
+    //my machine has problem with FallBackLayer, changing to DXR
+    SelectRaytracingAPI(RaytracingAPI::DirectXRaytracing);
 	UpdateForSizeChange(width, height);
 }
 
@@ -50,6 +52,12 @@ void DXProceduralProject::EnableDirectXRaytracing(IDXGIAdapter1* adapter)
 			L"Possible reasons: your OS is not in developer mode.\n\n");
 		m_raytracingAPI = RaytracingAPI::FallbackLayer;
 	}
+    //Mark modification on the base code, force the API to choose DXR when the machine supports DXR
+    else
+    {
+        //force to use DXR
+        //m_raytracingAPI = RaytracingAPI::DirectXRaytracing;
+    }
 }
 
 // Create resources that depend on the device.

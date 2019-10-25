@@ -15,11 +15,13 @@ struct Ray
     float3 direction;
 };
 
+//2d
 float length_toPow2(float2 p)
 {
     return dot(p, p);
 }
 
+//3d
 float length_toPow2(float3 p)
 {
     return dot(p, p);
@@ -130,8 +132,13 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
 	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+    ray.origin = cameraPosition;
+    //we know the width and height from main
+    int width = 720;
+    int height = 1280;
+    float4 ndc_pos = float4((index.x + width / 2.0f) / width, (index.x + height / 2.0f) / height, 1.0f, 1.0f);
+    float4 world_pos = mul(projectionToWorld, ndc_pos);
+	ray.direction = normalize(world_pos.xyz - ray.origin);//project from pixel world position to ray origin
 
     return ray;
 }

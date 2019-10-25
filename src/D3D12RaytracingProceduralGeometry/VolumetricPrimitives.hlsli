@@ -81,6 +81,10 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 // Remember that a metaball is just a solid sphere. Didn't we already do this somewhere else?
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
+    float sphere_tmin = 0.0f;
+    float sphere_tmax = 0.0f;
+
+    //want to use the two functions in AnalyticPrimitives, should we move here?
 	tmin = INFINITY;
     tmax = -INFINITY;
 }

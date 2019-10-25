@@ -163,21 +163,70 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 
 // TODO-3.4.1: Change this code to support intersecting multiple spheres (~3 spheres). 
 // You can hardcode the local centers/radii of the spheres, just try to maintain them between 1 and -1 (and > 0 for the radii).
+
+//my thought is to compute each individual spheres and compute their tmin to see which one is the one we hit
+//when we test intersection with hollow sphere, our attr is in, so do we get the change of those attrs?
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	float3 center = float3(-0.2, 0, -0.2);
-	float radius = 0.7f;
+	float3 sphere1_center = float3(-0.4, 0, -0.4);
+	float sphere1_radius = 0.5f;
 
-	thit = RayTCurrent();
+    float3 sphere2_center = float3(0, 0.7, 0);
+    float sphere2_radius = 0.3f;
 
-	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
+    float3 sphere3_center = float3(0.4, 0, 0.4);
+    float sphere3_radius = 0.3f;
+
+    float sphere_thit = 0.0f;
+    float sphere_tmax = 0.0f;
+    ProceduralPrimitiveAttributes sphere_attr;
+    float curr_t = RayTMax();
+    ProceduralPrimitiveAttributes curr_attr;
+
+    bool t_flag = false;
+    RaySphereIntersectionTest(ray, sphere2_thit, sphere2_tmax, sphere2_attr, sphere2_center, sphere2_radius);
+    RaySphereIntersectionTest(ray, sphere3_thit, sphere3_tmax, sphere3_attr, sphere3_center, sphere3_radius);
+
+	if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere1_center, sphere1_radius))
 	{
-		return true;
+        if (curr_t > sphere_thit)
+        {
+            t_flag = true;
+            curr_t = sphere_thit;
+            curr_attr = sphere_attr;
+        }
 	}
 
-	return false;
+    if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere2_center, sphere2_radius))
+    {
+        if (curr_t > sphere_thit)
+        {
+            t_flag = true;
+            curr_t = sphere_thit;
+            curr_attr = sphere_attr;
+        }
+    }
+
+    if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere3_center, sphere3_radius))
+    {
+        if (curr_t > sphere_thit)
+        {
+            t_flag = true;
+            curr_t = sphere_thit;
+            curr_attr = sphere_attr;
+        }
+    }
+
+    //assign the value to out
+    thit = curr_thit;
+    attr = curr_attr;
+
+    //validate the thit and normal
+    if(t_flag)
+	    return is_a_valid_hit(ray, thit, attr.normal);
+    
+    return false;
 }
 
 #endif // ANALYTICPRIMITIVES_H

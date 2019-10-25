@@ -68,15 +68,19 @@ void DXProceduralProject::DoRaytracing()
         // how do we utilize the stateObject to populate hitGroup, missShader and RayGenerationShader?
         //D3D12_Shader_Identifier_size_in_bytes + maxrootargumentsSize
         //everyone group should have a hitgroup shader -- triangles * rayType count + primitiveType * rayType count
-        dispatchDesc->HitGroupTable.StartAddress = m_hitgroupshadertable.GetGPUVirtualAddress();
-
+        dispatchDesc->HitGroupTable.StartAddress = m_hitGroupShaderTable.Get()->GetGPUVirtualAddress();
+        dispatchDesc->HitGroupTable.StrideInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES + LocalRootSignature::MaxRootArgumentsSize();
+        dispatchDesc->HitGroupTable.SizeInBytes = dispatchDesc->HitGroupTable.StrideInBytes * (RayType::Count + IntersectionShaderType::Count * RayType::Count);
 		// TODO-2.8: now fill in dispatchDesc->MissShaderTable
 		//m_missShaderTable
-		dispatchDesc->
-
+        dispatchDesc->MissShaderTable.StartAddress = m_missShaderTable.Get()->GetGPUVirtualAddress();
+        dispatchDesc->MissShaderTable.StrideInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+        dispatchDesc->MissShaderTable.SizeInBytes = dispatchDesc->HitGroupTable.StrideInBytes * 2;
 		// TODO-2.8: now fill in dispatchDesc->RayGenerationShaderRecord
 		//m_RayGenerationShaderTable
 		//only start address and size
+        dispatchDesc->RayGenerationShaderRecord.StartAddress = m_rayGenShaderTable.Get()->GetGPUVirtualAddress();
+        dispatchDesc->RayGenerationShaderRecord.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 		
 
 		// We do this for you. This will define how many threads will be dispatched. Basically like a blockDims in CUDA!

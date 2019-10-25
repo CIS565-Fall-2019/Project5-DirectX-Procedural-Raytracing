@@ -23,6 +23,8 @@ void DXProceduralProject::OnInit()
 	m_deviceResources->InitializeDXGIAdapter();
 	EnableDirectXRaytracing(m_deviceResources->GetAdapter());
 
+    //SelectRaytracingAPI(RaytracingAPI::DirectXRaytracing);
+
 	m_deviceResources->CreateDeviceResources();
 	m_deviceResources->CreateWindowSizeDependentResources();
 
