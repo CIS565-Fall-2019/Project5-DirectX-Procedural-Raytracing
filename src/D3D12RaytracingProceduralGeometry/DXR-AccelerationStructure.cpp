@@ -66,7 +66,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		geometryDescs[BottomLevelASType::AABB][0].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (off_s + AnalyticPrimitive::AABB) * sizeof(D3D12_RAYTRACING_AABB);
 		geometryDescs[BottomLevelASType::AABB][1].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (off_s + AnalyticPrimitive::Spheres) * sizeof(D3D12_RAYTRACING_AABB);
 		off_s += AnalyticPrimitive::Count;
-		geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
+		geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (off_s + VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
 	}
 }
 
