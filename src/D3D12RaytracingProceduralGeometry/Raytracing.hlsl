@@ -41,7 +41,7 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	float lambert = dot(incidentLightRay, normal);
+	float lambert = dot(-incidentLightRay, normal);
 	return saturate(lambert);
 }
 
@@ -54,7 +54,7 @@ float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal
 {
 	float3 V = normalize(-WorldRayDirection());//g_sceneCB.cameraPosition.xyz - HitWorldPosition();
 	float3 reflectedRay = normalize(reflect(incidentLightRay, normal));
-	float4 phong = pow(saturate(dot(reflectedRay, V)), specularPower);
+	float4 phong = pow(dot(reflectedRay, V), specularPower);
 	return saturate(phong);
 }
 
@@ -73,7 +73,7 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
 {
 	float3 position = HitWorldPosition();
-	float3 incidentLightRay = position - g_sceneCB.lightPosition.xyz;
+	float3 incidentLightRay = normalize(position - g_sceneCB.lightPosition.xyz);
 
 	// Ambient component
 	// Fake AO: Darken faces with normal facing downwards/away from the sky a little bit
@@ -86,15 +86,12 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	// Diffuse component
 	float lambert = CalculateDiffuseCoefficient(incidentLightRay, normal);
 	float4 diffuseColor = diffuseCoef * lambert * albedo * g_sceneCB.lightDiffuseColor;
-	float4 diffuseColorMin = albedo - g_sceneCB.lightDiffuseColor;
-	float4 diffuseColorMax = albedo - g_sceneCB.lightDiffuseColor * diffuseCoef;
-	diffuseColor = lerp(diffuseColorMin, diffuseColorMax, lambert);
 	
 	// Specular component
 	float4 specularColor = specularCoef*CalculateSpecularCoefficient(incidentLightRay, normal, specularPower);
 
 	if (isInShadow) {
-		specularColor = float4(0, 0, 0, 0);
+		specularColor = float4(0,0,0,0);
 		diffuseColor *= InShadowRadiance;
 	}
 
@@ -173,8 +170,8 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 	rayDesc.TMin = 0;
 	rayDesc.TMax = 10000;
 
-	ShadowRayPayload rayPayload;
-
+	ShadowRayPayload rayPayload = { true };
+	
 	TraceRay(g_scene,
 		RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
 		TraceRayParameters::InstanceMask,
@@ -207,8 +204,8 @@ void MyRaygenShader()
 //***************************************************************************
 
 XMFLOAT4 falloff(XMFLOAT4 color) {
-	float t = RayTCurrent()/ (100.0f);
-	float f = 1.0f / (1.0f + exp(-t));
+	float t = RayTCurrent()/100.0f;
+	float f = 1.0f / (1.0f + exp(-t + 2.0f));
 	return lerp(color, BackgroundColor, f);
 }
 

@@ -170,7 +170,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	float radius = 0.7f;
 	float3 center1 = float3(0.5, 0.5, 0.5);
 	float radius1 = 0.25f;
-	float3 center2 = float3(-0.85, -0.75, 0.75);
+	float3 center2 = float3(-0.7, -0.7, 0.7);
 	float radius2 = 0.1f;
 
 	thit = RayTCurrent();

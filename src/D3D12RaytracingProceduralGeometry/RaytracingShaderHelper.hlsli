@@ -149,7 +149,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	float cosTheta = saturate(dot(N, I));
+	float cosTheta = saturate(dot(N, -I));
 	return f0 + (1 - f0)*pow(1 - cosTheta, 5);
 }
 
