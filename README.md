@@ -20,6 +20,8 @@ The project aims at doing ray tracing rendering of a scene using DXR API. The st
 
 Raytracing is the technique used to render scenes and created the images. In raytracing, when a ray from the camera through the pixel co-rodinate of the screen space to the object, which is `radiance ray`,, we find the position and the normal corresponding to the intersection between the object geomentry and the ray. To render the object at the position, we create a light ray which goes to the light source (it's a point source in raytracing) and check whether it is blocked by some other geometry on the way to the light source. If it is blocked, then it's called a `shadow ray` and we render the shadow(black) color at that position. If it goes directly to the light source, we render the color of the obejct. We render the backgorund color if it misses our place surface(made of two triangles) and geometries, it is rendered as a background color. If the object is reflective, then we generate two rays, one which goes to the light source and the other as reflective ray which follows the same logic as radiance ray above. The ray is meant ot be dead if it bounces more than the maximum recursion depth of the ray. 
 
+<p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/raytrace.jpg" width="600"/></p>
+
 ### Code Section:
 
 While coding, the parts are divided into tow main parts: CPU and GPU section codes.
