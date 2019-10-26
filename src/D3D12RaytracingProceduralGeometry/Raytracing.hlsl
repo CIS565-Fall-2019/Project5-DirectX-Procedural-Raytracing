@@ -41,7 +41,7 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return saturate(dot(-incidentLightRay, normal));
+	return saturate(dot(incidentLightRay, normal));
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -51,10 +51,10 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	float3 reflectedRay = normalize(reflect(incidentLightRay, normal));
+	float3 reflectedRay = normalize(reflect(-incidentLightRay, normal));
 	float3 reverseRayDirection = normalize(-WorldRayDirection());
-	float4 specularComponent = pow(dot(reflectedRay, reverseRayDirection), specularPower);
-	return saturate(specularComponent);
+	float4 specularComponent = pow(saturate(dot(reflectedRay, reverseRayDirection)), specularPower);
+	return specularComponent;
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -86,7 +86,7 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float3 hitPosition = HitWorldPosition();
 	float3 lightPosition = g_sceneCB.lightPosition;
 
-	float3 incidentLightRay = normalize(hitPosition - lightPosition);
+	float3 incidentLightRay = normalize(lightPosition - hitPosition);
 	float lambertianCoefficient = CalculateDiffuseCoefficient(incidentLightRay, normal);
 	float4 diffuseColor = shadowCoefficient * lambertianCoefficient * g_sceneCB.lightDiffuseColor * albedo; //albedo = Intensity!!??
 
@@ -94,7 +94,7 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	if (!isInShadow) {
 		float4 lightSpecularColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 		float4 specularCoefficient = CalculateSpecularCoefficient(incidentLightRay, normal, specularPower);
-		specularColor = specularCoef * specularCoefficient * lightSpecularColor;
+		specularColor = specularCoefficient * lightSpecularColor;
 	}
 
 
@@ -263,7 +263,8 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
 	float t = RayTCurrent();
-	color = lerp(color, BackgroundColor, (1 / (1 + exp(-(t - 10)))));
+	color = lerp(color, BackgroundColor, 1 - exp(-0.000001*pow(t, 3.0f)));
+	//color = lerp(color, BackgroundColor, (1 / (1 + exp(-(t - 50)))));
     rayPayload.color = color;
 }
 
@@ -306,7 +307,8 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	float4 color = (phongColor + reflectedColor);
 
 	float t = RayTCurrent();
-	color = lerp(color, BackgroundColor, (1 / (1 + exp(-(t - 10)))));
+	color = lerp(color, BackgroundColor, 1 - exp(-0.000001*pow(t, 3.0f)));
+	//color = lerp(color, BackgroundColor, (1 / (1 + exp(-(t - 10)))));
 	rayPayload.color = color;
 }
 

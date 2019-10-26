@@ -70,10 +70,10 @@ float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration
 {
 	float how_far = fmod(elapsedTime, cycleDuration) / cycleDuration;
 	if (how_far <= 0.5) {
-		how_far = 2 * how_far;
+		how_far = 2.0f * how_far;
 	}
 	else {
-		how_far = 1 - 2 * (how_far - 0.5f);
+		how_far = 1.0f - (2.0f * (how_far - 0.5f));
 	}
 	return smoothstep(0, 1, how_far);
 }
@@ -137,7 +137,9 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
 	uint3 dimensions = DispatchRaysDimensions();
-	float4 normalized_device_coordinates = { (2.0f * (index.x - dimensions.x / 2.0f)) / dimensions.x, (2.0f * (index.y - dimensions.y / 2.0f)) / dimensions.y, 1.0f, 1.0f };
+	float4 normalized_device_coordinates = { 2.0f * ((index.x /(1.0f * dimensions.x)) - 0.5f), 2.0f * (0.5f - (index.y /(1.0f * dimensions.y))), 1.0f, 1.0f };
+	normalized_device_coordinates = normalize(normalized_device_coordinates);
+	//float4 normalized_device_coordinates = { (2.0f * (index.x - dimensions.x / 2.0f)) / dimensions.x, (2.0f * (index.y - dimensions.y / 2.0f)) / dimensions.y, 1.0f, 1.0f };
 
 	float4 world_coordinates = mul(normalized_device_coordinates, projectionToWorld);
 
@@ -154,7 +156,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
 	float cosi = saturate(dot(-I, N));
-	return f0 + (1 - f0) * pow(1 - cosi, 5);
+	return (f0 + (1 - f0) * pow(1 - cosi, 5));
 }
 
 #endif // RAYTRACINGSHADERHELPER_H
