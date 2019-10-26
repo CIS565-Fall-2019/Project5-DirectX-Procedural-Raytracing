@@ -41,7 +41,16 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return 0.0f;
+	// From wiki
+	/*
+	The reflection is calculated by taking the dot product of the surface's normal 
+	vector, {\displaystyle \mathbf {N} }\mathbf {N} , and a normalized light-direction 
+	vector, {\displaystyle \mathbf {L} }\mathbf {L} , pointing from the surface to 
+	the light source. 
+	*/
+
+	// So we want to return the clamped dot of reverse light and normal
+	return clamp(dot(normalize(-incidentLightRay), normal), 0, 1);
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -51,7 +60,10 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	return float4(0.0f, 0.0f, 0.0f, 0.0f);
+	// Use DXR builtin
+	float3 reflected = normalize(reflect(incidentLightRay, normal));
+	float4 coefficient = pow(clamp(dot(reflected, normalize(-incidentLightRay)), 0, 1), specularPower);
+	return coefficient;
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -68,6 +80,9 @@ float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal
 float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInShadow,
 	in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
 {
+	// Calculate the light ray by taking the ray from the light source to our hit position
+	float3 lightRay = normalize(HitWorldPosition() - g_sceneCB.lightPosition.xyz);
+
 	// Ambient component
 	// Fake AO: Darken faces with normal facing downwards/away from the sky a little bit
 	float4 ambientColor = g_sceneCB.lightAmbientColor;
@@ -76,7 +91,15 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-	return ambientColor;
+	// Diffuse part
+	float diffuse = CalculateDiffuseCoefficient(lightRay, normal);
+	float4 diffuseColor = diffuseCoef * diffuse * g_sceneCB.lightDiffuseColor * albedo;
+
+	// Specular part
+	float4 specular = CalculateSpecularCoefficient(lightRay, normal, specularPower);
+	float4 specularColor = specularCoef * specular * ~isInShadow;
+
+	return ambientColor + diffuseColor + specularColor;
 }
 
 //***************************************************************************
