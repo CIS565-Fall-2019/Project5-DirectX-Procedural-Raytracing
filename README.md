@@ -39,5 +39,6 @@ b. In GPU section, we perform the ray generation from the camera which goes from
 
 The performance analysis of FPS with varying the depth is shown below:
 
-<p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/imageChart.png" width="500"/></p>
+<p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/imageChart.png" width="700"/></p>
 
+We see that the FPS is decreasing as we are increasing the maximum depth of the ray which is expected.
