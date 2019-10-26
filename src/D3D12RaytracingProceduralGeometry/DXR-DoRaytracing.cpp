@@ -71,7 +71,6 @@ void DXProceduralProject::DoRaytracing()
 	{
 		// You will fill in a D3D12_DISPATCH_RAYS_DESC (which is dispatchDesc).
 		// TODO-2.8: fill in dispatchDesc->HitGroupTable. Look up the struct D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE
-		D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE hgt;
 		dispatchDesc->HitGroupTable.StartAddress  = m_hitGroupShaderTable->GetGPUVirtualAddress(); // Want to start here, makes sense.
 		dispatchDesc->HitGroupTable.SizeInBytes   = m_hitGroupShaderTable->GetDesc().Width; // Similar to before
 		dispatchDesc->HitGroupTable.StrideInBytes = m_hitGroupShaderTableStrideInBytes; // Makes sense...

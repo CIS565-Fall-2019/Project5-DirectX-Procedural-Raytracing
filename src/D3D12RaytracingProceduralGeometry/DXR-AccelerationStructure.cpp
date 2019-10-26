@@ -38,7 +38,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		
 		// Assign Index Values
 		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress(); // Get GPU addr of this resource
-		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width / sizeof(Index);
+		geometryDesc.Triangles.IndexCount = (UINT)(m_indexBuffer.resource->GetDesc().Width) / sizeof(Index);
 		geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT; // Index is UINT16
 
 		// Now assign Vertex values. Just like above.
@@ -46,7 +46,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Since I guess the vertex can be a complex type
 		geometryDesc.Triangles.VertexBuffer.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
 		geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
-		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width / sizeof(Vertex);
+		geometryDesc.Triangles.VertexCount = (UINT)(m_vertexBuffer.resource->GetDesc().Width) / sizeof(Vertex);
 		geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT; // Each vertex is a xyz of 32bit ints
 		                                                                   // But each vertex includes vertex + normals
 		                                                                   // But stride accounts for that.
@@ -219,8 +219,6 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 	//		Where do you think procedural shader records would start then? Hint: right after.
 	// * Make each instance hover above the ground by ~ half its width
 	{
-		D3D12_RAYTRACING_INSTANCE_DESC a; // Just for reference...
-
 		// Start off just like triangles above
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};

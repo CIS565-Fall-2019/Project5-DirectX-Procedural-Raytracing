@@ -110,7 +110,7 @@ void DXProceduralProject::BuildShaderTables()
 		ShaderTable missShaderTable(device, numShaderRecords, shaderRecordSize, L"MissShaderTable");
 
 		// Push back a shader record for each ray type
-		for (int i = 0; i < numShaderRecords; i++) {
+		for (UINT i = 0; i < numShaderRecords; i++) {
 			missShaderTable.push_back(ShaderRecord(missShaderIDs[i], shaderRecordSize, nullptr, 0));
 		}
 
