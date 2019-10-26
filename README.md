@@ -39,6 +39,11 @@ b. In GPU section, we perform the ray generation from the camera which goes from
 
 ### Performance Analysis
 
+In one of the steps after wrting the CPU code, ray generation and TraceRay() fucntion , here is the image how it looks like with the Analytical Primitives (AABB Box and Spheres):
+
+<p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/capture1PNG" width="600"/></p>
+
+
 The performance analysis of FPS with varying the depth is shown below:
 
 <p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/imageChart.png" width="700"/></p>
@@ -56,3 +61,6 @@ Some of the bloopers are below:
 2. Also, I didn't have the linear interpolate function correctly because of which I couldn't differentiate between the lan and the background.
 
 <p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/capture_no_plane_background_diff.PNG" width="600"/></p>
+
+## References
+
