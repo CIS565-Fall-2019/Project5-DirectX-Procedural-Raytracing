@@ -135,6 +135,7 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
+    return false;
 	if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
 	{
 		return false;
@@ -264,14 +265,14 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-	rayPayload.color = BackgroundColor;
+	//rayPayload.color = BackgroundColor;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
-	rayPayload.hit = false;
+	//rayPayload.hit = false;
 }
 
 //***************************************************************************

@@ -115,7 +115,7 @@ void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 	auto frameCount = m_deviceResources->GetBackBufferCount();
 	int numElements = m_aabbs.size();
 
-	m_aabbPrimitiveAttributeBuffer.Create(device, numElements, frameCount, L" Primitive Attribute Buffer");
+	m_aabbPrimitiveAttributeBuffer.Create(device, numElements, frameCount, L"Primitive Attribute Buffer");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.

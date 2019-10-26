@@ -88,20 +88,20 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 // Remember that a metaball is just a solid sphere. Didn't we already do this somewhere else?
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
-	tmin = INFINITY;
-    tmax = -INFINITY;
+	//tmin = INFINITY;
+ //   tmax = -INFINITY;
 
-	float tminCurr, tmaxCurr;
-	for (int i = 0; i < N_METABALLS; i++) {
-		
-		if (RaySolidSphereIntersectionTest(ray, tminCurr, tmaxCurr, blobs[i].center, blobs[i].radius)) {
-			if (tminCurr < tmin) tmin = tminCurr;
-			if (tmaxCurr > tmax) tmax = tmaxCurr;
-		}
-	}
+	//float tminCurr, tmaxCurr;
+	//for (int i = 0; i < N_METABALLS; i++) {
+	//	
+	//	if (RaySolidSphereIntersectionTest(ray, tminCurr, tmaxCurr, blobs[i].center, blobs[i].radius)) {
+	//		if (tminCurr < tmin) tmin = tminCurr;
+	//		if (tmaxCurr > tmax) tmax = tmaxCurr;
+	//	}
+	//}
 
-	tmin = tminCurr;
-	tmax = tmaxCurr;
+	//tmin = tminCurr;
+	//tmax = tmaxCurr;
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.

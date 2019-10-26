@@ -166,34 +166,35 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	float3 center[3] = { float3(-0.2, 0, -0.2), float3(0.5, 0.5, 0.5), float3(0.2, 0.3, 0.3)};
-	float radius[3] = { 0.7f, 0.2f, 0.5f };
+	//float3 center[3] = { float3(-0.2, 0, -0.2), float3(0.5, 0.5, 0.5), float3(0.2, 0.3, 0.3)};
+	//float radius[3] = { 0.7f, 0.2f, 0.5f };
 
-	thit = RayTCurrent();
+	//thit = RayTCurrent();
 
-	float tmax;
-	float tmin = thit;
-	bool hit = false;
+	//float tmax;
+	//float tmin = thit;
+	//bool hit = false;
 
-	ProceduralPrimitiveAttributes attrMin;
+	//ProceduralPrimitiveAttributes attrMin;
 
-	for (int i = 0; i < 3; i++) {
-		ProceduralPrimitiveAttributes tempAttr;
-		if (RaySphereIntersectionTest(ray, thit, tmax, tempAttr, center[i], radius[i]))
-		{
-			if (thit < tmin) {
-				tmin = tmin;
-				attrMin = tempAttr;
-			}
+	//for (int i = 0; i < 3; i++) {
+	//	ProceduralPrimitiveAttributes tempAttr;
+	//	if (RaySphereIntersectionTest(ray, thit, tmax, tempAttr, center[i], radius[i]))
+	//	{
+	//		if (thit < tmin) {
+	//			tmin = tmin;
+	//			attrMin = tempAttr;
+	//		}
 
-			hit = true;
-		}
-	}
+	//		hit = true;
+	//	}
+	//}
 
-	thit = tmin;
-	attr = attrMin;
+	//thit = tmin;
+	//attr = attrMin;
 
-	return hit;
+	//return hit;
+    return false;
 }
 
 #endif // ANALYTICPRIMITIVES_H
