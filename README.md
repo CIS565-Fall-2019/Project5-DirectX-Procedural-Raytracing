@@ -65,7 +65,7 @@ I tried using Sigmoid function to produce the blur effect for long distance obje
 
 The performance of the render was tested for different values of Recursion depth. Performance is measured in terms of frames per second of the render.
 
-![](images/)
+![](images/performance.PNG)
 
 It can be seen from the figure that the performance decreases with increasing depth. This is because for every render, the ray is traced more number of times. However, after a certain depth, the performance more or less remains same since the ray will most probably bounce into a light source (radiance ray) or become a shadow ray.
 
