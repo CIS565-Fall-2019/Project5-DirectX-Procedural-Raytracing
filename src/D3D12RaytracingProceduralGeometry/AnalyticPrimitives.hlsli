@@ -170,12 +170,13 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	float3 center1 = float3(-0.2, 0, -0.2);
 	float radius1 = 0.7f;
 
-	float3 center2 = float3(-0.4, 0, 0.2);
+	float3 center2 = float3(0.4, 0, 0.5);
 	float radius2 = 0.3f;
 
 	float3 center3 = float3(0.6, 0, 0.8);
 	float radius3 = 0.1f;
 	float ttmp = RayTCurrent();
+    thit = ttmp;
 	ProceduralPrimitiveAttributes attrtmp;
 	bool flag = false;
 	float tmax;

@@ -130,7 +130,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	float step = (tmax - tmin) / 128.0f;
 	for (int i = 1; i <= 128; i++) {
 		float3 position = ray.origin + (tmin + i * step) * ray.direction;
-		if (CalculateMetaballsPotential(position, blobs) > 0.5f) {
+		if (CalculateMetaballsPotential(position, blobs) > 0.15f) {
 			attr.normal = CalculateMetaballsNormal(position, blobs);
 			thit = tmin + i * step;
 			if (is_a_valid_hit(ray, thit, attr.normal))

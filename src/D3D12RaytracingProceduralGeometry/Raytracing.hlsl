@@ -79,17 +79,17 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 
 	float4 diffuseColor = g_sceneCB.lightDiffuseColor;
 	float3 lightDir = normalize(g_sceneCB.lightPosition.xyz - HitWorldPosition());
-	diffuseColor = diffuseCoef * diffuseColor * abs(dot(normal, lightDir));
+	diffuseColor = albedo * diffuseCoef * diffuseColor * clamp(dot(normal, lightDir), 0.0, 1.0);
 	
 	float4 specularColor = float4(g_sceneCB.reflectance, g_sceneCB.reflectance, g_sceneCB.reflectance, 1.0f);
-	specularColor = specularColor * specularCoef * pow(abs(dot(normalize(g_sceneCB.cameraPosition.xyz - HitWorldPosition()), reflect(-lightDir, normal))), specularPower);
+	specularColor = specularColor * specularCoef * pow(abs(dot(normalize(-WorldRayDirection()), reflect(-lightDir, normal))), specularPower);
 	float4 finalColor;
 	if(isInShadow) {
 		finalColor = ambientColor + diffuseColor * InShadowRadiance;
 	} else {
-		finalColor = ambientColor + diffuseColor + specularColor;
+        finalColor = ambientColor + diffuseColor + specularColor;
 	}
-
+    finalColor.w = 1.0f;
     return finalColor;
 }
 
@@ -149,6 +149,12 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
+
+    if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+    {
+        return false;
+    }
+
     //wtf
 	RayDesc rayDesc;
     rayDesc.Origin = ray.origin;
@@ -241,13 +247,9 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
-	float t = RayTCurrent() - 10000.0f;
-	if(t > 0.0f) {
-		t = min(t / 10000.0f, 1.0f);
-		rayPayload.color = lerp(color, float4(0.05f, 0.5f, 0.55f, 1.0f), t);
-	} else {
-		rayPayload.color = color;
-	}
+    float t = RayTCurrent();
+    color = lerp(color, float4(0.05f, 0.5f, 0.55f, 1.0f), 1 - exp(-0.00001*pow(t, 2.0f)));
+    rayPayload.color = color;
 }
 
 // TODO: Write the closest hit shader for a procedural geometry.
@@ -297,13 +299,9 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
-	float t = RayTCurrent() - 10000.0f;
-	if(t > 0.0f) {
-		t = min(t / 10000.0f, 1.0f);
-		rayPayload.color = lerp(color, float4(0.05f, 0.5f, 0.55f, 1.0f), t);
-	} else {
-		rayPayload.color = color;
-	}
+    float t = RayTCurrent();
+    color = lerp(color, float4(0.05f, 0.5f, 0.55f, 1.0f), 1 - exp(-0.00001*pow(t, 2.0f)));
+    rayPayload.color = color;
 }
 
 //***************************************************************************
