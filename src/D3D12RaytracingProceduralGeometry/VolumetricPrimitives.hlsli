@@ -26,14 +26,16 @@ float CalculateMetaballPotential(in float3 position, in Metaball blob)
 
 	// How far from the center are we
 	float dist = distance(position, blob.center);
-	
-	// Our function will be 0 for input 0 and 1 for input 1
-	// So clamp the distance ratio to avoid branches
-	dist = dist / blob.radius;
-	dist = clamp(dist, 0, 1);
 
-	pot = (6 * pow(dist, 5)) - (15 * pow(dist, 4)) + (10 * pow(dist, 3));
-	
+	if (dist >= blob.radius) {
+		pot = 0.0f;
+	}
+	else {
+		// the ratio of the distance from the center to the radius.
+		float x = (blob.radius - dist) / blob.radius;
+		pot = (6 * pow(x, 5)) - (15 * pow(x, 4)) + (10 * pow(x, 3));
+	}
+
 	return pot;
 }
 
@@ -137,8 +139,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
 
 	// 1) Initialize a metaball array. See InitializeAnimatedMetaballs()
-	InitializeAnimatedMetaballs(blobs, elapsedTime, 10); // Can't find a defined cycle duration
-	// TODO-JOHN: Find one.
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 10); // duration can be whatever according to piaz
 
 	// 2) Test intersections on the metaballs to find the minimum t and the maximum t to raymarch between.
 	TestMetaballsIntersection(ray, tmin, tmax, blobs);
@@ -154,12 +155,15 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	const float THRESHOLD = 0.5;
 	const UINT STEPS = 128;
 	float marchDist = tmax - tmin;
+	float delta = marchDist / STEPS;
 	float pot = 0.0f;
 	float3 normal;
+	float3 posStart = ray.origin;
+	float posAlongRay = tmin;
 
 	// Step through...
-	for (UINT i = 0; i < STEPS; i++) {
-		float pos = tmin + ((i / STEPS)*marchDist);
+	for (UINT i = 0; i < STEPS; i++, posAlongRay += delta) {
+		float3 pos = posStart + posAlongRay * ray.direction;
 
 		// And calculate the potential.
 		pot = CalculateMetaballsPotential(pos, blobs);
@@ -167,8 +171,8 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 		// If the potential is greater than some threshold + is valid, render it
 		if (pot > THRESHOLD) {
 			normal = CalculateMetaballsNormal(pos, blobs);
-			if (is_a_valid_hit(ray, pos, normal)) {
-				thit = pos;
+			if (is_a_valid_hit(ray, posAlongRay, normal)) {
+				thit = posAlongRay;
 				attr.normal = normal;
 				hit = true;
 				break;
