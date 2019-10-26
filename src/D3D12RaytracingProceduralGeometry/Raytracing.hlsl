@@ -279,6 +279,13 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
+	
+	// Interpolate between final color and background color
+	// lerp(x, y, s)  --> x*(1-s) + y*s
+	// Want far to be closer to 1, near closer to 0
+	// So a power of sorts?
+	float far = RayTCurrent();
+	color = lerp(color, BackgroundColor, 1.0f - exp(-0.01 * far));
 
     rayPayload.color = color;
 }
@@ -297,7 +304,50 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
+	float4 tmpColor;
 
+	// Relevant positions
+	float3 pos = HitWorldPosition();
+	float3 lightpos = g_sceneCB.lightPosition.xyz;
+
+	// (1) Trace a shadow ray to determine if this ray is a shadow ray.
+	// TraceShadowRayAndReportIfHit()
+	Ray shadowray;
+	shadowray.origin = pos;
+	shadowray.direction = normalize(lightpos - pos);
+	bool shadowHit = TraceShadowRayAndReportIfHit(shadowray, rayPayload.recursionDepth);
+
+	// (2) Trace a reflectance ray --> compute the reflected color.
+	Ray reflRay;
+	reflRay.origin = pos;
+	reflRay.direction = normalize(reflect(pos, attr.normal));
+	float4 reflColor = TraceRadianceRay(reflRay, rayPayload.recursionDepth);
+	float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), attr.normal, l_materialCB.albedo.xyz);
+	reflColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflColor;
+
+	// (3) Use the fact that your ray is a shadow ray or not to compute the Phong lighting.
+	float4 phongLighting = CalculatePhongLighting(
+		l_materialCB.albedo,
+		attr.normal,
+		shadowHit,
+		l_materialCB.diffuseCoef,  // Bunch of stuff from constant buffers
+		l_materialCB.specularCoef,
+		l_materialCB.specularPower
+	);
+
+	// (4) Combine the reflect color and the phong color into one color.
+	tmpColor = phongLighting + reflColor;
+
+	// (5) Apply visibility falloff to select some interpolation between the computed color or the background color
+	// Interpolate between final color and background color
+	// lerp(x, y, s)  --> x*(1-s) + y*s
+	// Want far to be closer to 1, near closer to 0
+	// So a power of sorts?
+	float far = RayTCurrent();
+	tmpColor = lerp(tmpColor, BackgroundColor, 1.0f - exp(-0.01 * far));
+
+	// (6) Fill the payload color with whatever final color you computed
+	rayPayload.color = tmpColor;
 }
 
 //***************************************************************************
