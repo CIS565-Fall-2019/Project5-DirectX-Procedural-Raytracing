@@ -308,6 +308,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 
 	// Relevant positions
 	float3 pos = HitWorldPosition();
+	float3 direction = WorldRayDirection();
 	float3 lightpos = g_sceneCB.lightPosition.xyz;
 
 	// (1) Trace a shadow ray to determine if this ray is a shadow ray.
@@ -318,12 +319,18 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	bool shadowHit = TraceShadowRayAndReportIfHit(shadowray, rayPayload.recursionDepth);
 
 	// (2) Trace a reflectance ray --> compute the reflected color.
+	float4 reflColor;
 	Ray reflRay;
 	reflRay.origin = pos;
-	reflRay.direction = normalize(reflect(pos, attr.normal));
-	float4 reflColor = TraceRadianceRay(reflRay, rayPayload.recursionDepth);
+	reflRay.direction = normalize(reflect(direction, attr.normal));
+	reflColor = TraceRadianceRay(reflRay, rayPayload.recursionDepth);
+		
+	// Apply fresnel
 	float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), attr.normal, l_materialCB.albedo.xyz);
+
+	// Update Color
 	reflColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflColor;
+
 
 	// (3) Use the fact that your ray is a shadow ray or not to compute the Phong lighting.
 	float4 phongLighting = CalculatePhongLighting(
