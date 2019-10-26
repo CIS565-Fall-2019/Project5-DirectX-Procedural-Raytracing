@@ -6,7 +6,7 @@ Project 5 - DirectX Procedural Raytracing**
 
 ## DirectX Procedural Raytracing
 <p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/camera_geo_light_anime.gif"></p>
-
+ 
 ## Introduction
 
 <p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/raytrace.jpg" width="400"></p>
@@ -35,7 +35,7 @@ Project 5 - DirectX Procedural Raytracing**
 ### Effect of Distance Fog
 <p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/without_fog_after3.6.PNG" width="600"></p>
 
-## Performance Analysis: FPS with Ray Depth
+## Performance Analysis
 <p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/fps_ray_depth.png" width="600"></p>
 
 ## Bloopers
