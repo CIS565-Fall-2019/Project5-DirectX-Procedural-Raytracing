@@ -39,8 +39,8 @@ void DXProceduralProject::CreateRootSignatures()
                 //      t registers --> SRV
                 //      b registers --> CBV
 		CD3DX12_ROOT_PARAMETER rootParameters[GlobalRootSignature::Slot::Count];
-		rootParameters[GlobalRootSignature::Slot::OutputView].InitAsUnorderedAccessView(0);
-		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsShaderResourceView(1);
+		rootParameters[GlobalRootSignature::Slot::OutputView].InitAsDescriptorTable(1, &ranges[0]);
+		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(1, &ranges[1]);
 		rootParameters[GlobalRootSignature::Slot::AccelerationStructure].InitAsShaderResourceView(0);
 		rootParameters[GlobalRootSignature::Slot::SceneConstant].InitAsConstantBufferView(0);
 		rootParameters[GlobalRootSignature::Slot::AABBattributeBuffer].InitAsShaderResourceView(3);
@@ -72,7 +72,14 @@ void DXProceduralProject::CreateRootSignatures()
                 //      to register 1, this overlap is allowed since we are talking about *local* root signatures 
 		//      --> the values they hold will depend on the shader function the local signature is bound to!
 		{
-			
+			namespace RootSignatureSlots = LocalRootSignature::AABB::Slot;
+			CD3DX12_ROOT_PARAMETER rootParameters[RootSignatureSlots::Count];
+			rootParameters[RootSignatureSlots::MaterialConstant].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 1);
+			rootParameters[RootSignatureSlots::GeometryIndex].InitAsConstants(SizeOfInUint32(PrimitiveConstantBuffer), 2);
+
+			CD3DX12_ROOT_SIGNATURE_DESC localRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);
+			localRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+			SerializeAndCreateRaytracingRootSignature(localRootSignatureDesc, &m_raytracingLocalRootSignature[LocalRootSignature::Type::AABB]);
 		}
 	}
 }

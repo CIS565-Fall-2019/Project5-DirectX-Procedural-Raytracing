@@ -32,8 +32,10 @@ void DXProceduralProject::BuildShaderTables()
 		// TODO-2.7: Miss shaders.
 		// Similar to the raygen shader, but now we  have 1 for each ray type (radiance, shadow)
 		// Don't forget to update shaderIdToStringMap.
-		missShaderIDs[0] = nullptr;
-		missShaderIDs[1] = nullptr;
+		missShaderIDs[0] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[0]);
+		shaderIdToStringMap[missShaderIDs[0]] = c_missShaderNames[0];
+		missShaderIDs[1] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[1]);
+		shaderIdToStringMap[missShaderIDs[1]] = c_missShaderNames[1];
 
 		// Hitgroup shaders for the Triangle. We have 2: one for radiance ray, and another for the shadow ray.
 		for (UINT i = 0; i < RayType::Count; i++)
@@ -43,7 +45,14 @@ void DXProceduralProject::BuildShaderTables()
 		}
 
 		// TODO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
-		
+		for (UINT j = 0; j < IntersectionShaderType::Count; j++)
+		{
+			for (UINT i = 0; i < RayType::Count; i++)
+			{
+				hitGroupShaderIDs_AABBGeometry[j][i] = stateObjectProperties->GetShaderIdentifier(c_hitGroupNames_AABBGeometry[j][i]);
+				shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[j][i]] = c_hitGroupNames_AABBGeometry[j][i];
+			}
+		}
 	};
 
 	// Get shader identifiers using the lambda function defined above.
@@ -95,7 +104,20 @@ void DXProceduralProject::BuildShaderTables()
 	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	{
-		
+		UINT numShaderRecords = 2;
+		UINT shaderRecordSize = shaderIDSize; // No root arguments
+
+		// The RayGen shader table contains a single ShaderRecord: the one single raygen shader!
+		ShaderTable missShaderTable(device, numShaderRecords, shaderRecordSize, L"RayMissShaderTable");
+
+		// Push back the shader record, which does not need any root signatures.
+		missShaderTable.push_back(ShaderRecord(missShaderIDs[0], shaderRecordSize, nullptr, 0));
+		missShaderTable.push_back(ShaderRecord(missShaderIDs[1], shaderRecordSize, nullptr, 0));
+
+		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
+		missShaderTable.DebugPrint(shaderIdToStringMap);
+		m_missShaderTableStrideInBytes = missShaderTable.GetShaderRecordSize();
+		m_missShaderTable = missShaderTable.GetResource();
 	}
 
 	// Hit group shader table. This one is slightly different given that a hit group requires its own custom root signature.
