@@ -6,6 +6,9 @@
 
 #include "RaytracingShaderHelper.hlsli"
 
+#define NUMSTEPS 128
+#define THRESH 0.15f
+
 // LOOKAT-1.9.4: Shockingly, a metaball is just a sphere!
 struct Metaball
 {
@@ -13,7 +16,7 @@ struct Metaball
     float  radius;
 };
 
-// TODO-3.4.2: Calculate a magnitude of an influence from a Metaball charge.
+// TDO-3.4.2: Calculate a magnitude of an influence from a Metaball charge.
 // This function should return a metaball potential, which is a float in range [0,1].
 // 1) If the point is at the center, the potential is maximum = 1.
 // 2) If it is at the radius or beyond, the potential is 0.
@@ -22,7 +25,14 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+    float3 distvec = blob.center - position;
+    float dist = sqrt(distvec.x * distvec.x + distvec.y * distvec.y + distvec.z * distvec.z);
+    if (dist > blob.radius)
+    {
+        return 0.0f;
+    }
+    float r = 1.0 - (dist / blob.radius);
+    return 6*r*r*r*r*r - 15*r*r*r*r + 10*r*r*r;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -77,15 +87,23 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
     }
 }
 
-// TODO-3.4.2: Find the entry and exit points for all metaball bounding spheres combined.
+// TDO-3.4.2: Find the entry and exit points for all metaball bounding spheres combined.
 // Remember that a metaball is just a solid sphere. Didn't we already do this somewhere else?
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
-}
 
-// TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
+    for (UINT i = 0; i < N_METABALLS; i++)
+    {
+        float localtmin, localtmax;
+        SolveRaySphereIntersectionEquation(ray, localtmin, localtmax, blobs[i].center, blobs[i].radius);
+        if (localtmin < tmin) tmin = localtmin;
+        if (localtmax > tmax) tmax = localtmax;
+                
+    }
+}
+// TDO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
 // The test sphere traces through the metaball field until it hits a threshold isosurface.
 // Returns true if we found a point. False otherwise.
 // 1) Initialize a metaball array. See InitializeAnimatedMetaballs()
@@ -100,9 +118,31 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
-    return false;
+    Metaball blobs[N_METABALLS];
+    InitializeAnimatedMetaballs(blobs, elapsedTime, 1.0f);//TODO: figure out this cycle time stuff
+    float tmin, tmax;
+    TestMetaballsIntersection(ray, tmin, tmax, blobs);
+    if (tmin == INFINITY || tmax == -INFINITY) return false;//did not hit any metaballs
+    float tdiff = tmax - tmin;
+    float tdelta = tdiff / NUMSTEPS;
+
+    bool didHit = false;
+    float curT = tmin;
+    for (int i = 0; i < NUMSTEPS; i++)
+    {
+        curT += tdelta;
+        float potential = CalculateMetaballsPotential(ray.origin + ray.direction * curT, blobs);
+        if (potential > THRESH)
+        {//taking the first hit on our raymarch that breaks the potential
+            didHit = true;
+            
+            break;
+        }
+    }
+    if (!didHit) return false;
+    thit = curT;
+    attr.normal = CalculateMetaballsNormal(ray.origin + ray.direction * thit, blobs);
+    return is_a_valid_hit(ray, thit, attr.normal);
 }
 
 #endif // VOLUMETRICPRIMITIVESLIBRARY_H

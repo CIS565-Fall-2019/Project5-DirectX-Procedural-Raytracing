@@ -145,7 +145,7 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 
     if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
     {
-        return float4(0, 0, 0, 0);
+		return false;
     }
     RayDesc rayDesc;
     rayDesc.Origin = ray.origin;
@@ -153,12 +153,15 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
     rayDesc.TMin = 0;
     rayDesc.TMax = 10000;
 
-    ShadowRayPayload rayPayload = { true };
+    ShadowRayPayload rayPayload;
+    rayPayload.hit = true;
 
     return false;
-                
+
+    RAY_FLAG shadowFlags = RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_FORCE_OPAQUE; 
+
     TraceRay(g_scene,
-        RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+        shadowFlags,
         TraceRayParameters::InstanceMask,
         TraceRayParameters::HitGroup::Offset[RayType::Shadow],//1
         TraceRayParameters::HitGroup::GeometryStride,
@@ -359,6 +362,22 @@ void MyIntersectionShader_AnalyticPrimitive()
 [shader("intersection")]
 void MyIntersectionShader_VolumetricPrimitive()
 {
+    Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+    float thit;
+    ProceduralPrimitiveAttributes attr;
+
+        
+        if (RayMetaballsIntersectionTest(localRay, thit, attr, 0))//TODO: find out how to get elapsedTime for this method
+        {
+            PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+            
+            // Make sure the normals are stored in BLAS space and not the local space
+            attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+            attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+
+            // thit is invariant to the space transformation
+            ReportHit(thit, /*hitKind*/ 0, attr);
+        }
 
 }
 #endif // RAYTRACING_HLSL
