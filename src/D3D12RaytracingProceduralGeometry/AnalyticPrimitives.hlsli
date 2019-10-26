@@ -186,6 +186,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 		}
 	}
 	return hit;
+	
 }
 
 #endif // ANALYTICPRIMITIVES_H

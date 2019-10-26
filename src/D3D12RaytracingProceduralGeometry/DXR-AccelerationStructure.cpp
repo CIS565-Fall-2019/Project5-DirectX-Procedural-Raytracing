@@ -322,6 +322,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 
 	// TODO-2.6: fill in the topLevelBuildDesc. Read about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
+	topLevelInputs.InstanceDescs = instanceDescsResource->GetGPUVirtualAddress();
 	topLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
 	topLevelBuildDesc.DestAccelerationStructureData = topLevelAS->GetGPUVirtualAddress();
 

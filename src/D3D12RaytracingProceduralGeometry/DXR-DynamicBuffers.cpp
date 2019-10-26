@@ -113,8 +113,9 @@ void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
 	auto device = m_deviceResources->GetD3DDevice();
 	auto num_elements = m_aabbs.size();
-		
-	m_aabbPrimitiveAttributeBuffer.Create(device, num_elements, 1, L"Scene Structured Buffer");
+	auto frameCount = m_deviceResources->GetBackBufferCount();
+
+	m_aabbPrimitiveAttributeBuffer.Create(device, num_elements, frameCount, L"Scene Structured Buffer");
 
 }
 

@@ -15,23 +15,20 @@ struct Metaball
 
 // TODO-3.4.2: Calculate a magnitude of an influence from a Metaball charge.
 // This function should return a metaball potential, which is a float in range [0,1].
-// 1) If the point is at the center, the potential is maximum = 1.
-// 2) If it is at the radius or beyond, the potential is 0.
+//  1) If the point is at the center, the potential is maximum = 1.f
+// 2)  it is at the radius or beyond, the potential is 0.ff
 // 3) In between (i.e the distance from the center is between 0 and radius), consider using the a
 //		quintic polynomial field function of the form 6x^5 - 15x^4 + 10x^3, such that x is the ratio 
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-	/*if (position == blob.center) {
-		return 1.0f;
-	}*/
 	float dist = distance(position, blob.center);
 	if (dist >= blob.radius) {
 		return 0.0f;
 	}
 	float ratio = dist / blob.radius;
-	float potential = 6 * pow(ratio, 5) - 15 * pow(ratio, 4) + 10 * pow(ratio, 3);
-    return potential;
+	float potential = 6 * pow(1 - ratio, 5) - 15 * pow(1 - ratio, 4) + 10 * pow(1 - ratio, 3);
+	return potential;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -71,11 +68,11 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
     {
         { float3(-0.3, -0.3, -0.4),float3(0.3,-0.3,-0.0) }, // begin center --> end center
         { float3(0.0, -0.2, 0.5), float3(0.0, 0.4, 0.5) },
-        { float3(0.4,0.4, 0.4), float3(-0.4, 0.2, -0.4) }
+        { float3(0.4,0.4, 0.4), float3(-0.4, 0.2, -0.4) },
     };
 
     // Metaball field radii of max influence
-    float radii[N_METABALLS] = { 0.45, 0.55, 0.45 };
+    float radii[N_METABALLS] = { 0.6, 0.8, 0.7 };
 
     // Calculate animated metaball center positions.
 	float tAnimate = CalculateAnimationInterpolant(elapsedTime, cycleDuration);
@@ -91,8 +88,8 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
 	tmin = INFINITY;
-    tmax = -INFINITY;
-	
+	tmax = -INFINITY;
+
 	for (UINT i = 0; i < N_METABALLS; i++) {
 		float curr_thit, curr_tmax;
 		if (RaySolidSphereIntersectionTest(ray, curr_thit, curr_tmax, blobs[i].center, blobs[i].radius)) {
@@ -129,7 +126,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	UINT MAXIMUM_STEPS = 128;
 	float t = tmin;
 	float step = (tmax - tmin) / MAXIMUM_STEPS;
-	float threshold = 0.3f;
+	float threshold = 0.9f;
 	while (t < tmax) {
 		float3 pos = ray.origin + t * ray.direction;
 		float total_potential = CalculateMetaballsPotential(pos, blobs);
@@ -143,7 +140,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 		}
 		t += step;
 	}
-    return false;
+	return false;
 }
 
 #endif // VOLUMETRICPRIMITIVESLIBRARY_H
