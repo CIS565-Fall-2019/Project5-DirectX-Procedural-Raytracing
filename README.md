@@ -5,6 +5,8 @@ Project 5 - DirectX Procedural Raytracing**
   * [LinkedIn](https://www.linkedin.com/in/somanshu25)
 * Tested on: Windows 10, i7-6700 @ 3.4GHz 16GB, Quadro P1000 4GB (Moore 100B Lab)
 
+![](https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/gif_scene_new.gif)
+
 ### Table of Contents
 
 1. [Introduction](#Introduction)
@@ -42,3 +44,15 @@ The performance analysis of FPS with varying the depth is shown below:
 <p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/imageChart.png" width="700"/></p>
 
 We see that the FPS is decreasing as we are increasing the maximum depth of the ray which is expected.
+
+### Bloopers
+
+Some of the bloopers are below:
+
+1. The folwwing happened when I was calculating the potential for the Metaball. I was creating the inverse functino from cetner to radii but should have been the opposite.
+
+<p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/capture2.PNG" width="600"/></p>
+
+2. Also, I didn't have the linear interpolate function correctly because of which I couldn't differentiate between the lan and the background.
+
+<p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/capture_no_plane_background_diff.PNG" width="600"/></p>
