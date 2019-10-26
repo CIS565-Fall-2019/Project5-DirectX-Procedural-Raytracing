@@ -73,13 +73,13 @@ void DXProceduralProject::DoRaytracing()
 		dispatchDesc->HitGroupTable.SizeInBytes = m_hitGroupShaderTable->GetDesc().Width;
 		// TODO-2.8: now fill in dispatchDesc->MissShaderTable
 		//m_missShaderTable
-        dispatchDesc->MissShaderTable.StartAddress = m_missShaderTable.Get()->GetGPUVirtualAddress();
+        dispatchDesc->MissShaderTable.StartAddress = m_missShaderTable->GetGPUVirtualAddress();
         dispatchDesc->MissShaderTable.StrideInBytes = m_missShaderTableStrideInBytes;
         dispatchDesc->MissShaderTable.SizeInBytes = m_missShaderTable->GetDesc().Width;
 		// TODO-2.8: now fill in dispatchDesc->RayGenerationShaderRecord
 		//m_RayGenerationShaderTable
 		//only start address and size
-        dispatchDesc->RayGenerationShaderRecord.StartAddress = m_rayGenShaderTable.Get()->GetGPUVirtualAddress();
+        dispatchDesc->RayGenerationShaderRecord.StartAddress = m_rayGenShaderTable->GetGPUVirtualAddress();
         dispatchDesc->RayGenerationShaderRecord.SizeInBytes = m_rayGenShaderTable->GetDesc().Width;
 		
 

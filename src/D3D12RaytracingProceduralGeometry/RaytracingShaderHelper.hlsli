@@ -133,12 +133,15 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 {
 	Ray ray;
     ray.origin = cameraPosition;
-    //we know the width and height from main
-    int width = 720;
-    int height = 1280;
-    float4 ndc_pos = float4((index.x + width / 2.0f) / width, (index.x + height / 2.0f) / height, 1.0f, 1.0f);
-    float4 world_pos = mul(projectionToWorld, ndc_pos);
-	ray.direction = normalize(world_pos.xyz - ray.origin);//project from pixel world position to ray origin
+    //we know the width and height from dispatchRaysDimension
+    //helped tremendously by Jiangping and Ziad
+    uint3 screensize = DispatchRaysDimensions();
+    float width = screensize.x;
+    float height = screensize.y;
+    //we add the far clip into account
+    float4 ndc_pos = float4(125.0f * (2.0f * index.x  / width - 1.0f), 125.0f * (1.0 - 2.0f * index.y / height), 125.0f * 1.0f, 125.0f * 1.0f);
+    float4 world_pos = mul(ndc_pos, projectionToWorld); //column major
+	ray.direction = normalize(float3(world_pos.x, world_pos.y, world_pos.z) - ray.origin);//project from pixel world position to ray origin
 
     return ray;
 }

@@ -138,8 +138,8 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
 
     //should the actual bottom-level AS desc be the destination?
-    bottomLevelBuildDesc.ScratchAccelerationStructureData = scratch.Get()->GetGPUVirtualAddress();
-    bottomLevelBuildDesc.DestAccelerationStructureData = bottomLevelAS.Get()->GetGPUVirtualAddress();
+    bottomLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
+    bottomLevelBuildDesc.DestAccelerationStructureData = bottomLevelAS->GetGPUVirtualAddress();
 
 	// Fill up the command list with a command that tells the GPU how to build the bottom-level AS.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -216,26 +216,24 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 
     //not sure how to do this part
 	{
-		const XMUINT3 NUM_AABB = XMUINT3(3, 1, 3);
-		const XMFLOAT3 fWidth = XMFLOAT3(
-			NUM_AABB.x * c_aabbWidth + (NUM_AABB.x - 1) * c_aabbDistance,
-			NUM_AABB.y * c_aabbWidth + (NUM_AABB.y - 1) * c_aabbDistance,
-			NUM_AABB.z * c_aabbWidth + (NUM_AABB.z - 1) * c_aabbDistance);
-		const XMVECTOR vWidth = XMLoadFloat3(&fWidth);
+		//const XMUINT3 NUM_AABB = XMUINT3(3, 1, 3);
+		//const XMFLOAT3 fWidth = XMFLOAT3(
+		//	NUM_AABB.x * c_aabbWidth + (NUM_AABB.x - 1) * c_aabbDistance,
+		//	NUM_AABB.y * c_aabbWidth + (NUM_AABB.y - 1) * c_aabbDistance,
+		//	NUM_AABB.z * c_aabbWidth + (NUM_AABB.z - 1) * c_aabbDistance);
+		//const XMVECTOR vWidth = XMLoadFloat3(&fWidth);
 
         auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
         instanceDesc = {};
         instanceDesc.InstanceMask = 1; // If the value is zero, then the instance will never be included, so typically this should be set to some non-zero value. 
-        instanceDesc.InstanceContributionToHitGroupIndex = GeometryType::Enum::Count * RayType::Count; //triagles and AABBs, we can add more if we want 
+        instanceDesc.InstanceContributionToHitGroupIndex = 2;//GeometryType::Enum::Count * RayType::Count; //triagles and AABBs, we can add more if we want 
         instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 
-        const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(-0.5f, 0.0f, -0.5f));
+        const XMVECTOR vBasePosition = c_aabbWidth * XMLoadFloat3(&XMFLOAT3(-0.5f, 0.0f, -0.5f));
 
-		// Scale in XZ dimensions.
-		XMMATRIX mScale = XMMatrixScaling(fWidth.x, fWidth.y, fWidth.z);
 		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
-		XMMATRIX mTransform = mScale * mTranslation;
+		XMMATRIX mTransform = mTranslation;
 
 		// Store the transform in the instanceDesc.
 		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
@@ -351,12 +349,12 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 
 	// TODO-2.6: fill in the topLevelBuildDesc. Read about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
-    topLevelBuildDesc.ScratchAccelerationStructureData = scratch.Get()->GetGPUVirtualAddress();
+    topLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
 
 	//TODO-2.6(Mark), set up the last element instanceDescs of topLevelBuildDesc here after we populate instanceDescsResource
-	topLevelInputs.InstanceDescs = instanceDescsResource.Get()->GetGPUVirtualAddress();
+	topLevelInputs.InstanceDescs = instanceDescsResource->GetGPUVirtualAddress();
 
-    topLevelBuildDesc.DestAccelerationStructureData = topLevelAS.Get()->GetGPUVirtualAddress();
+    topLevelBuildDesc.DestAccelerationStructureData = topLevelAS->GetGPUVirtualAddress();
 
 	// Build acceleration structure.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -404,7 +402,7 @@ void DXProceduralProject::BuildAccelerationStructures()
     for (UINT idx = 0; idx < BottomLevelASType::Count; ++idx)
     {
         //what build flag should we use or just default?
-        bottomLevelAS[idx] = BuildBottomLevelAS(geometryDescs[idx], D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE);
+        bottomLevelAS[idx] = BuildBottomLevelAS(geometryDescs[idx], D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE);
     }
 
 	// Batch all resource barriers for bottom-level AS builds.
@@ -418,7 +416,7 @@ void DXProceduralProject::BuildAccelerationStructures()
 
 	// TODO-2.6: Build top-level AS. Hint, you already made a function that does this.
 	AccelerationStructureBuffers topLevelAS;
-    topLevelAS = BuildTopLevelAS(bottomLevelAS, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE);
+    topLevelAS = BuildTopLevelAS(bottomLevelAS, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE);
 
 	// Kick off acceleration structure construction.
 	m_deviceResources->ExecuteCommandList();
