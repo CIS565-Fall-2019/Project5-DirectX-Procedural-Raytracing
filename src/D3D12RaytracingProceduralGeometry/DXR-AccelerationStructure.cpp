@@ -369,7 +369,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	// Very similar to how you did this in BuildBottomLevelAS() except now you have to worry about topLevelASBuffers.instanceDesc.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h.
 	// Make sure to return the topLevelASBuffers before you exit the function.
-	return return AccelerationStructureBuffers{ scratch, topLevelAS, instanceDescsResource, topLevelPrebuildInfo.ResultDataMaxSizeInBytes};
+	return AccelerationStructureBuffers{ scratch, topLevelAS, instanceDescsResource, topLevelPrebuildInfo.ResultDataMaxSizeInBytes};
 }
 
 // TODO-2.6: This will wrap building the Acceleration Structure! This is what we will call when building our scene.
