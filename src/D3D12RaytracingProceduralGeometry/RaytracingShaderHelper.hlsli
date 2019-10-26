@@ -137,9 +137,9 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 	Ray ray;
 	uint3 screensize = DispatchRaysDimensions();
     ray.origin = cameraPosition;
-	float4 p_ndc = float4((2.0f * index[0] / screensize.x - 1.0f), (1.0f - 2.0f * index[1] / screensize.y), 1.0f, 1.0f);
+	float4 p_ndc = float4(125.0f*(2.0f * index[0] / screensize.x - 1.0f), 125.0f*(1.0f - 2.0f * index[1] / screensize.y), 125.0f*1.0f, 125.0f*1.0f);
 	p_ndc = mul(p_ndc, projectionToWorld);
-	ray.direction = normalize(float3(p_ndc.x, p_ndc.y, p_ndc.z)/* - cameraPosition*/);
+	ray.direction = normalize(float3(p_ndc.x, p_ndc.y, p_ndc.z) - cameraPosition);
 
     return ray;
 }
@@ -149,7 +149,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-    return float3(0.0f, 0, 0);//f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow(1.0f - dot(N, I), 5.0f);
+    return f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow(1.0f - abs(dot(N, I)), 5.0f);
 }
 
 #endif // RAYTRACINGSHADERHELPER_H

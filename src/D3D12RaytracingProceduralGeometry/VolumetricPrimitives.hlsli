@@ -122,7 +122,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
     //wtf
-    /*
+    
 	Metaball blobs[N_METABALLS];
 	InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f);
 	float tmin, tmax;
@@ -137,7 +137,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 				return true;
 		}
 	}
-    */
+    
     return false;
 }
 

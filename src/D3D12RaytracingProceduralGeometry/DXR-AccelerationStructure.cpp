@@ -211,16 +211,18 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
 		instanceDesc.InstanceMask = 1;
-		instanceDesc.InstanceContributionToHitGroupIndex = GeometryType::Enum::Count * RayType::Count;
+		instanceDesc.InstanceContributionToHitGroupIndex = 2;// GeometryType::Enum::Count * RayType::Count;
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
         
-        const XMVECTOR vBasePosition = c_aabbWidth * XMLoadFloat3(&XMFLOAT3(0.0f, 0.5f, 0.0f));
+		const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(-0.5f, 0.5f, -0.5f));
 
-        // To see about the scaling later on 
-        //XMMATRIX mScale = XMMatrixScaling(fWidth.x, fWidth.y, fWidth.z);
-        XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
-        XMMATRIX mTransform = mTranslation;
-        XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
+		// Scale in XZ dimensions.
+		XMMATRIX mScale = XMMatrixScaling(fWidth.x, fWidth.y, fWidth.z);
+		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
+		XMMATRIX mTransform = mScale * mTranslation;
+
+		// Store the transform in the instanceDesc.
+		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
 	}
 
 	// Upload all these instances to the GPU, and make sure the resouce is set to instanceDescsResource.
@@ -329,7 +331,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	// TODO-2.6: fill in the topLevelBuildDesc. Read about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
 	topLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
-	topLevelInputs.InstanceDescs = instanceDescsResource.Get()->GetGPUVirtualAddress();
+	topLevelInputs.InstanceDescs = instanceDescsResource->GetGPUVirtualAddress();
 	topLevelBuildDesc.DestAccelerationStructureData = topLevelAS->GetGPUVirtualAddress();
 
 	// Build acceleration structure.
