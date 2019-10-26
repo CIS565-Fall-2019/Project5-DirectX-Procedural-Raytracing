@@ -7,6 +7,8 @@ Project 5 - DirectX Procedural Raytracing**
 
 ### Highlights
 
+![](images/three_spheres1.gif)
+
 ### Contents
 
 - Ray Tracing
