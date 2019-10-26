@@ -8,9 +8,9 @@ Project 5 - DirectX Procedural Raytracing**
 ### Table of Contents
 
 1. [Introduction](#Introduction)
-2. [RayTracing](#Ray-Tracing)
-3. [Code Section](#Code)
-4. [Performace Analysis](#Performace-Analysis)
+2. [RayTracing](#RayTracing)
+3. [Code Section](#Code Section)
+4. [Performace Analysis](#Performace Analysis)
 5. [Bloopers](#Bloopers)
 
 ### Introduction
