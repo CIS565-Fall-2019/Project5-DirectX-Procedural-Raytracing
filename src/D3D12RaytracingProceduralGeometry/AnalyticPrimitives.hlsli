@@ -165,8 +165,9 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 // You can hardcode the local centers/radii of the spheres, just try to maintain them between 1 and -1 (and > 0 for the radii).
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
-    float3 centers[3] = { float3(-0.2, 0, -0.2) , float3(0.2, 0.2, 0.2) ,float3(0.5, 0.5, 0.5) };
-    float radius[3] = { 0.3f , 0.5f, 0.15f };
+    
+    float3 centers[3] = { float3(-0.2, 0, -0.2) , float3(0.6, 0.6, 0.6) ,float3(0.6, -0.6, 0.7) };
+    float radius[3] = { 0.4f , 0.25f, 0.2f };
 
     thit = RayTCurrent();
 
@@ -179,7 +180,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
     {
 
         ProceduralPrimitiveAttributes attr2;
-        if (RaySphereIntersectionTest(ray, thit, tmax, attr2, centers[i, radius[i]]))
+        if (RaySphereIntersectionTest(ray, thit, tmax, attr2, centers[i], radius[i]))
         {
             if (thit < tmin) {
                 tmin = thit;
@@ -191,6 +192,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 
     thit = tmin;
     return hit;
+    
 }
 
 #endif // ANALYTICPRIMITIVES_H

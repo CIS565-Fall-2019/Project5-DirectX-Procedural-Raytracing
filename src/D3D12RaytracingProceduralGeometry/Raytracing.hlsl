@@ -181,7 +181,8 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
         rayDesc, rayPayload);
 
     return rayPayload.hit;
-
+    
+    //return false;
 }
 
 //***************************************************************************
@@ -275,6 +276,7 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
+    
     float3 hitPosition = HitWorldPosition();
 
     Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
@@ -299,6 +301,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     float t = RayTCurrent();
     color = lerp(color, BackgroundColor, 1 - exp(-0.000001*pow(t, 3.0f)));
     rayPayload.color = color;
+    
 }
 
 //***************************************************************************

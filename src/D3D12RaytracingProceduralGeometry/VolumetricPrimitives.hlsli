@@ -22,18 +22,6 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    /*
-    if (position.x == blob.center.x && position.y == blob.center.y && position.z == blob.center.z)
-        return 1.0f;
-
-    float dist = distance(position, blob.center);
-    if (dist >= blob.radius)
-        return 0.0f;
-
-    float x = dist / blob.radius;
-    float value = 6.0f * pow(x, 5.0f) - 15.0f * pow(x, 4.0f) + 10 * pow(x, 3.0f);
-
-    return value;*/
 
     float distance = length(position - blob.center);
     if (distance >= blob.radius)
@@ -137,6 +125,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
+    
     Metaball blobs[N_METABALLS];
     InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f);
 
@@ -147,8 +136,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
     uint steps = 128;
     float tPoint = tmin;
     float tStride = (tmax - tmin) / (steps * 1.0f);
-    float potential = 0.0f;
-    float threshold = 0.5f;
+    float threshold = 0.25f;
 
     while (tPoint <= tmax) {
         float netPotential = 0.0f;
@@ -170,6 +158,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
     //thit = 0.0f;
     //attr.normal = float3(0.0f, 0.0f, 0.0f);
     return false;
+    
 }
 
 #endif // VOLUMETRICPRIMITIVESLIBRARY_H
