@@ -86,12 +86,13 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// This should take into account the basePosition and the stride defined above.
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
-			D3D12_RAYTRACING_AABB aabb{ basePosition.x + offsetIndex.x * stride.x, 
+			D3D12_RAYTRACING_AABB aabb{ 
+            basePosition.x + offsetIndex.x * stride.x, 
 			basePosition.y + offsetIndex.y * stride.y,
 			basePosition.z + offsetIndex.z * stride.z,
 			basePosition.x + offsetIndex.x * stride.x + size.x,
-			basePosition.x + offsetIndex.x * stride.x + size.y,
-			basePosition.x + offsetIndex.x * stride.x + size.z};
+			basePosition.y + offsetIndex.y * stride.y + size.y,
+			basePosition.z + offsetIndex.z * stride.z + size.z};
 			return aabb;
 		};
 

@@ -136,29 +136,30 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
     return false;
-	if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
-	{
-		return false;
-	}
 
-	RayDesc rayDesc;
-	rayDesc.Origin = ray.origin;
-	rayDesc.Direction = ray.direction;
-	rayDesc.TMin = 0;
-	rayDesc.TMax = 10000;
+	//if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+	//{
+	//	return false;
+	//}
 
-	ShadowRayPayload rayPayload = { true };
+	//RayDesc rayDesc;
+	//rayDesc.Origin = ray.origin;
+	//rayDesc.Direction = ray.direction;
+	//rayDesc.TMin = 0;
+	//rayDesc.TMax = 10000;
 
-	TraceRay(g_scene,
-		RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
-		TraceRayParameters::InstanceMask,
-		TraceRayParameters::HitGroup::Offset[RayType::Shadow],
-		TraceRayParameters::HitGroup::GeometryStride,
-		TraceRayParameters::MissShader::Offset[RayType::Shadow],
-		rayDesc, rayPayload);
+	//ShadowRayPayload rayPayload = { true };
+
+	//TraceRay(g_scene,
+	//	RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+	//	TraceRayParameters::InstanceMask,
+	//	TraceRayParameters::HitGroup::Offset[RayType::Shadow],
+	//	TraceRayParameters::HitGroup::GeometryStride,
+	//	TraceRayParameters::MissShader::Offset[RayType::Shadow],
+	//	rayDesc, rayPayload);
 
 
-	return rayPayload.hit;
+	//return rayPayload.hit;
 }
 
 //***************************************************************************
@@ -172,8 +173,7 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
-	uint2 index = DispatchRaysIndex().xy;
-	Ray ray = GenerateCameraRay(index, g_sceneCB.cameraPosition, g_sceneCB.projectionToWorld);
+	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
 	float4 color = TraceRadianceRay(ray, 0);
 	// Write the color to the render target
     g_renderTarget[DispatchRaysIndex().xy] = color;

@@ -35,6 +35,9 @@ void DXProceduralProject::BuildShaderTables()
 		missShaderIDs[0] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[0]);
 		missShaderIDs[1] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[1]);
 
+        shaderIdToStringMap[missShaderIDs[0]] = c_missShaderNames[0];
+        shaderIdToStringMap[missShaderIDs[1]] = c_missShaderNames[1];
+
 		// Hitgroup shaders for the Triangle. We have 2: one for radiance ray, and another for the shadow ray.
 		for (UINT i = 0; i < RayType::Count; i++)
 		{
@@ -114,6 +117,7 @@ void DXProceduralProject::BuildShaderTables()
 		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
 		missShaderTable.DebugPrint(shaderIdToStringMap);
 		m_missShaderTable = missShaderTable.GetResource();
+        m_missShaderTableStrideInBytes = missShaderTable.GetShaderRecordSize();
 		
 	}
 
