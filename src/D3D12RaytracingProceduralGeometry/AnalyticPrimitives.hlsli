@@ -166,7 +166,7 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
     float3 centers[3] = { float3(-0.2, 0, -0.2) , float3(0.2, 0.2, 0.2) ,float3(0.5, 0.5, 0.5) };
-    float radius[3] = { 0.7f , 0.5f, 0.15f };
+    float radius[3] = { 0.3f , 0.5f, 0.15f };
 
     thit = RayTCurrent();
 
@@ -179,7 +179,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
     {
 
         ProceduralPrimitiveAttributes attr2;
-        if (RaySphereIntersectionTest(ray, thit, tmax, attr2, centers[i], radius[i]))
+        if (RaySphereIntersectionTest(ray, thit, tmax, attr2, centers[i, radius[i]]))
         {
             if (thit < tmin) {
                 tmin = thit;

@@ -22,6 +22,7 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
+    /*
     if (position.x == blob.center.x && position.y == blob.center.y && position.z == blob.center.z)
         return 1.0f;
 
@@ -32,7 +33,16 @@ float CalculateMetaballPotential(in float3 position, in Metaball blob)
     float x = dist / blob.radius;
     float value = 6.0f * pow(x, 5.0f) - 15.0f * pow(x, 4.0f) + 10 * pow(x, 3.0f);
 
-    return value;
+    return value;*/
+
+    float distance = length(position - blob.center);
+    if (distance >= blob.radius)
+        return 0.0f;
+
+    float rad = blob.radius;
+    float distnew = rad - distance;
+    float x = distnew / rad;
+    return 6 * pow(x,5.0f) - 15 * pow(x, 4.0f) + 10 * pow(x, 3.0f);
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -138,7 +148,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
     float tPoint = tmin;
     float tStride = (tmax - tmin) / (steps * 1.0f);
     float potential = 0.0f;
-    float threshold = 0.25f;
+    float threshold = 0.5f;
 
     while (tPoint <= tmax) {
         float netPotential = 0.0f;
@@ -157,8 +167,8 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 
         tPoint += tStride;
     }
-    thit = 0.0f;
-    attr.normal = float3(0.0f, 0.0f, 0.0f);
+    //thit = 0.0f;
+    //attr.normal = float3(0.0f, 0.0f, 0.0f);
     return false;
 }
 
