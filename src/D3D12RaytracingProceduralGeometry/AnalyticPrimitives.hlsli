@@ -163,21 +163,59 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 
 // TODO-3.4.1: Change this code to support intersecting multiple spheres (~3 spheres). 
 // You can hardcode the local centers/radii of the spheres, just try to maintain them between 1 and -1 (and > 0 for the radii).
+// This is kinda lame cause it hardcodes the spheres in the intersection test.
+// I guess the AABB is better for passing in stuff
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
-	// Define the spheres in local space (within the aabb)
-	float3 center = float3(-0.2, 0, -0.2);
-	float radius = 0.7f;
+	bool hit = false;
 
-	thit = RayTCurrent();
+	// Store values in here until ready to leave
+	float tmp_thit;
+	ProceduralPrimitiveAttributes tmp_attr;
+
+	// Define the spheres in local space (within the aabb)
+	float3 center[3];
+	float radius[3];
+	
+	// Sphere 1
+	center[0] = (float3(-0.2, 0, -0.2));
+	radius[0] = (0.2f);
+
+	// Sphere 2
+	center[1] = (float3(-0.3, 0.5, -0.3));
+	radius[1] = (0.2f);
+
+	// Sphere 3
+	center[2] = (float3(0.5, 0, 0.5));
+	radius[2] = (0.2f);
+
+	tmp_thit = RayTCurrent();
 
 	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
-	{
-		return true;
+	float min_diff = 100; // Arbitratily large. Will never be greater than 2 due to bounding box
+
+	// thit is modified by function
+	for (int i = 0; i < 3; i++) {
+		if (RaySphereIntersectionTest(ray, tmp_thit, tmax, tmp_attr, center[i], radius[i]))
+		{
+			// We intersected a sphere. Check now if this intersection is closest.
+			// A ray is just a line, so in this local space we need to see which is closest
+			// to the entry point on that line.
+			// RayTCurrent() - Ending point of ray
+			// RayTMin() - Starting point of ray
+			// So whichever is closest to RayTMin()
+			float diff = abs(tmp_thit - RayTMin()); // Could we be coming in from above? Below?
+			
+			// This is closer to the entry point, pick it
+			if (diff < min_diff) {
+				thit = tmp_thit;
+				attr = tmp_attr;
+				hit = true;
+			}
+		}
 	}
 
-	return false;
+	return hit;
 }
 
 #endif // ANALYTICPRIMITIVES_H
