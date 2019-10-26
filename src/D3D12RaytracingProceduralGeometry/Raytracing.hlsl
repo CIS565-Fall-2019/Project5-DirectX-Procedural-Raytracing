@@ -287,14 +287,19 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
+	// Hit nothing, so end the ray
+	rayPayload.recursionDepth = MAX_RAY_RECURSION_DEPTH;
 
+	// Set the color to the background.
+	rayPayload.color = BackgroundColor;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
-
+	// We hit nothing. That means no hit. So...
+	rayPayload.hit = false;
 }
 
 //***************************************************************************
