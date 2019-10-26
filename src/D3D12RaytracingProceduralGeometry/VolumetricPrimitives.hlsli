@@ -19,10 +19,22 @@ struct Metaball
 // 2) If it is at the radius or beyond, the potential is 0.
 // 3) In between (i.e the distance from the center is between 0 and radius), consider using the a
 //		quintic polynomial field function of the form 6x^5 - 15x^4 + 10x^3, such that x is the ratio 
-//		of the distance from the center to the radius.
+//		of the distance from the center to the radius. 
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	float pot = 0.0f;
+
+	// How far from the center are we
+	float dist = distance(position, blob.center);
+	
+	// Our function will be 0 for input 0 and 1 for input 1
+	// So clamp the distance ratio to avoid branches
+	dist = dist / blob.radius;
+	dist = clamp(dist, 0, 1);
+
+	pot = (6 * pow(dist, 5)) - (15 * pow(dist, 4)) + (10 * pow(dist, 3));
+	
+	return pot;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -79,10 +91,26 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 
 // TODO-3.4.2: Find the entry and exit points for all metaball bounding spheres combined.
 // Remember that a metaball is just a solid sphere. Didn't we already do this somewhere else?
+// Hmmmm... just a sphere test?
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+
+	float tmp_thit;
+	float tmp_tmax;
+
+	// Do something similar to the multiple spheres test
+	// Difference here is that we return the entry and exit through
+	// tmin and tmax
+	for (int i = 0; i < N_METABALLS; i++) {
+		Metaball m = blobs[i];
+		if (RaySolidSphereIntersectionTest(ray, tmp_thit, tmp_tmax, m.center, m.radius)) {
+			// Intersected, set values
+			tmin = min(tmp_thit, tmin);	
+			tmax = max(tmp_tmax, tmax);
+		}
+	}
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,9 +128,55 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
+	bool hit = false;
+	float tmin;
+	float tmax;
+	Metaball blobs[N_METABALLS];
+
 	thit = 0.0f;
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
-    return false;
+
+	// 1) Initialize a metaball array. See InitializeAnimatedMetaballs()
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 10); // Can't find a defined cycle duration
+	// TODO-JOHN: Find one.
+
+	// 2) Test intersections on the metaballs to find the minimum t and the maximum t to raymarch between.
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+
+	// 3) Use some number of steps (~128 is a good number for raymarching) to do the following:
+	//		a) Compute the total metaball potential over this point by summing ALL potentials of each metaball. 
+	//			See CalculateMetaballsPotential().
+	//		b) If the total potential crosses an isosurface threshold (defined on (0,1]), then we will potentially
+	//			render this point:
+	//			i) We compute the normal at this point (see CalculateMetaballsNormal())
+	//			ii) Only render this point if it is valid hit. See is_a_valid_hit(). 
+	//				If this condition fails, keep raymarching!
+	const float THRESHOLD = 0.5;
+	const UINT STEPS = 128;
+	float marchDist = tmax - tmin;
+	float pot = 0.0f;
+	float3 normal;
+
+	// Step through...
+	for (UINT i = 0; i < STEPS; i++) {
+		float pos = tmin + ((i / STEPS)*marchDist);
+
+		// And calculate the potential.
+		pot = CalculateMetaballsPotential(pos, blobs);
+
+		// If the potential is greater than some threshold + is valid, render it
+		if (pot > THRESHOLD) {
+			normal = CalculateMetaballsNormal(pos, blobs);
+			if (is_a_valid_hit(ray, pos, normal)) {
+				thit = pos;
+				attr.normal = normal;
+				hit = true;
+				break;
+			}
+		}
+	}
+
+    return hit;
 }
 
 #endif // VOLUMETRICPRIMITIVESLIBRARY_H
