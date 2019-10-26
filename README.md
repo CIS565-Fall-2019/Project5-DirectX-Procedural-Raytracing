@@ -64,3 +64,7 @@ Some of the bloopers are below:
 
 ## References
 
+1. [Nvidia Tutorial on DXR raytracing](https://developer.nvidia.com/rtx/raytracing/dxr/DX12-Raytracing-tutorial-Part-2)
+2. [Phong Reflection Model](https://en.wikipedia.org/wiki/Phong_reflection_model)
+3. [Schlick's approximation](https://en.wikipedia.org/wiki/Schlick%27s_approximation)
+4. DirectX documentation and Structure Definitions on Internet 
