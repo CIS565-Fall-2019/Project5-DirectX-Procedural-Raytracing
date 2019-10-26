@@ -170,11 +170,11 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	float3 centers[N] =
 	{
 		float3(-0.2, 0, -0.2),
-		float3(0.1, 0.1, 0.0),
-		float3(0.35,0.35, 0.0)
+		float3(0.6, 0.1, 0.6),
+		float3(0.2, 0.35, 0.2)
 	};
 
-	float  radii[N] = { 0.8f, 0.4f, 0.35f };
+	float radii[N] = { 0.4f, 0.2f, 0.1f };
 	bool hitFound = false;
 
 	thit = RayTCurrent();
@@ -184,7 +184,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	ProceduralPrimitiveAttributes temp_attr;
 	for (int i = 0; i < N; i++)
 	{
-		if (RaySphereIntersectionTest(ray, temp_thit, tmax, temp_attr, centers[i, radii[i]]))
+		if (RaySphereIntersectionTest(ray, temp_thit, tmax, temp_attr, centers[i], radii[i]))
 		{
 			if (temp_thit < thit)
 			{

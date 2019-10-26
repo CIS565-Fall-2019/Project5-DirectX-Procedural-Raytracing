@@ -125,7 +125,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	TestMetaballsIntersection(ray, tmin, tmax, blobs);
 
 	UINT MAX_STEPS = 128;
-	const float Threshold = 0.5f;
+	const float Threshold = 0.2f;
 	float step_size = (tmax - tmin) / 128;
 	float t = tmin;
 	while (t < tmax) {
