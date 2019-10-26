@@ -24,4 +24,4 @@ This is a directX raytracing project using the recently released DirectX Raytrac
     <img src = images/FPS.png>
 </p>
 
-The figure above shows the frame rate changes as increasing maximum raytracing depth. FPS goes doen as expected when tracing depth increases.
+The figure above shows the frame rate changes as increasing maximum raytracing depth. FPS goes down as expected when tracing depth increases.
