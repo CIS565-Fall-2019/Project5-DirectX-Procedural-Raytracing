@@ -41,7 +41,7 @@ b. In GPU section, we perform the ray generation from the camera which goes from
 
 In one of the steps after wrting the CPU code, ray generation and TraceRay() fucntion and Miss shaders , here is the image how it looks like with the Analytical Primitives (AABB Box and Spheres):
 
-<p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/Capture1.PNG" width="600"/></p>
+<p align="center"><img src="https://github.com/somanshu25/Project5-DirectX-Procedural-Raytracing/blob/master/images/Capture1.PNG" width="700"/></p>
 
 
 The performance analysis of FPS with varying the depth is shown below:
