@@ -35,6 +35,12 @@ void DXProceduralProject::BuildShaderTables()
 		missShaderIDs[0] = nullptr;
 		missShaderIDs[1] = nullptr;
 
+		for (UINT i = 0; i < RayType::Count; i++)
+		{
+			missShaderIDs[i] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[i]);
+			shaderIdToStringMap[missShaderIDs[i]] = c_missShaderNames[i];
+		}
+
 		// Hitgroup shaders for the Triangle. We have 2: one for radiance ray, and another for the shadow ray.
 		for (UINT i = 0; i < RayType::Count; i++)
 		{
@@ -43,7 +49,13 @@ void DXProceduralProject::BuildShaderTables()
 		}
 
 		// TODO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
-		
+		for (UINT r = 0; r < IntersectionShaderType::Count; r++) {
+			for (UINT c = 0; c < RayType::Count; c++)
+			{
+				hitGroupShaderIDs_AABBGeometry[r][c] = stateObjectProperties->GetShaderIdentifier(c_hitGroupNames_AABBGeometry[r][c]);
+				shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[r][c]] = c_hitGroupNames_AABBGeometry[r][c];
+			}
+		}
 	};
 
 	// Get shader identifiers using the lambda function defined above.
@@ -95,7 +107,17 @@ void DXProceduralProject::BuildShaderTables()
 	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	{
-		
+		UINT numShaderRecords = RayType::Count;
+		UINT shaderRecordSize = shaderIDSize; // No root arguments
+
+		ShaderTable missShaderTable(device, numShaderRecords, shaderRecordSize, L"MissShaderTable");
+		for (UINT i = 0; i < RayType::Count; i++)
+		{
+			missShaderTable.push_back(ShaderRecord(missShaderIDs[i], shaderIDSize, nullptr, 0));
+		}
+		missShaderTable.DebugPrint(shaderIdToStringMap);
+		m_missShaderTableStrideInBytes = missShaderTable.GetShaderRecordSize();
+		m_missShaderTable = missShaderTable.GetResource();
 	}
 
 	// Hit group shader table. This one is slightly different given that a hit group requires its own custom root signature.

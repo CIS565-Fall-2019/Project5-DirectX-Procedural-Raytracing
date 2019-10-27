@@ -4,7 +4,7 @@
 
 // LOOKAT-2.4, TODO-2.4: Fill in the Raytracing Pipeline State Object (RTPSO).
 // An RTPSO represents a full set of shaders reachable by a DispatchRays() call, with all configuration options resolved, 
-// such as local signatures and other state.
+// such as local signatures and other .
 void DXProceduralProject::CreateRaytracingPipelineStateObject()
 {
 	// Create 18 subobjects that combine into 1 RTPSO:
@@ -30,6 +30,7 @@ void DXProceduralProject::CreateRaytracingPipelineStateObject()
 
 	// TODO-2.4: Local root signature and shader association. Call the other function you did in in DXR-HitGroup.cpp.
 	CreateLocalRootSignatureSubobjects(&raytracingPipeline);
+
 
 	// Global root signature
 	auto globalRootSignature = raytracingPipeline.CreateSubobject<CD3D12_GLOBAL_ROOT_SIGNATURE_SUBOBJECT>();
