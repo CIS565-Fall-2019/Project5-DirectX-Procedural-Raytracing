@@ -220,12 +220,12 @@ PrebuildCheck.bat</Command>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Libraries\D3D12RaytracingFallback\src\FallbackLayer.vcxproj">
       <Project>{4be280a6-1066-41ca-acdd-6bb7e532508b}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
