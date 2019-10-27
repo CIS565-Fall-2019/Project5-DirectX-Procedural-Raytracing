@@ -15,8 +15,8 @@ Project 5 - DirectX Procedural Raytracing**
 - [Introduction]( https://github.com/chhavisharma/Project4-CUDA-ICP#introduction )
 - [Implementation Details]( https://github.com/chhavisharma/Project4-CUDA-ICP#implementation-details )
 - [Analysis](https://github.com/chhavisharma/Project4-CUDA-ICP#analysis )
-- [Some More Results and Bloopers]( https://github.com/chhavisharma/Project4-CUDA-ICP#bloopers )
-- [References](https://github.com/chhavisharma/Project4-CUDA-ICP#resources-and-references )
+- [Results]( https://github.com/chhavisharma/Project4-CUDA-ICP#bloopers )
+- [Bloopers](https://github.com/chhavisharma/Project4-CUDA-ICP#resources-and-references )
 
 ### Introduction
 
@@ -50,19 +50,19 @@ As the recursion depth increases, the frame rate drops. But visibly there isn't 
   <img src="images/fps_vs_recursion.png">
 </p>
 
-### More Results
+### Results
 
 #### Progress Per Section 
 
 <p align="center">
-  <img src="images/1.gif", width=300>
-  <img src="images/2.gif", width=300>
-  <img src="images/3.gif", width=300>
+  <img src="images/1.gif", width=280>
+  <img src="images/2.gif", width=280>
+  <img src="images/3.gif", width=280>
 </p>
 <p align="center">
-  <img src="images/4.gif", width=300>
-  <img src="images/5.png", width=300>
-  <img src="images/6.gif", width=300>
+  <img src="images/4.gif", width=280>
+  <img src="images/5.png", width=280>
+  <img src="images/6.gif", width=280>
 </p>
 
 #### Final Render
@@ -77,15 +77,15 @@ As the recursion depth increases, the frame rate drops. But visibly there isn't 
 
 - Error computing Meta-Ball potential
 <p align="center">
-  <img src="images/fps_vs_recursion.png">
+  <img src="images/PotentialError.png">
 </p>
 
 - Error computing Shadow Rays
 <p align="center">
-  <img src="images/fps_vs_recursion.png">
+  <img src="images/Shadows.png">
 </p>
 
 - Error in color computation
 <p align="center">
-  <img src="images/fps_vs_recursion.png">
+  <img src="images/Color.png">
 </p>
