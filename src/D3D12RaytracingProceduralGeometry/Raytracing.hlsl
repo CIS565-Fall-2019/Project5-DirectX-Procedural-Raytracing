@@ -149,9 +149,14 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
+    Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
+    
+    UINT currentRecursionDepth = 0;
+    float4 reflectionColor = TraceRadianceRay(ray, currentRecursionDepth);
 
 	// Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    // g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    g_renderTarget[DispatchRaysIndex().xy] = reflectionColor;
 }
 
 //***************************************************************************
@@ -227,7 +232,7 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
-
+    //rayPayload.color = float4(0.0, 0.0, 0.0, 0.0);
 }
 
 //***************************************************************************
@@ -240,14 +245,15 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-
+    float4 backgroundColor = float4(BackgroundColor);
+    rayPayload.color = backgroundColor;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
-
+    //rayPayload.hit = false;
 }
 
 //***************************************************************************
