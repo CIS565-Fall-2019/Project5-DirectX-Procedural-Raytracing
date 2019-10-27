@@ -8,7 +8,7 @@ Project 5 - DirectX Procedural Raytracing**
 
 - [Overview](#Overview)
 - [Performance Analysis](#Performance-Analysis)
-- [Debilitating Bugs/Bloopers](#Debilitating_Bugs_aka_bloopers_in_CIS565_world)
+- [Debilitating Bugs/Bloopers](#Debilitating-Bugs-aka-bloopers-in-CIS565_world)
 - [references](#references)
 
 # Overview
