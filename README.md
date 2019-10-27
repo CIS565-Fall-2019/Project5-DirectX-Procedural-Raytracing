@@ -17,6 +17,8 @@ DirectX12 what more can I say ... It is nifty in theory but debilitating in prac
 
 # Performance Analysis
 
+Below are some data points after manipulating the recursion depth. As you can see, the further we follow the slower our application becomes. This is fairly intuitive.
+
 ![](images/FPS.png)
 
 # Debilitating Bugs aka bloopes in CIS565 world
