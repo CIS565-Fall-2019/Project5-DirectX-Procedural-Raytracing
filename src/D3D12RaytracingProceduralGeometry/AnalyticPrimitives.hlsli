@@ -169,60 +169,60 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	//float3 sphere1_center = float3(-0.4, 0, -0.4);
-	//float sphere1_radius = 0.5f;
+	float3 sphere1_center = float3(-0.4, 0, -0.4);
+	float sphere1_radius = 0.5f;
 
- //   float3 sphere2_center = float3(0, 0.7, 0);
- //   float sphere2_radius = 0.3f;
+    float3 sphere2_center = float3(0, 0.7, 0);
+    float sphere2_radius = 0.3f;
 
- //   float3 sphere3_center = float3(0.4, 0, 0.4);
- //   float sphere3_radius = 0.3f;
+    float3 sphere3_center = float3(0.4, 0, 0.4);
+    float sphere3_radius = 0.3f;
 
- //   float sphere_thit = 0.0f;
- //   float sphere_tmax = 0.0f;
- //   ProceduralPrimitiveAttributes sphere_attr;
- //   float curr_t = RayTCurrent();
- //   ProceduralPrimitiveAttributes curr_attr;
+    float sphere_thit = 0.0f;
+    float sphere_tmax = 0.0f;
+    ProceduralPrimitiveAttributes sphere_attr;
+    float curr_t = RayTCurrent();
+    ProceduralPrimitiveAttributes curr_attr;
 
- //   bool t_flag = false;
+    bool t_flag = false;
 
-	//if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere1_center, sphere1_radius))
-	//{
- //       if (curr_t > sphere_thit)
- //       {
- //           t_flag = true;
- //           curr_t = sphere_thit;
- //           curr_attr = sphere_attr;
- //       }
-	//}
+	if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere1_center, sphere1_radius))
+	{
+        if (curr_t > sphere_thit)
+        {
+            t_flag = true;
+            curr_t = sphere_thit;
+            curr_attr = sphere_attr;
+        }
+	}
 
- //   if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere2_center, sphere2_radius))
- //   {
- //       if (curr_t > sphere_thit)
- //       {
- //           t_flag = true;
- //           curr_t = sphere_thit;
- //           curr_attr = sphere_attr;
- //       }
- //   }
+    if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere2_center, sphere2_radius))
+    {
+        if (curr_t > sphere_thit)
+        {
+            t_flag = true;
+            curr_t = sphere_thit;
+            curr_attr = sphere_attr;
+        }
+    }
 
- //   if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere3_center, sphere3_radius))
- //   {
- //       if (curr_t > sphere_thit)
- //       {
- //           t_flag = true;
- //           curr_t = sphere_thit;
- //           curr_attr = sphere_attr;
- //       }
- //   }
+    if (RaySphereIntersectionTest(ray, sphere_thit, sphere_tmax, sphere_attr, sphere3_center, sphere3_radius))
+    {
+        if (curr_t > sphere_thit)
+        {
+            t_flag = true;
+            curr_t = sphere_thit;
+            curr_attr = sphere_attr;
+        }
+    }
 
- //   //assign the value to out
- //   thit = curr_t;
- //   attr = curr_attr;
+    //assign the value to out
+    thit = curr_t;
+    attr = curr_attr;
 
- //   //validate the thit and normal
- //   if(t_flag)
-	//    return is_a_valid_hit(ray, thit, attr.normal);
+    //validate the thit and normal
+    if(t_flag)
+	    return is_a_valid_hit(ray, thit, attr.normal);
     
     return false;
 }

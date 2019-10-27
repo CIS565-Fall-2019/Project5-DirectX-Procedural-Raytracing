@@ -5,6 +5,7 @@
 #define VOLUMETRICPRIMITIVESLIBRARY_H
 
 #include "RaytracingShaderHelper.hlsli"
+#include "AnalyticPrimitives.hlsli"
 
 // LOOKAT-1.9.4: Shockingly, a metaball is just a sphere!
 struct Metaball
@@ -22,7 +23,22 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+    float dist = distance(position, blob.center);
+    float result = 0;
+    if (dist >= blob.radius)
+    {
+        result = 0;
+    }
+    else if (dist == 0)
+    {
+        result = 1;
+    }
+    else
+    {
+        float x = 1.0f - dist / blob.radius;
+        result = 6 * pow(x, 5.0f) - 15 * pow(x, 4.0f) + 10 * pow(x, 3.0f);
+    }
+    return result;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -84,9 +100,30 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
     float sphere_tmin = 0.0f;
     float sphere_tmax = 0.0f;
 
-    //want to use the two functions in AnalyticPrimitives, should we move here?
-	tmin = INFINITY;
-    tmax = -INFINITY;
+    float temp_tmin = 0.0f;
+    float temp_tmax = 0.0f;
+
+    for (int i = 0; i < N_METABALLS; ++i)
+    {
+
+        if (RaySolidSphereIntersectionTest(ray, temp_tmin, temp_tmax, blobs[i].center, blobs[i].radius))
+        {
+            if (i == 0)
+            {
+                sphere_tmin = temp_tmin;
+                sphere_tmax = temp_tmax;
+            }
+            else
+            {
+                if (sphere_tmin > temp_tmin) sphere_tmin = temp_tmin;
+                if (sphere_tmax < temp_tmax) sphere_tmax = temp_tmax;
+            }
+        }
+    }
+
+    //want to use the two functions in AnalyticPrimitives, include the file
+    tmin = max(sphere_tmin, RayTMin());
+    tmax = min(sphere_tmax, RayTCurrent());
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -104,8 +141,31 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
+    Metaball blobs[N_METABALLS];
+    float cycle_duration = 8.0f;
+    InitializeAnimatedMetaballs(blobs, elapsedTime, cycle_duration);
+    //get the tmin and tmax for these metaballs
+    float tmin = 0.0f;
+    float tmax = 0.0f;
+    TestMetaballsIntersection(ray, tmin, tmax, blobs);
+    float diff_t = tmax - tmin;
+    float thre = 0.15f;
+    for (int ray_step = 1; ray_step <= 128; ++ray_step)
+    {
+        float3 curr_pos = ray.origin + ray.direction * (tmin + (ray_step / 128.0f) * diff_t);
+        float pot = CalculateMetaballsPotential(curr_pos, blobs);
+        if (pot > thre)
+        {
+            //we decide to render this point
+
+            //first compute the normal
+            attr.normal = CalculateMetaballsNormal(curr_pos, blobs);
+
+            //then assign the thit to appropriate value
+            thit = tmin + (ray_step / 128.0f) * diff_t;
+            if(is_a_valid_hit(ray, thit, attr.normal))  return true;
+        }
+    }
     return false;
 }
 

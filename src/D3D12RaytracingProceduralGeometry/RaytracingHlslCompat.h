@@ -28,7 +28,7 @@ typedef UINT16 Index;
 
 #define N_FRACTAL_ITERATIONS 5      // = <1,...>
 
-#define MAX_RAY_RECURSION_DEPTH 3    // ~ primary rays + reflections + shadow rays from reflected geometry.
+#define MAX_RAY_RECURSION_DEPTH 10    // ~ primary rays + reflections + shadow rays from reflected geometry.
 
 /**************** Scene *****************/
 static const XMFLOAT4 ChromiumReflectance = XMFLOAT4(0.549f, 0.556f, 0.554f, 1.0f);
@@ -62,6 +62,7 @@ struct Vertex
 };
 
 // Really this isn't a `constant` buffer, as in the contents may change but the buffer itself isn't dynamic.
+//g_sceneCB
 struct SceneConstantBuffer
 {
 	XMMATRIX projectionToWorld;
@@ -69,7 +70,7 @@ struct SceneConstantBuffer
 	XMVECTOR lightPosition;
 	XMVECTOR lightAmbientColor;
 	XMVECTOR lightDiffuseColor;
-	float    reflectance;
+	float    reflectance;                 // the specular constant?
 	float    elapsedTime;                 // Elapsed application time.
 };
 

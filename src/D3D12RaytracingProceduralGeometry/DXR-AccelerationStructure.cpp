@@ -230,7 +230,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
         instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 
-        const XMVECTOR vBasePosition = c_aabbWidth * XMLoadFloat3(&XMFLOAT3(-0.5f, 0.0f, -0.5f));
+        const XMVECTOR vBasePosition = c_aabbWidth * XMLoadFloat3(&XMFLOAT3(-0.6f, 0.5f, -0.6f));
 
 		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
 		XMMATRIX mTransform = mTranslation;
