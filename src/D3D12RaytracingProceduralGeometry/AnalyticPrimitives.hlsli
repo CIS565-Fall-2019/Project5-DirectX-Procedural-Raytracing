@@ -166,47 +166,47 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 
-    float3 center = float3(-0.2, 0, -0.2);
-    float radius = 0.7f;
-
-    thit = RayTCurrent();
-
-    float tmax;
-    if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
-    {
-        return true;
-    }
-
-    return false;
-
-        //float3 center[3] = { float3(-0.2, 0, -0.2), float3(0.5, 0.5, 0.5), float3(0.2, 0.3, 0.3)};
-    //float radius[3] = { 0.7f, 0.2f, 0.5f };
+    //float3 center = float3(-0.2, 0, -0.2);
+    //float radius = 0.7f;
 
     //thit = RayTCurrent();
 
     //float tmax;
-    //float tmin = thit;
-    //bool hit = false;
-
-    //ProceduralPrimitiveAttributes attrMin;
-
-    //for (int i = 0; i < 3; i++) {
-    //	ProceduralPrimitiveAttributes tempAttr;
-    //	if (RaySphereIntersectionTest(ray, thit, tmax, tempAttr, center[i], radius[i]))
-    //	{
-    //		if (thit < tmin) {
-    //			tmin = tmin;
-    //			attrMin = tempAttr;
-    //		}
-
-    //		hit = true;
-    //	}
+    //if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
+    //{
+    //    return true;
     //}
 
-    //thit = tmin;
-    //attr = attrMin;
+    //return false;
 
-    //return hit;
+    float3 center[3] = { float3(-0.2, 0, -0.2), float3(0.4, 0.7, 0.3), float3(0.6, -0.3, 0.6)};
+    float radius[3] = { 0.7f, 0.2f, 0.3f };
+
+    thit = RayTCurrent();
+
+    float tmax;
+    float tmin = thit;
+    bool hit = false;
+
+    ProceduralPrimitiveAttributes attrMin;
+
+    for (int i = 0; i < 3; i++) {
+    	ProceduralPrimitiveAttributes tempAttr;
+    	if (RaySphereIntersectionTest(ray, thit, tmax, tempAttr, center[i], radius[i]))
+    	{
+    		if (thit < tmin) {
+    			tmin = thit;
+    			attrMin = tempAttr;
+    		}
+
+    		hit = true;
+    	}
+    }
+
+    thit = tmin;
+    attr = attrMin;
+
+    return hit;
 }
 
 #endif // ANALYTICPRIMITIVES_H

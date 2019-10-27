@@ -81,6 +81,11 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// Again, these tell the AS where the actual geometry data is and how it is laid out.
 	// TODO-2.6: fill the bottom-level inputs. Consider using D3D12_ELEMENTS_LAYOUT_ARRAY as the DescsLayout.
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS &bottomLevelInputs = bottomLevelBuildDesc.Inputs;
+    bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+    bottomLevelInputs.Flags = buildFlags;
+    bottomLevelInputs.NumDescs = geometryDescs.size();
+    bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+    bottomLevelInputs.pGeometryDescs = geometryDescs.data();
 
 
 	// Query the driver for resource requirements to build an acceleration structure. We've done this for you.
@@ -202,8 +207,8 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		const XMVECTOR vBasePosition = c_aabbWidth * XMLoadFloat3(&XMFLOAT3(0.0f, 0.5f, 0.0f));
 
 		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
-		XMMATRIX mScale = XMMatrixScaling(c_aabbWidth, c_aabbWidth, c_aabbWidth);
-		XMMATRIX mTransform = mScale * mTranslation;
+		//XMMATRIX mScale = XMMatrixScaling(c_aabbWidth, c_aabbWidth, c_aabbWidth);
+		XMMATRIX mTransform = mTranslation;
 		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
 	}
 
