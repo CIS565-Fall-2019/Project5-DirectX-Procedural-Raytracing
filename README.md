@@ -7,8 +7,8 @@ Project 5 - DirectX Procedural Raytracing**
 * Tested on: Windows 10, i5, Nvidia GTX1660 (Personal)
 
 - [Overview](#Overview)
-- [Performance Analysis1](#Performance-Analysis)
-- [Debilitating Bugs/Bloopers](#debilitating-bugs-aka-bloopers-in-cis565-world)
+- [Performance Analysis](#Performance-Analysis)
+- [Debilitating Bugs/Bloopers](#Debilitating-Bugs-AKA-Bloopers-In-CIS565-World)
 - [references](#references)
 
 # Overview
@@ -21,7 +21,7 @@ Below are some data points after manipulating the recursion depth. As you can se
 
 ![](images/FPS.png)
 
-# Debilitating Bugs aka bloopes in CIS565 world
+# Debilitating Bugs AKA Bloopes In CIS565 World
 
 ![](images/looks_close_enough.PNG)
 
