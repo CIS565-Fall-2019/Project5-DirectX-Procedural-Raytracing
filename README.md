@@ -6,8 +6,7 @@
 Project 5 - DirectX Procedural Raytracing**
 
 * Author: Chhavi Sharma ([LinkedIn](https://www.linkedin.com/in/chhavi275/))
-* Tested on: Windows 10, Intel Core(R) Core(TM) i7-6700 CPU @ 3.40GHz 16GB, 
-             NVIDIA Quadro P1000 4GB (MOORE100B-06)
+* Tested on: Windows 10, Intel Xeon CPU E5-2687W v3 @ 3.10GHz 22GB, NVIDIA TITAN V 12GB (SIGLab-VR1)
 
 
 ### Index
