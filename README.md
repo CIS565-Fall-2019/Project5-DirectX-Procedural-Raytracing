@@ -12,7 +12,7 @@ Project 5 - DirectX Procedural Raytracing**
 1. [Introduction](#Introduction)
 2. [RayTracing](#RayTracing)
 3. [Code Section](#Code-Section)
-4. [Performace Analysis](#Performace-Analysis)
+4. [Performace Analysis](#Performance-Analysis)
 5. [Bloopers](#Bloopers)
 6. [References](#References)
 
