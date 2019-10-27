@@ -20,7 +20,7 @@ Project 5 - DirectX Procedural Raytracing**
 
 In this project, we use Microsoft's DirectX Raytracing API to ray trace procedural geometries. The code is divided into two categories, the CPU pipline for allocation and setup of DXR buffers, and, the the GPU rendering pipeline to execute the ray tracing. Microsoft introduced the DirectX Raytracing (DXR) API to allow ease of use of GPU-accelerated ray tracing in DirectX and also for interoperability with the DirectX rasterization. 
 
-*Raytracing*, is a rendering technique for generating an image by tracing the path of light as pixels in an image plane. In Ray tracing, a light ray is shot from the camera center through each pixel. It is traced as it intersects different objects in the scene. At each interseciton, the ray is sent to to the light source, and, other rays are generated based on the material properties ( eg. reflection). If the ray interseacts another object on its way to light, then it is categorised as a shadow ray and color is assosiated with it accordingly. 
+*Raytracing*, is a rendering technique for generating an image by tracing the path of light through pixels in an image plane. In ray tracing, a light ray is shot from the camera center through each pixel. It is traced as it intersects different objects in the scene. At each interseciton, the ray is sent to to the light source, and, other rays are generated based on the material properties ( eg. reflection). If the ray interseacts another object on its way to light, then it is categorised as a shadow ray and color is assosiated with it accordingly. 
 
 <p align="center">
   <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/raytrace.jpg">
