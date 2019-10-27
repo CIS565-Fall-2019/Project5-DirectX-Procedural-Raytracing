@@ -94,10 +94,16 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	// Diffuse part
 	float diffuse = CalculateDiffuseCoefficient(lightRay, normal);
 	float4 diffuseColor = diffuseCoef * diffuse * g_sceneCB.lightDiffuseColor * albedo;
+	if (isInShadow) {
+		diffuseColor *= InShadowRadiance;
+	}
 
 	// Specular part
 	float4 specular = CalculateSpecularCoefficient(lightRay, normal, specularPower);
-	float4 specularColor = specularCoef * specular * ~isInShadow;
+	float4 specularColor = specularCoef * specular;
+	if (isInShadow) {
+		//specularColor *= 0; // Black out if in shadow
+	}
 
 	return ambientColor + diffuseColor + specularColor;
 }
