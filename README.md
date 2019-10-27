@@ -14,13 +14,17 @@ DirectX12 what more can I say ... It is nifty in theory but debilitating in prac
 
 
 
-### Debilitating Bugs with ( aka bloopers ... )
+### Debilitating Bugs ( aka bloopers ... )
 
-![](images/fuzzy.png)
+![](images/looks_close_enough)
+
+After watching my program crash 10000000000000000000 times because my cpu side was wrong, finally I got something up... but then I had to sadly go back and fix alot of stuff ... 
+
+![](images/fuzzy.PNG)
 
 turns out there was alot wrong here ... alot
 
-![](images/wtf.png)
+![](images/wtf.PNG)
 
 my lerping for fade off color was off.. way offf.... Lerping is not to be confused with the ever popular LARPing.
 
