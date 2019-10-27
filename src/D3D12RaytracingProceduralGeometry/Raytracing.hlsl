@@ -279,7 +279,34 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
 
+	float3 hitPosition = HitWorldPosition();
 
+	float3 normal = attr.normal;
+
+	// Trace a ray from the hit position towards the single light source we have. If on our way to the light we hit something, then we have a shadow!
+	Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
+	bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+
+	float4 reflectedColor = float4(0, 0, 0, 0);
+
+	if (l_materialCB.reflectanceCoef > 0.001)
+	{
+		// Trace a reflection ray from the intersection points using Snell's law. The reflect() HLSL built-in function does this for you!
+		// See https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
+		Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), normal) };
+		float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
+
+		float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), normal, l_materialCB.albedo.xyz);
+		reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
+	}
+
+	// Calculate final color.
+	float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+	float4 color = (phongColor + reflectedColor);
+
+	float t = -RayTCurrent() / 100.0f;
+	color = lerp(color, BackgroundColor, 1 - exp(pow(t, 3.0f)));
+	rayPayload.color = color;
 
 }
 
