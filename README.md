@@ -7,9 +7,9 @@ Project 5 - DirectX Procedural Raytracing**
 * Tested on: Windows 10, i5, Nvidia GTX1660 (Personal)
 
 - [Overview](#Overview)
-- [Performance Analysis](#Performance_Analysis)
-- [Debilitating Bugs/Bloopers](#Debilitating_Bugs_aka_bloopers_in_CIS565_world)
-- [references](#references)
+- [Performance Analysis](#Performance-Analysis)
+- [Debilitating Bugs/Bloopers](#Debilitating-Bugs-AKA-Bloopers-In-CIS565-World)
+- [References](#References)
 
 # Overview
 
@@ -17,9 +17,11 @@ DirectX12 what more can I say ... It is nifty in theory but debilitating in prac
 
 # Performance Analysis
 
+Below are some data points after manipulating the recursion depth. As you can see, the further we follow the slower our application becomes. This is fairly intuitive.
 
+![](images/FPS.png)
 
-# Debilitating Bugs aka bloopes in CIS565 world
+# Debilitating Bugs AKA Bloopers In CIS565 World
 
 ![](images/looks_close_enough.PNG)
 
@@ -31,7 +33,7 @@ turns out there was alot wrong here ... alot ... But I do like the darker purple
 
 ![](images/wtf.PNG)
 
-my lerping for fade off color was off.. way offf.... Lerping is not to be confused with the ever popular LARPing.
+my lerping for fading was off.. way offf.... Lerping is not to be confused with the ever popular LARPing.
 
 ![](images/weird_balls.gif)
 
@@ -39,7 +41,7 @@ If you look you can see that the two purple balls move in a very odd manner. was
 
 problem was my logic for keeping track of closet hit was a bit off. I was keeping track of tmax, a sensical person would have looked at the function return and saw it was evaluating thit... I became sensical after about 2 hours of debugging.
 
-# references
+# References
 
 Ziad ... without him I would have thrown my computer out the window
 
@@ -48,4 +50,5 @@ https://www.freecodecamp.org/news/understanding-linear-interpolation-in-ui-anima
 https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
 https://www.scratchapixel.com/lessons/3d-basic-rendering/phong-shader-BRDF
+https://www.scratchapixel.com/lessons/advanced-rendering/rendering-distance-fields/blobbies
 
