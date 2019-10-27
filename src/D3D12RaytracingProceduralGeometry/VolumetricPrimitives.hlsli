@@ -94,10 +94,13 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 
         float tminCurr, tmaxCurr;
 		if (RaySolidSphereIntersectionTest(ray, tminCurr, tmaxCurr, blobs[i].center, blobs[i].radius)) {
-			if (tminCurr < tmin) tmin = tminCurr;
-			if (tmaxCurr > tmax) tmax = tmaxCurr;
+			tmin = min(tmin, tminCurr);
+			tmax = max(tmax, tmaxCurr);
 		}
 	}
+
+    tmin = max(tmin, RayTMin());
+    tmax = min(tmax, RayTCurrent());
 
 }
 
@@ -117,7 +120,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
     Metaball blobs[N_METABALLS];
-    InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f);
+    InitializeAnimatedMetaballs(blobs, elapsedTime, 8.0f);
     
     
     float tmin, tmax;
@@ -125,14 +128,14 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
     TestMetaballsIntersection(ray, tmin, tmax, blobs);    
     
     int steps = 128;
-    float th = 0.25f;
+    float th = 0.20f;
 
     float tp = tmin;
     float jump = (tmax - tmin) /((float)steps);
 
     while (tp <= tmax) {
         float3 pos = ray.origin + tp * ray.direction;
-        float totalPotential = CalculateMetaballsPotential(tp, blobs);
+        float totalPotential = CalculateMetaballsPotential(pos, blobs);
 
         if (totalPotential > th) {
             float3 normal = CalculateMetaballsNormal(pos, blobs);
