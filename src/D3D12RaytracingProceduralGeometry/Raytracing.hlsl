@@ -41,7 +41,7 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return 0.0f;
+    return saturate(dot(normal, incidentLightRay));
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -49,9 +49,13 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // HINT:	Consider using built-in DirectX functions to find the reflected ray. Remember that a reflected ray is reflected
 //			with respect to the normal of the hit position.
 // Remember to normalize the reflected ray, and to clamp the dot product term 
-float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
+float CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	return float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float3 reflectedRay = normalize(reflect(-incidentLightRay, normal));
+    float3 reverseViewRay = normalize(-WorldRayDirection());
+    float specularCoeff = pow(saturate(dot(reflectedRay, reverseViewRay)), specularPower);
+
+    return specularCoeff;
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -76,7 +80,26 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-	return ambientColor;
+    float3 lightPos = g_sceneCB.lightPosition.xyz;
+    float3 hitP = HitWorldPosition();
+
+    float3 incidentRay = normalize(lightPos - hitP);
+
+    diffuseCoef = CalculateDiffuseCoefficient(incidentRay, normal);
+
+    float4 diffuseColor = albedo * diffuseCoef * g_sceneCB.lightDiffuseColor;
+    if (isInShadow)
+        diffuseColor *= InShadowRadiance;
+
+    specularCoef = CalculateSpecularCoefficient(incidentRay, normal, specularPower);
+
+    float4 specularColor;
+    if (isInShadow)
+        specularColor = float4(1.0f, 1.0f, 1.0f, 1.0f) * specularCoef;
+    else
+        specularColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	return ambientColor + specularColor + diffuseColor;
 }
 
 //***************************************************************************
@@ -235,6 +258,8 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
 
+    float t = RayTCurrent();
+    color = lerp(color, BackgroundColor, 1 - exp(-0.000001*pow(t, 3.0f)));
     rayPayload.color = color;
 }
 
@@ -252,7 +277,31 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
+    float3 hitPosition = HitWorldPosition();
 
+    // Trace a ray from the hit position towards the single light source we have. If on our way to the light we hit something, then we have a shadow!
+    Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
+    bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+
+    // Reflected component ray.
+    float4 reflectedColor = float4(0, 0, 0, 0);
+    if (l_materialCB.reflectanceCoef > 0.001)
+    {
+        // Trace a reflection ray from the intersection points using Snell's law. The reflect() HLSL built-in function does this for you!
+        Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), attr.normal) };
+        float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
+
+        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), attr.normal, l_materialCB.albedo.xyz);
+        reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
+    }
+
+    // Calculate final color.
+    float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+    float4 color = (phongColor + reflectedColor);
+
+    float t = RayTCurrent();
+    color = lerp(color, BackgroundColor, 1 - exp(-0.000001*pow(t, 3.0f)));
+    rayPayload.color = color;
 }
 
 //***************************************************************************
