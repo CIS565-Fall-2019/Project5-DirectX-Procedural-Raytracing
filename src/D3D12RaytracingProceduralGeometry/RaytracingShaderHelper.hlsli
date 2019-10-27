@@ -67,11 +67,11 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 //				  f(0) = 0, f(0.5) = 1, f(1) = 0. And is linear between these 3 points.
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
-{	
+{
 
-	float interpolant = fmod(elapsedTime, cycleDuration) / cycleDuration;
-	float cycletime = (interpolant <= 0.5f) ? 2 * interpolant : 1 - 2 * (interpolant - 0.5f);
-	return smoothstep(0, 1, cycletime);
+    float interpolant = fmod(elapsedTime, cycleDuration) / cycleDuration;
+    float cycletime = (interpolant <= 0.5f) ? 2 * interpolant : 1 - 2 * (interpolant - 0.5f);
+    return smoothstep(0, 1, cycletime);
 
 }
 
@@ -133,23 +133,23 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 // as long as the direction of the ray is correct then the depth does not matter.
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
-	Ray ray;
+    Ray ray;
 
-	// Pixel coords
-	float norm_x = float(index.x) / DispatchRaysDimensions().x; // bring to 0-1
-	float norm_y = float(index.y) / DispatchRaysDimensions().y; // bring to 0-1
-	float norm_z = 1.0f; // image frame is unit distance away from the camera
+    // Pixel coords
+    float norm_x = float(index.x) / DispatchRaysDimensions().x; // bring to 0-1
+    float norm_y = float(index.y) / DispatchRaysDimensions().y; // bring to 0-1
+    float norm_z = 1.0f; // image frame is unit distance away from the camera
 
-	norm_x = 2.0f*norm_x - 1.0f ; // bring x to 0-2,  then to(-1, 1)
-	norm_y = 1.0f - 2.0f*norm_y; // bring y  0-2, then to 1-,1 from (0,2) Y axis is flipped
+    norm_x = 2.0f*norm_x - 1.0f; // bring x to 0-2,  then to(-1, 1)
+    norm_y = 1.0f - 2.0f*norm_y; // bring y  0-2, then to 1-,1 from (0,2) Y axis is flipped
 
-	float4 pixel_inCameraCoords = float4(norm_x, norm_y, norm_z, 1.0f); // convert to homogenous coordinates [x,y,z,1] 
-	float4 pixel_inWorldCoords = mul(pixel_inCameraCoords, projectionToWorld);
+    float4 pixel_inCameraCoords = float4(norm_x, norm_y, norm_z, 1.0f); // convert to homogenous coordinates [x,y,z,1] 
+    float4 pixel_inWorldCoords = mul(pixel_inCameraCoords, projectionToWorld);
 
-	pixel_inWorldCoords /= pixel_inWorldCoords.w; // normalise by last dim 
+    pixel_inWorldCoords /= pixel_inWorldCoords.w; // normalise by last dim 
 
-	ray.origin = cameraPosition;
-	ray.direction = normalize(pixel_inWorldCoords.xyz - cameraPosition);
+    ray.origin = cameraPosition;
+    ray.direction = normalize(pixel_inWorldCoords.xyz - cameraPosition);
 
     return ray;
 }
@@ -158,9 +158,10 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // See https://en.wikipedia.org/wiki/Schlick%27s_approximation for formula.
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
-{	
-	float cos = saturate(dot(N, I));
-	return (1.0f - f0) * pow(1.0f - cos, 5.0f) + f0;
+{
+    float cos = saturate(dot(-I,N)); 
+    return (1.0f - f0) * pow(1.0f - cos, 5.0f) + f0;
+
 }
 
 #endif // RAYTRACINGSHADERHELPER_H

@@ -118,13 +118,13 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
 		
 		//(ID3D12Device* pDevice, void *pData, UINT64 datasize, ID3D12Resource **ppResource,const wchar_t* resourceName)
-		AllocateUploadBuffer(device, m_aabbs.data(), m_aabbs.size() * sizeof(m_aabbs[0]), &m_aabbBuffer.resource);
+		AllocateUploadBuffer(device, m_aabbs.data(), m_aabbs.size()*sizeof(m_aabbs[0]), &m_aabbBuffer.resource);
 	}
 }
 
 // TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
-	DXProceduralProject::BuildPlaneGeometry();
-	DXProceduralProject::BuildProceduralGeometryAABBs();
+	BuildPlaneGeometry();
+	BuildProceduralGeometryAABBs();
 }

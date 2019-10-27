@@ -16,13 +16,15 @@
 #include "stdafx.h"
 #include "DXProceduralProject.h"
 
-#define CPU_CODE_COMPLETE 0
+#define CPU_CODE_COMPLETE 1
 
 _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
     DXProceduralProject project(1280, 720, L"DXR Project - Procedural Geometry");
 #if CPU_CODE_COMPLETE
+
     return Win32Application::Run(&project, hInstance, nCmdShow);
+
 #endif
 }

@@ -23,7 +23,7 @@ void DXProceduralProject::DoRaytracing()
 
 	// TODO-2.8: do a very similar operation for the m_aabbPrimitiveAttributeBuffer
 	m_aabbPrimitiveAttributeBuffer.CopyStagingToGpu(frameIndex);
-	commandList->SetComputeRootConstantBufferView(GlobalRootSignature::Slot::AABBattributeBuffer, m_aabbPrimitiveAttributeBuffer.GpuVirtualAddress(frameIndex));
+	commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::AABBattributeBuffer, m_aabbPrimitiveAttributeBuffer.GpuVirtualAddress(frameIndex));
 
 	// Bind the descriptor heaps.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
@@ -68,8 +68,8 @@ void DXProceduralProject::DoRaytracing()
 			m_missShaderTable->GetDesc().Width , m_missShaderTableStrideInBytes };
 
 		// TODO-2.8: now fill in dispatchDesc->RayGenerationShaderRecord
-		dispatchDesc->RayGenerationShaderRecord = { m_rayGenShaderTable->GetGPUVirtualAddress(), 
-			m_rayGenShaderTable->GetDesc().Width };
+		dispatchDesc->RayGenerationShaderRecord = 
+        { m_rayGenShaderTable->GetGPUVirtualAddress(), m_rayGenShaderTable->GetDesc().Width };
 
 
 		// We do this for you. This will define how many threads will be dispatched. Basically like a blockDims in CUDA!

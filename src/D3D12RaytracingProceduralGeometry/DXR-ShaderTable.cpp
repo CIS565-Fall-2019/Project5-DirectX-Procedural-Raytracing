@@ -35,6 +35,7 @@ void DXProceduralProject::BuildShaderTables()
 		// Don't forget to update shaderIdToStringMap.
 		missShaderIDs[0] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[0]);
 		shaderIdToStringMap[missShaderIDs[0]] = c_missShaderNames[0];
+
 		missShaderIDs[1] = stateObjectProperties->GetShaderIdentifier(c_missShaderNames[1]);
 		shaderIdToStringMap[missShaderIDs[1]] = c_missShaderNames[1];
 
@@ -111,9 +112,9 @@ void DXProceduralProject::BuildShaderTables()
 		ShaderTable missShaderTable(device, numShaderRecords, shaderRecordSize, L" MissShaderTable");
 
 		// Push back the shader record, which does not need any root signatures.
-		for (int i = 0; i < RayType::Count; i++) {
-			missShaderTable.push_back(ShaderRecord(missShaderIDs[i], shaderRecordSize, nullptr, 0));
-		}
+		
+		missShaderTable.push_back(ShaderRecord(missShaderIDs[0], shaderRecordSize, nullptr, 0));
+        missShaderTable.push_back(ShaderRecord(missShaderIDs[1], shaderRecordSize, nullptr, 0));
 
 		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
 		missShaderTable.DebugPrint(shaderIdToStringMap);
