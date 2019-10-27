@@ -2,7 +2,7 @@
 Project 5 - DirectX Procedural Raytracing**
 
 * Disha Jindal: [Linkedin](https://www.linkedin.com/in/disha-jindal/)
-* Tested on: 
+* Tested on: Windows 10, Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz 16GB (SIGLAB)
 
 ## DirectX Procedural Raytracing
 <p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/camera_geo_light_anime.gif"></p>
@@ -58,13 +58,15 @@ Following bloopers are a result of some of the bugs introduced while working on 
 **Upside Down** 
 This is the result of my incorrect ray generation logic. Initially in pixel coordinates, (0,0) is the top left corner of the canvas. I normalized it to bring it to bring every pixel from (-1,1) range but missed that for DXR (-1,-1) should be bottom left not top left. 
 
-<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/blooper1_axis.PNG" width="600"></p>
+<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/blooper1_axis.PNG" width="400"></p>
+
+**Visibility Falloff For AABB**
+Incorrect configuration for visibility falloff for AABB's, led to this:
+<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/blooper3_visibility_falloff.PNG" width="400"></p>
 
 **Background Not Far Enough For Triangles**
 We implemented distance falloff function inside the triangle closest hit shader so that faraway triangles are slightly blurred. By not properly configuring the far away function, the background overshadowed the ground.
 
-<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/blooper2_background_not_far_enough.PNG" width="600"></p>
+<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/blooper2_background_not_far_enough.PNG" width="400"></p>
 
-**Visibility Falloff For AABB**
-Incorrect configuration for visibility falloff for AABB's, led to this:
-<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/blooper3_visibility_falloff.PNG" width="600"></p>
+
