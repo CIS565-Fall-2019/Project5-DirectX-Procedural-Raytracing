@@ -89,7 +89,7 @@ As the recursion depth increases, the frame rate drops. Most of the rays termina
   <img src="images/Shadows.png">
 </p>
 
-- Error in color computation (Incorrect Normal computation)
+- Error in color computation
 <p align="center">
   <img src="images/Color.png">
 </p>
