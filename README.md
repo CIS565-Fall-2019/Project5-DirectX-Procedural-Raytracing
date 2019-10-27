@@ -13,7 +13,9 @@ Project 5 - DirectX Procedural Raytracing**
 
 # Overview
 
-In this project we used DirectX12 to implement a basic path tracer. In this homework we were asked to implement the CPU side of DirectX12  as well as the GPU logic of raytracing in DirectX12.Below you will see some animations of the ray tracer in motion.
+Special thanks to Ziad. He is probably sick of seeing me in his OH and on Piazza. Without him I would have thrown my desktop out the window.
+
+In this project we used DirectX12 to implement a basic path tracer. In this homework we were asked to implement the CPU side of DirectX12  as well as the GPU logic of raytracing in DirectX12. Below you will see some animations of the ray tracer in motion.
 
 ![](images/sceenshot.PNG)
 
@@ -25,7 +27,7 @@ In this project we used DirectX12 to implement a basic path tracer. In this home
 
 # Performance Analysis
 
-Below are some data points after manipulating the recursion depth. As you can see, the further we follow the slower our application becomes. This is fairly intuitive.
+Below are some data points after manipulating the recursion depth. As you can see, the further we follow the ray slower our application becomes. I also did not see any noticeable rendering difference with these increasing recursion depths.
 
 ![](images/FPS.png)
 
@@ -58,9 +60,14 @@ This is what happens when you accidentally return a float instead of float3 ):
 Ziad ... without him I would have thrown my computer out the window
 
 http://viclw17.github.io/2018/11/29/raymarching-algorithm/
+
 https://www.freecodecamp.org/news/understanding-linear-interpolation-in-ui-animations-74701eb9957c/	
+
 https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
+
 https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
+
 https://www.scratchapixel.com/lessons/3d-basic-rendering/phong-shader-BRDF
+
 https://www.scratchapixel.com/lessons/advanced-rendering/rendering-distance-fields/blobbies
 
