@@ -22,7 +22,7 @@ After watching my program crash 10000000000000000000 times because my cpu side w
 
 ![](images/fuzzy.PNG)
 
-turns out there was alot wrong here ... alot
+turns out there was alot wrong here ... alot ... But I do like the darker purple and darker yellow colors!
 
 ![](images/wtf.PNG)
 
