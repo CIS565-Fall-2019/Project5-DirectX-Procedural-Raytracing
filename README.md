@@ -39,10 +39,11 @@ DXR also implements special Acceleration Structures namely `Bottom Level Acceler
   <img src="https://github.com/CIS565-Fall-2019/Project5-DirectX-Procedural-Raytracing/blob/master/images/accelexplained.png">
 </p>
 
+We implement the [Phong](https://en.wikipedia.org/wiki/Phong_reflection_model) lighting model which is an empirical model of the local illumination of points on a surface using Ambient, Diffuese and Specular lighting. We also implement Schlick's Approximation for Fresnel reflection effects on the objects.
 
 ### Performance Analysis
 
-As the recursion depth increases, the frame rate drops. But visibly there isn't much gain in the the rendering quality therfore recursion depth of 3 is sufficient to render well defined images for the given scene. 
+As the recursion depth increases, the frame rate drops. Most of the rays terminate at the light source after a few bounces so there isn't significant FPS drop after depth 6-7.  Visibly, there isn't much gain in the the rendering quality therfore recursion depth of 3 is sufficient to render well defined images for the given scene.
 
 <p align="center">
   <img src="images/fps_vs_recursion.png">
@@ -52,11 +53,14 @@ As the recursion depth increases, the frame rate drops. But visibly there isn't 
 
 #### Progress Per Section 
 
+ <p align="center"> Trace Rays | Miss Shaders |  Intersection Shaders (Metaballs & AABBS) </p> 
 <p align="center">
   <img src="images/1.gif", width=280>
   <img src="images/2.gif", width=280>
   <img src="images/3.gif", width=280>
 </p>
+
+ <p align="center"> Phong Lighting Model Shading, Schlick's Approximation |  Closest Hit Shaders </p>
 <p align="center">
   <img src="images/4.gif", width=280>
   <img src="images/5.png", width=280>
