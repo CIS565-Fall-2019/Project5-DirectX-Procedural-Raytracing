@@ -23,18 +23,18 @@ Specifically, the DXR execution pipeline mimics all the interactions depicted ab
 <p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/hitgroup.png" width="400"></p>
 
 ## Animations
-### No Animation
+
+The scene looks like this without any animation.
 
 <p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/no_anime.PNG" width="600"></p>
 
-### Geometric Animation
-<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/geo_anime.gif" width="600"></p>
+Following are the images with three different animations on the above image. The first one shows geometric animation where the objects are moving. The one is the middle has fixed camera and objects but the lighting is moving. Finally, in the last one object and lights are fixed but the camera viewpoint is moving.
 
-### Light Animation
-<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/light_anime.gif" width="600"></p>
 
-### Camera Animation
-<p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/camera_anime.gif" width="600"></p>
+
+Geometric Animation        |  Light Animation          |  Camera Animation 
+:-------------------------:|:-------------------------:|:-------------------------:
+![](https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/geo_anime.gif)  |  ![](https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/light_anime.gif)  |  ![](https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/camera_anime.gif)
 
 ## Implementation
 
