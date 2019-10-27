@@ -111,7 +111,10 @@ void DXProceduralProject::CreateConstantBuffers()
 //		structured buffers are for structs that have dynamic data (e.g lights in a scene, or AABBs in this case)
 void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
-
+	auto device = m_deviceResources->GetD3DDevice();
+	auto frameCount = m_deviceResources->GetBackBufferCount();
+	auto numElements = m_aabbs.size();
+	m_aabbPrimitiveAttributeBuffer.Create(device, numElements, frameCount, L"AABB Primitive Attribute Buffer");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
@@ -164,6 +167,9 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// You can infer what the bottom level AS space to local space transform should be.
 		// The intersection shader tests in this project work with local space, but the geometries are provided in bottom level 
 		// AS space. So this data will be used to convert back and forth from these spaces.
+		XMMATRIX mTransform = XMMatrixMultiply(XMMatrixMultiply(mScale, mRotation), mTranslation);
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = mTransform;
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, mTransform);
 	};
 
 	UINT offset = 0;
