@@ -56,7 +56,6 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// One AABB primitive per procedural geometry.
 		geometryDescs[BottomLevelASType::AABB].resize(IntersectionShaderType::TotalPrimitiveCount, aabbDescTemplate);
 
-		//UINT off_s = 0;
 		// TODO-2.6: Fill the AABB geometry desc for every procedural geometry.
 		// Look-up what a D3D12_RAYTRACING_GEOMETRY_AABBS_DESC structs needs to be filled in correctly.
 		// Remember to use m_aabbBuffer to get the AABB geometry data you previously filled in.
@@ -65,7 +64,6 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		
 		geometryDescs[BottomLevelASType::AABB][0].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (AnalyticPrimitive::AABB) * sizeof(D3D12_RAYTRACING_AABB);
 		geometryDescs[BottomLevelASType::AABB][1].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (AnalyticPrimitive::Spheres) * sizeof(D3D12_RAYTRACING_AABB);
-		//off_s += AnalyticPrimitive::Count;
 		geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
 	}
 }

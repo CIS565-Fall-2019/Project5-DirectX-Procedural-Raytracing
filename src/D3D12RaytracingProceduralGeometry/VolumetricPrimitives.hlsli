@@ -22,17 +22,17 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-	float distance = distance(position,blob.center);
+	float Distance = distance(position,blob.center);
 	float r = blob.radius;
-	float x = (r - distance)/r;
+	float x = (r - Distance)/r;
 
-	if (distance >= r)
+	if (Distance >= r)
 		return 0.0f;
-	else if (distance == r)
+	else if (Distance == r)
 		return 1.0f;
 
-	float d = r - distance;
-	float x = d / r;
+	//float d = r - distance;
+	//float x = d / r;
 
 	return (6 * pow(x, 5)) - (15 * pow(x, 4)) + (10 * pow(x, 3));
 }
@@ -138,7 +138,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	float stride = (tmax - tmin) / (steps * 1.0f);
 
 	while (t_point <= tmax) {
-		float3 position = ray.origin + (t_point * ray.direction;)
+        float3 position = ray.origin + (t_point * ray.direction);
 		float potential = CalculateMetaballsPotential(position, blobs);
 		float3 normal = CalculateMetaballsNormal(position, blobs);
 		if (potential > threshold && is_a_valid_hit(ray, t_point, normal))

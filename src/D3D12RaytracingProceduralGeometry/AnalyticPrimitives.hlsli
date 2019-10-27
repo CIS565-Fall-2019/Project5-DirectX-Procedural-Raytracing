@@ -177,7 +177,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 
 	ProceduralPrimitiveAttributes temp_attr;
 
-	bool intersected = false
+    bool intersected = false;
 
 	float tmax, temp_thit;
 
@@ -192,7 +192,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 			attr = temp_attr;
 			thit = temp_thit;
 		}
-		intersected = true
+        intersected = true;
 	}
 
 	if (RaySphereIntersectionTest(ray, temp_thit, tmax, temp_attr, center2, radius2))
@@ -201,7 +201,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 			attr = temp_attr;
 			thit = temp_thit;
 		}
-		intersected = true
+        intersected = true;
 	}
 
 

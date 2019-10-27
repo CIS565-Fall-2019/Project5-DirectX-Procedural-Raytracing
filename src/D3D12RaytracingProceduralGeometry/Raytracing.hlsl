@@ -89,12 +89,12 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 
 
 	float4 diffuse_color = dif_coef* diffuseCoef * albedo * g_sceneCB.lightDiffuseColor;
-	float4 specular_color = spec_coef * specularCoef
+    float4 specular_color = spec_coef * specularCoef;
 
 	if (isInShadow) {
 
 		diffuse_color *= InShadowRadiance;
-		specularColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+        specular_color = float4(0.0f, 0.0f, 0.0f, 0.0f);
 		
 	}
 
