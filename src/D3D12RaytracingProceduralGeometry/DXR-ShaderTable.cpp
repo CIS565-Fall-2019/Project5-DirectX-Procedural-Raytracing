@@ -115,6 +115,7 @@ void DXProceduralProject::BuildShaderTables()
 
 		missShaderTable.DebugPrint(shaderIdToStringMap);
 		m_missShaderTable = missShaderTable.GetResource();
+		m_missShaderTableStrideInBytes = missShaderTable.GetShaderRecordSize();
 	}
 
 	// Hit group shader table. This one is slightly different given that a hit group requires its own custom root signature.

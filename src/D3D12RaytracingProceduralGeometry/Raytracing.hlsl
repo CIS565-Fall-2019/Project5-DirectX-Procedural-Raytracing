@@ -171,7 +171,6 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
     ShadowRayPayload rayPayload;
     rayPayload.hit = true;
 
-
     RAY_FLAG shadowFlags = RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_FORCE_OPAQUE; 
 
     TraceRay(g_scene,

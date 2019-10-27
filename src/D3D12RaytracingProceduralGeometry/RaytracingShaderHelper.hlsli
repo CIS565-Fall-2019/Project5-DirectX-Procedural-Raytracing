@@ -158,7 +158,9 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0;
+    float costheta = min(max(dot(I, N), 0.0f), 1.0f);
+    float factor = pow(1.0f - costheta, 5);
+	return factor * f0;
 }
 
 #endif // RAYTRACINGSHADERHELPER_H
