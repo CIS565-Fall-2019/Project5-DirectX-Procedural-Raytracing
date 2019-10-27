@@ -21,7 +21,7 @@ Below are some data points after manipulating the recursion depth. As you can se
 
 ![](images/FPS.png)
 
-# Debilitating Bugs AKA Bloopes In CIS565 World
+# Debilitating Bugs AKA Bloopers In CIS565 World
 
 ![](images/looks_close_enough.PNG)
 
