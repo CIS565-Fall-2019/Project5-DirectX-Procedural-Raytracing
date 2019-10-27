@@ -50,7 +50,7 @@ Project 5 - DirectX Procedural Raytracing**
 
 4. No animation
 
-   1. ![](images/no_animation.png)
+   1. ![](images/no_animation.PNG)
 
 
 
