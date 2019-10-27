@@ -54,13 +54,13 @@ As the recursion depth increases, the frame rate drops. Most of the rays termina
 #### Progress Per Section 
 
  <p align="center"> Trace Rays | Miss Shaders |  Intersection Shaders (Metaballs & AABBS) </p> 
+  <p align="center"> Phong Lighting Model Shading, Schlick's Approximation |  Closest Hit Shaders </p>
+  
 <p align="center">
   <img src="images/1.gif", width=280>
   <img src="images/2.gif", width=280>
   <img src="images/3.gif", width=280>
 </p>
-
- <p align="center"> Phong Lighting Model Shading, Schlick's Approximation |  Closest Hit Shaders </p>
 <p align="center">
   <img src="images/4.gif", width=280>
   <img src="images/5.png", width=280>
@@ -79,7 +79,7 @@ As the recursion depth increases, the frame rate drops. Most of the rays termina
 
 ### Bloopers
 
-- Error computing Meta-Ball potential
+- Error computing Meta-Ball potential, (incorrect range)
 <p align="center">
   <img src="images/PotentialError.png">
 </p>
@@ -89,7 +89,7 @@ As the recursion depth increases, the frame rate drops. Most of the rays termina
   <img src="images/Shadows.png">
 </p>
 
-- Error in color computation
+- Error in color computation (Incorrect Normal computation)
 <p align="center">
   <img src="images/Color.png">
 </p>
