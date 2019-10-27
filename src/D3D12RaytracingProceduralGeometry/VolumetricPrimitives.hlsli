@@ -22,7 +22,15 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+    float position_from_Center = distance(position, blob.center); //non-neg
+
+    if (position_from_Center >= blob.radius) {
+        return 0.0f;
+    }
+    //position_from_Center = position_from_Center / blob.radius; // normlaised to (0,1)
+    float norm_x = distance(position_from_Center,blob.radius)/blob.radius; // normalise to compute potential
+    return 6 * pow(norm_x, 5.0f) - 15 * pow(norm_x, 4.0f) + 10 * pow(norm_x, 3.0f);
+    
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -83,6 +91,16 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+
+    for (UINT i = 0; i < N_METABALLS; i++) {
+
+        float tmini, tmaxi;
+
+        if (RaySolidSphereIntersectionTest(ray, tmini, tmaxi, blobs[i].center, blobs[i].radius)) {
+            tmin = min(tmin, tmini); //running min
+            tmax = max(tmax, tmaxi); //running max
+        }
+    }
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,8 +118,42 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
+    Metaball blobs[N_METABALLS];
+    InitializeAnimatedMetaballs(blobs, elapsedTime, 12.0f);
+
+    float tmin, tmax;
+    TestMetaballsIntersection(ray, tmin, tmax, blobs);
+    UINT MAX_STEPS = 128;
+    float t = tmin;
+
+    float minTStep = (tmax - tmin) / (MAX_STEPS / 1);
+
+    UINT iStep = 0;
+    const float Threshold = 0.25f;
+
+    while (iStep < MAX_STEPS)
+    {
+        float3 position = ray.origin + t * ray.direction;
+        float sumFieldPotential = 0;  // Sum of all metaball field potentials.
+
+        sumFieldPotential = CalculateMetaballsPotential(position, blobs);
+
+        if (sumFieldPotential >= Threshold) {
+
+            float3 normal = CalculateMetaballsNormal(position, blobs);
+            if (is_a_valid_hit(ray, t, normal)) {
+                thit = t;
+                attr.normal = normal;
+                return true;
+            }
+        }
+
+        t += minTStep;
+        iStep++;
+    }
+
+    thit = 0.0f;
+    attr.normal = float3(0.0f, 0.0f, 0.0f);
     return false;
 }
 
