@@ -14,7 +14,7 @@ DirectX12 what more can I say ... It is nifty in theory but debilitating in prac
 
 
 
-### Debilitating Bugs ( aka bloopers ... )
+### Debilitating Bugs ( aka bloopers in CIS565 world ... )
 
 ![](images/looks_close_enough.PNG)
 
