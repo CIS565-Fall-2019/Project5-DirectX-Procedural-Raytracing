@@ -65,6 +65,12 @@ void DXProceduralProject::DoRaytracing()
 		GlobalRootSignature::Slot::OutputView,
 		m_raytracingOutputResourceUAVGpuDescriptor);
 
+	// Copy down the vertex buffers. Duh. I forgot this line and 
+	// spent hours trying to find out what was wrong
+	commandList->SetComputeRootDescriptorTable(
+		GlobalRootSignature::Slot::VertexBuffers, 
+		m_indexBuffer.gpuDescriptorHandle);
+
 	// This will define a `DispatchRays` function that takes in a command list, a pipeline state, and a descriptor
 	// This will set the hooks using the shader tables built before and call DispatchRays on the command list
 	auto DispatchRays = [&](auto* raytracingCommandList, auto* stateObject, auto* dispatchDesc)
