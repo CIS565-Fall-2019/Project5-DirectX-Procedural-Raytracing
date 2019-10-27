@@ -68,14 +68,14 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	//float curCycleTime = fmod(elapsedTime, cycleDuration)/ cycleDuration;
-	//if (curCycleTime > 0.5) {
-	//	curCycleTime = 1.0 - 2.0*(curCycleTime - 0.5);
-	//}
-	//else {
-	//	curCycleTime = 2.0*curCycleTime;
-	//}
-	return smoothstep(0, 1, 0);
+	float curCycleTime = fmod(elapsedTime, cycleDuration)/ cycleDuration;
+	if (curCycleTime > 0.5) {
+		curCycleTime = 1.0 - 2.0*(curCycleTime - 0.5);
+	}
+	else {
+		curCycleTime = 2.0*curCycleTime;
+	}
+	return smoothstep(0, 1, curCycleTime);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
