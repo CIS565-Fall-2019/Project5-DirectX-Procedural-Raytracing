@@ -68,7 +68,14 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+	float curCycleTime = fmod(elapsedTime, cycleDuration)/ cycleDuration;
+	if (curCycleTime > 0.5) {
+		curCycleTime = 1.0 - 2.0*(curCycleTime - 0.5);
+	}
+	else {
+		curCycleTime = 2.0*curCycleTime;
+	}
+	return smoothstep(0, 1, curCycleTime);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -129,9 +136,18 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 // as long as the direction of the ray is correct then the depth does not matter.
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
+
+	uint3 dim = DispatchRaysDimensions();
+	float2 ndc = float2(index.x / (dim.x * 1.0f),  index.y / (dim.y * 1.0f));
+    ndc.x = 2.0f * (ndc.x - 0.5f);
+    ndc.y = 2.0f * (0.5f - ndc.y);
+
+    float4 rayDir = normalize(float4(ndc.x, ndc.y, 1.0f, 1.0f));
+	float4 point3d = mul(rayDir, projectionToWorld);
+
 	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+    ray.origin = cameraPosition;
+	ray.direction = normalize(float3(point3d.x, point3d.y, point3d.z));
 
     return ray;
 }
@@ -141,7 +157,10 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0;
+    float3 fR;
+    fR = f0 + (1 - f0)*pow(1 - saturate(dot(-I, N)), 5.0f);
+    return fR;
+
 }
 
 #endif // RAYTRACINGSHADERHELPER_H
