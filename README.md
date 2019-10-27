@@ -8,6 +8,55 @@ DXR Raytracing
   * [Personal Website](https://jmarcao.github.io)
 * Tested on: Windows 10, i5-4690K @ 3.50GHz, 8GB DDR3, RTX 2080 TI 3071MB (Personal)
 
+<b>(Artifacts in the reflection are due to GIF encoding, will try to fix that)</b>
+
+![](images/scene.gif)
+
+# Project
+This project went through the steps of setting up DXR Raytracing pipeline with triangle support, as well as simple geometries (spheres), Axis-Aligned Bounding Box (AABB), as well as volumetric Metaballs that become distorted with time.
+
+The project was focused on simply understanding the API and applying the raytracing knowledge from Project 3 as well as additional geometries. I also perform some performance analysis on several parameters, including ray depth, metaball raymarching granularity, and number of elements in a metaball group.
+
+# DXR API
+
+The DXR API provides a lot of power, but also a lot of confusion. The API can handle triangles easily, but adding support for non-triangle geometries turned out to be complicated in my opinion. Below are some of the highlights from learning the API that can hopefully help somebody else out. DXR is all about structure. To automate a lot of steps, DXR just needs to be told about the layout of the data. From there, it can figure things out (such as triangle/ray intersections).
+
+### Global and Local Root Signatures
+In CUDA, arguments are defined through normal C-style function arguments. With the DXR API, arguments can be passed in through root signatures. Each GPU thread/shader will receive the same copy of the GlobalRootSignature. This makes it great for globally true values, such as lighting locations, acceleration structure data, etc. LocalRootSignatures, on the other hand, are unique for each shader. Each is structured the same, but the contents of the data can change. This allows shaders to get data on the specific geometry they are intersecting with. 
+
+# Performance
+
+I collected performance metrics on the DXR project by varying ray depth and metaball raymarching and complexity.
+
+First, I increased the maximum ray depth parameter. The collected data is below.
+
+![](images/raydepth_fps.png)
+
+| Ray Depth | FPS    |
+|-----------|--------|
+| 3         | 550.92 |
+| 4         | 510.75 |
+| 5         | 482.51 |
+| 6         | 471.74 |
+| 7         | 486.36 |
+| 8         | 467.83 |
+| 9         | 477.81 |
+| 10        | 471.27 |
+
+As ray depth increases, the FPS goes down. This is expected, since a deeper depth adds more iterations of each ray. However, it also becomes clear that after a ray depth of 5, the difference is minimal. This is because most of the rays will, by that point, be executing on no-hit shaders. Those shaders perform minimal work and set the depth of ray to the maximum value, essentially removing them from the equation. 
+
+Additionally, I analyzed the performance of the Metaball Raymarching algorithm. The algorithm looks at each point from the entry of the ray in the bounding box and the exit of the ray. It then calculates a "potential" based on the distance between the point and each other sphere. By modifying the steps taken, we can see how drastic the performance hit is of rendering these metaballs. I also include what each step variant looks like. As can be seen, The performance loss is pretty huge, which is expected since each ray needs to test against each sphere in the bounding box. However, the metaballs do not render "correctly" if not enough steps are taken. 
+
+![](images/metablls.png)
+
+| MB Steps | FPS    | GIF |
+|----------|--------| ----|
+| 2        | 1726   | ![](images/mb_2.gif) |
+| 8        | 1660   | ![](images/mb_8.gif) |
+| 32       | 1267   | ![](images/mb_32.gif) |
+| 128      | 550.92 | ![](images/mb_128.gif) |
+| 512      | 135    | ![](images/mb_512.gif) |
+
 # Conceptual Questions
 
 ## Question 1
