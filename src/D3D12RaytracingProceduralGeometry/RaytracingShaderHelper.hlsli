@@ -138,14 +138,13 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 {
 	Ray ray;
 	ray.origin = cameraPosition;
-	// Pixel width, height and depth
-	uint3 whd = DispatchRaysDimensions();
-	// Pixel to NDC
-	float3 dc = { ((2.0f * index.x) / whd.x) - 1.0f, 1.0f - ((2.0f * index.y) / whd.y) , 1.0f };
-	float4 ndc = normalize(float4(dc.x, dc.y, 1.0f, 1.0f));
-	// Projected Point
-	float4 pos = mul(ndc, projectionToWorld);
-	ray.direction = normalize(float3(pos.x, pos.y, pos.z));
+	float2 screenPos = (index + 0.5f) / DispatchRaysDimensions().xy * 2 - 1;
+	screenPos.y = -screenPos.y;
+	float4 norm_points = { screenPos[0], screenPos[1],0,1 };
+	float4 dir = mul(norm_points, projectionToWorld);
+	dir.xyz /= dir.w;
+	ray.direction = normalize(dir.xyz - cameraPosition);
+
 	return ray;
 }
 
