@@ -194,7 +194,6 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		instanceDesc.InstanceContributionToHitGroupIndex = hitGroupIndexOffset;
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::Triangle];
 
-		hitGroupIndexOffset += ARRAYSIZE(c_hitGroupNames_TriangleGeometry);
 
 		// Calculate transformation matrix.
 		// We multiply the width by -0.5 in the x,z plane because we want the middle of the plane
@@ -220,7 +219,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
 		instanceDesc.InstanceMask = 1;
-		instanceDesc.InstanceContributionToHitGroupIndex = hitGroupIndexOffset;
+		instanceDesc.InstanceContributionToHitGroupIndex = BottomLevelASType::AABB * RayType::Count;
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 		//make translation matrix, out of wishes and pretend

@@ -68,7 +68,12 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+    float ratio = elapsedTime / cycleDuration;
+    float cyclePoint = ratio - (int)ratio;
+                if (cyclePoint <= 0.5f)
+                    return smoothstep(0, 1, 2.0f * cyclePoint);
+                else
+                    return smoothstep(0, 1, 2.0f * (1.0f - cyclePoint));
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -119,7 +124,7 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
         barycentrics.y * (vertexAttribute[2] - vertexAttribute[0]);
 }
 
-// TODO-3.1: Generate a ray in world space for a camera pixel corresponding to a dispatch index (analogous to a thread index in CUDA).
+// TDO-3.1: Generate a ray in world space for a camera pixel corresponding to a dispatch index (analogous to a thread index in CUDA).
 // Check out https://docs.microsoft.com/en-us/windows/win32/direct3d12/direct3d-12-raytracing-hlsl-system-value-intrinsics to see interesting 
 // intrinsic HLSL raytracing functions you may use.
 // Remember that you are given the pixel coordinates from index. You need to convert this to normalized-device coordinates first.

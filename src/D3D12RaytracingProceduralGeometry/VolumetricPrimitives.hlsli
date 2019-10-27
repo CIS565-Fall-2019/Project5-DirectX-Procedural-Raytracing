@@ -8,6 +8,7 @@
 
 #define NUMSTEPS 128
 #define THRESH 0.15f
+#define CYCLETIME 5.0f
 
 // LOOKAT-1.9.4: Shockingly, a metaball is just a sphere!
 struct Metaball
@@ -119,7 +120,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
     Metaball blobs[N_METABALLS];
-    InitializeAnimatedMetaballs(blobs, elapsedTime, 1.0f);//TODO: figure out this cycle time stuff
+    InitializeAnimatedMetaballs(blobs, elapsedTime, CYCLETIME);
     float tmin, tmax;
     TestMetaballsIntersection(ray, tmin, tmax, blobs);
     if (tmin == INFINITY || tmax == -INFINITY) return false;//did not hit any metaballs

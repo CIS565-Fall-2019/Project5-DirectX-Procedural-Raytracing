@@ -85,7 +85,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// and returns an D3D12_RAYTRACING_AABB for you.
 		// Note that you are only filling an axis-aligned bounding box.
 		// This should take into account the basePosition and the stride defined above.
-		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
+		auto InitializeAABB = [&](XMFLOAT3& offsetIndex, auto& size)
 		{
 			D3D12_RAYTRACING_AABB aabb{};
 			//center coordinate for our (0, 0) index point
@@ -93,18 +93,18 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 									basePosition.y + c_aabbWidth / 2.0f,
 									basePosition.z  + c_aabbWidth / 2.0f};
 			XMFLOAT3 myCenter = baseCenter;// + offsetIndex * stride
-			myCenter.x += stride.x * (aabbGrid.x - 1) / 2.0f;
-		    myCenter.y += stride.y * (aabbGrid.y - 1) / 2.0f;
-			myCenter.z += stride.z * (aabbGrid.z - 1) / 2.0f;
-			myCenter.x += offsetIndex.x * stride.x;
-			myCenter.y += offsetIndex.y * stride.y;
-			myCenter.z += offsetIndex.z * stride.z;
+			myCenter.x += stride.x * ((aabbGrid.x - 1) / 2.0f + offsetIndex.x);
+		    myCenter.y += stride.y * ((aabbGrid.y - 1) / 2.0f + offsetIndex.y);
+			myCenter.z += stride.z * ((aabbGrid.z - 1) / 2.0f + offsetIndex.z);
 			aabb.MaxX = myCenter.x + size.x / 2.0f;
 			aabb.MaxY = myCenter.y + size.y / 2.0f;
 			aabb.MaxZ = myCenter.z + size.z / 2.0f;
 			aabb.MinX = myCenter.x - size.x / 2.0f;
 			aabb.MinY = myCenter.y - size.y / 2.0f;
 			aabb.MinZ = myCenter.z - size.z / 2.0f;
+			char buffer[300];
+			sprintf_s(buffer, "AABB:\tX[%f,%f]\tY[%f,%f]\tZ[%f,%f]\n", aabb.MinX, aabb.MaxX, aabb.MinY, aabb.MaxY, aabb.MinZ, aabb.MaxZ);
+			OutputDebugStringA(buffer);
 			
 			return aabb;
 		};
@@ -116,14 +116,14 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		{
 			using namespace AnalyticPrimitive;
 			m_aabbs[offset + AABB] = InitializeAABB(XMFLOAT3(0.5f, 0.0f, 0.0f), XMFLOAT3(2.0f, 3.0f, 2.0f));
-			m_aabbs[offset + Spheres] = InitializeAABB(XMFLOAT3(1.0f, 0.75f, -0.5f), XMFLOAT3(3.0f, 3.0f, 3.0f));
+			m_aabbs[offset + Spheres] = InitializeAABB(XMFLOAT3(1.0f, 0.5f, -0.5f), XMFLOAT3(3.0f, 3.0f, 3.0f));
 			offset += AnalyticPrimitive::Count;
 		}
 
 		// Volumetric primitives.
 		{
 			using namespace VolumetricPrimitive;
-			m_aabbs[offset + Metaballs] = InitializeAABB(XMINT3(-1.0f, 0.0f, 0.0f), XMFLOAT3(6.0f, 6.0f, 6.0f));
+			m_aabbs[offset + Metaballs] = InitializeAABB(XMFLOAT3(-1.0f, 0.5f, 1.0f), XMFLOAT3(6.0f, 6.0f, 6.0f));
 			offset += VolumetricPrimitive::Count;
 		}
 

@@ -51,10 +51,14 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // HINT:	Consider using built-in DirectX functions to find the reflected ray. Remember that a reflected ray is reflected
 //			with respect to the normal of the hit position.
 // Remember to normalize the reflected ray, and to clamp the dot product term 
-float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
+float CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	float3 reflectDirection = reflect(incidentLightRay, normal);
-	return float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float3 reflectDirection = normalize(reflect(incidentLightRay, normal));
+    float3 reverseRayDirection = -WorldRayDirection();
+    float dotp = dot(reflectDirection, reverseRayDirection);
+    dotp = min(max(dotp, 0.0f), 1.0f);
+    float retval = pow(dotp, specularPower);
+    return retval;
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -74,6 +78,11 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	if (isInShadow){
 		return float4(0.0f, 0.0f, 0.0f, 0.0f);
 	}
+
+    float3 hitPos = HitWorldPosition();
+    float3 lightPos = g_sceneCB.lightPosition.xyz;
+    float3 incident = normalize(hitPos - lightPos);
+
    
 	// Ambient component
 	// Fake AO: Darken faces with normal facing downwards/away from the sky a little bit
@@ -83,7 +92,13 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-	return ambientColor;
+    float4 specularColor = float4(1.0f, 1.0f, 1.0f, 1.0f) * CalculateSpecularCoefficient(incident, normal, specularPower); 
+    float4 diffuseColor = albedo * diffuseCoef * CalculateDiffuseCoefficient(incident, normal);
+
+    float4 result = ambientColor + specularColor + diffuseColor;
+    
+    return result;
+           
 }
 
 //***************************************************************************
@@ -156,7 +171,6 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
     ShadowRayPayload rayPayload;
     rayPayload.hit = true;
 
-    return false;
 
     RAY_FLAG shadowFlags = RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_FORCE_OPAQUE; 
 
@@ -244,6 +258,9 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
+	//TODO: apply visibility falloff
+    float t = RayTCurrent();
+    color = lerp(color, BackgroundColor, 1.0 - exp(-0.0000001*t*t*t));
 
     rayPayload.color = color;
 }
@@ -287,6 +304,8 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 
 
 	//TODO: apply visibility falloff
+    float t = RayTCurrent();
+    color = lerp(color, BackgroundColor, 1.0 - exp(-0.0000001*t*t));
 
     rayPayload.color = color;
 }
@@ -295,17 +314,17 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 //**********************------ Miss shaders -------**************************
 //***************************************************************************
 
-// TODO-3.3: Complete the Radiance ray miss shader. What color should you output if you hit no geometry?
+// TDO-3.3: Complete the Radiance ray miss shader. What color should you output if you hit no geometry?
 // Make sure you edit the rayPayload so your color gets passed down to other shaders.
 // NOTE: whether we missed a Triangle or a Procedural Geometry does not matter. The miss output should be the same!
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-    rayPayload.color = float4(0.1f, 0.4f, 0.8f, 0.0f);
+    rayPayload.color = float4(BackgroundColor);
 
 }
 
-// TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
+// TDO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
@@ -367,7 +386,7 @@ void MyIntersectionShader_VolumetricPrimitive()
     ProceduralPrimitiveAttributes attr;
 
         
-        if (RayMetaballsIntersectionTest(localRay, thit, attr, 0))//TODO: find out how to get elapsedTime for this method
+        if (RayMetaballsIntersectionTest(localRay, thit, attr, g_sceneCB.elapsedTime))
         {
             PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
             
