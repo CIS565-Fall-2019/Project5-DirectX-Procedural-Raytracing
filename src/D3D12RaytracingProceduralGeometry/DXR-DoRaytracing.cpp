@@ -50,16 +50,10 @@ void DXProceduralProject::DoRaytracing()
 	// This should be done by telling the commandList to SetComputeRoot*(). You just have to figure out what * is.
 	// Example: in the case of GlobalRootSignature::Slot::SceneConstant above, we used SetComputeRootConstantBufferView()
 	// Hint: look at CreateRootSignatures() in DXR-Pipeline.cpp.
-	auto SetCommonPipelineState = [&](auto* descriptorSetCommandList)
-	{
-		descriptorSetCommandList->SetDescriptorHeaps(1, m_descriptorHeap.GetAddressOf());
-		commandList->SetComputeRootDescriptorTable(GlobalRootSignature::Slot::VertexBuffers, m_indexBuffer.gpuDescriptorHandle);
+	commandList->SetComputeRootDescriptorTable(GlobalRootSignature::Slot::VertexBuffers, m_indexBuffer.gpuDescriptorHandle);
 
-		// TODO-2.8: Bind the OutputView (basically m_raytracingOutputResourceUAVGpuDescriptor). Very similar to the Index/Vertex buffer.
-		commandList->SetComputeRootDescriptorTable(GlobalRootSignature::Slot::OutputView, m_raytracingOutputResourceUAVGpuDescriptor);
-	};
-
-	commandList->SetComputeRootSignature(m_raytracingGlobalRootSignature.Get());
+	// TODO-2.8: Bind the OutputView (basically m_raytracingOutputResourceUAVGpuDescriptor). Very similar to the Index/Vertex buffer.
+	commandList->SetComputeRootDescriptorTable(GlobalRootSignature::Slot::OutputView, m_raytracingOutputResourceUAVGpuDescriptor);
 
 	// This will define a `DispatchRays` function that takes in a command list, a pipeline state, and a descriptor
 	// This will set the hooks using the shader tables built before and call DispatchRays on the command list

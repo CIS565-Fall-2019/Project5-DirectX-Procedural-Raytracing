@@ -41,7 +41,8 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return 0.0f;
+	float coeff = dot(normalize(-incidentLightRay), normalize(normal));
+	return coeff;
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -51,6 +52,7 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
+	float3 reflectRay = normalize(reflect(incidentLightRay, normal));
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
@@ -150,16 +152,14 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 void MyRaygenShader()
 {
 	// Generate a ray for a camera pixel corresponding to an index from the dispatched 2D grid.
-	//Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
+	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
 
 	// Cast a ray into the scene and retrieve a shaded color.
-	//UINT currentRecursionDepth = 3;
-	//float4 color = TraceRadianceRay(ray, currentRecursionDepth);
-
-	float4 color1 = float4(0, 1, 0, 1);
+	UINT currentRecursionDepth = 0;
+	float4 color = TraceRadianceRay(ray, currentRecursionDepth);
 
 	// Write the raytraced color to the output texture.
-	g_renderTarget[DispatchRaysIndex().xy] = color1;
+	g_renderTarget[DispatchRaysIndex().xy] = color;
 
 	// Write the color to the render target
 	//g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
