@@ -15,7 +15,7 @@ Project 5 - DirectX Procedural Raytracing**
 
 In this project we used DirectX12 to implement a basic path tracer. In this homework we were asked to implement the CPU side of DirectX12  as well as the GPU logic of raytracing in DirectX12.Below you will see some animations of the ray tracer in motion.
 
-![](images/screenshot.PNG)
+![](images/sceenshot.PNG)
 
 ![](images/done.gif)
 
