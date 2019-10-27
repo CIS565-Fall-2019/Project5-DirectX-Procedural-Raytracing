@@ -17,7 +17,7 @@ DirectX12 what more can I say ... It is nifty in theory but debilitating in prac
 
 # Performance Analysis
 
-
+![](images/FPS.PNG)
 
 # Debilitating Bugs aka bloopes in CIS565 world
 
