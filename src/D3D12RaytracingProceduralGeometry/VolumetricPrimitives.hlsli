@@ -22,7 +22,24 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	// double check
+	float close_ness = length(position - blob.center);
+
+	if (close_ness == 0)
+		return 1.0f;
+	if (close_ness >= blob.radius)
+		return 0.0f;
+	
+	// some ratio
+	close_ness = blob.radius - close_ness;
+	close_ness /= blob.radius;
+
+	float powa = pow(close_ness, 5);
+	float powb = pow(close_ness, 4);
+	float powc = pow(close_ness, 3);
+
+	// this needs toturn into ratio 
+	return 6*powa - 15*powb + 10*powc;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -83,6 +100,21 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+
+	float temp_max;
+	float temp_min;
+
+	for (int i = 0; i < N_METABALLS; i++)
+	{
+		Metaball blob = blobs[i];
+		//bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, in float3 center = float3(0, 0, 0), in float radius = 1)
+		if (RaySolidSphereIntersectionTest(ray, temp_min, temp_max, blob.center, blob.radius))
+		{
+				// keep track of our min and max intersection locations important for marching
+				tmin = min(temp_min, tmin);
+				tmax = max(temp_max, tmax);
+		}
+	}
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,9 +132,54 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
+	Metaball blobs[N_METABALLS];
+	
+	// because this class is satan
+	const float artistic_touch = 1-.666666f;
+	const float cycleDuration = 6.6666f;
+	
+	// default to 0 unless valid hit occurs
 	thit = 0.0f;
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
-    return false;
+	
+	float temp_max;
+	float temp_min;
+
+	// void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elapsedTime, in float cycleDuration)
+	// step 1
+	InitializeAnimatedMetaballs(blobs, elapsedTime, cycleDuration);
+
+	// step 2 find min and max
+	TestMetaballsIntersection(ray, temp_min, temp_max,blobs);
+
+	// slightly adjust our position every iteration based off of our findings of min and max scale to 128 so it ends on our temp_max boundary
+	float step = (temp_max - temp_min) / 128;
+	
+	// ray march this bitch 
+	for (int i = 0; i < 128; i++)
+	{
+		//step 3a
+		float3 position = ray.origin + temp_min * ray.direction;
+		float potential = CalculateMetaballsPotential(position, blobs);
+
+		// 3b
+		// potentially render this bitch 
+		if (potential > artistic_touch)
+		{
+			//float3 CalculateMetaballsNormal(in float3 position, in Metaball blobs[N_METABALLS])
+			float normal = CalculateMetaballsNormal(position, blobs);
+			if (is_a_valid_hit(ray, temp_min, attr.normal))
+			{
+			    // set variables here or else bugs occur ): 
+				thit = temp_min;
+				attr.normal = normal;
+				return true;
+			}
+		}
+		temp_min += step;
+	}
+	// no hit or some shit
+	return false;
 }
 
 #endif // VOLUMETRICPRIMITIVESLIBRARY_H

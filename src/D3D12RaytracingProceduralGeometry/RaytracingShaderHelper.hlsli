@@ -68,7 +68,15 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+	// 1
+	float interpolant = elapsedTime / cycleDuration; // gives something like 1/5
+    
+	// 2 lol what ... I just double or nothing that shit
+	// https://www.freecodecamp.org/news/understanding-linear-interpolation-in-ui-animations-74701eb9957c/	
+	interpolant = interpolant <= .5 ? interpolant * 2 : 1 - 2 *(interpolant -.5f);
+
+	// smooth my stuff please ...
+	return smoothstep(0, 1, interpolant);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -139,10 +147,10 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 
 	// do what I said in hte conceptual question which is trafnsorm us
 	// screen pos = x,y 0 is z since we have no z and w = 1
-	float4 world = mul(float4(screenPos, 0, 1), projectionToWorld);
+	float4 world_star = mul(float4(screenPos, 0, 1), projectionToWorld);
 
 	// do what ziad told me to do in OH divide everything by w to get the correct perspective view
-	world.xyz /= world.w;
+	world_star.xyz /= world_star.w;
 
 	Ray ray;
 	
@@ -150,7 +158,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 	ray.origin = cameraPosition;
 	
 	// normalize our coordinates because thats something CG ppl do
-	ray.direction = normalize(world.xyz - ray.origin);
+	ray.direction = normalize(world_star.xyz - ray.origin);
 
     return ray;
 }

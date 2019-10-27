@@ -103,7 +103,7 @@ float3 CalculateNormalForARaySphereHit(in Ray ray, in float thit, float3 center)
 }
 
 // Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects a hollow sphere.
-bool RaySphereIntersectionTest(in Ray ray, out float thit, out float tmax, in ProceduralPrimitiveAttributes attr, in float3 center = float3(0, 0, 0), in float radius = 1)
+bool RaySphereIntersectionTest(in Ray ray, out float thit, out float tmax, out ProceduralPrimitiveAttributes attr, in float3 center = float3(0, 0, 0), in float radius = 1)
 {
     float t0, t1; // solutions for t if the ray intersects 
 
@@ -166,18 +166,39 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	float3 center = float3(-0.2, 0, -0.2);
-	float radius = 0.7f;
+	float3 center[3];
+	float radius[3];
+	bool hit = false;
+
+	center[0] = float3(-0.2, 0, -0.2);
+	radius[0] = 0.5f;
+	center[1] = float3(-.4, -.5, -0.9);
+	radius[1] = .3f;
+	center[2] = float3(0.7, 0.8, 0.2);
+	radius[2] = .2f;
+
 
 	thit = RayTCurrent();
-
-	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
+	float temp_max =0;
+	float tmax = 0;
+	float temp_hit = thit;
+	ProceduralPrimitiveAttributes temp_attr;
+	for (int i = 0; i < 3; i++) 
 	{
-		return true;
+		if (RaySphereIntersectionTest(ray, temp_hit, temp_max, temp_attr, center[i], radius[i]))
+		{
+			//not sure why thit and not max but oh well tmax causes for a mind bending bug
+			if (temp_hit < thit)
+			{
+				tmax = temp_max;
+				attr = temp_attr;
+				thit = temp_hit;
+				hit = true;
+			}
+		}
 	}
 
-	return false;
+	return hit;
 }
 
 #endif // ANALYTICPRIMITIVES_H

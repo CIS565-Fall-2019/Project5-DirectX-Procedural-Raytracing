@@ -41,7 +41,7 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return saturate(dot(incidentLightRay,normal));
+	return saturate(dot(-incidentLightRay,normal));
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -51,7 +51,17 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	return float4(0.0f, 0.0f, 0.0f, 0.0f);
+	// reflect
+	float3 reflected_ray = reflect(incidentLightRay,normal);
+	//  https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
+	// helpful aF
+	float3 reverse_ray_direction = normalize(-WorldRayDirection());
+	
+	float4 coefficient = saturate(dot(reflected_ray, reverse_ray_direction));
+
+	coefficient = saturate(pow(coefficient, specularPower));
+
+	return coefficient;
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -68,6 +78,30 @@ float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal
 float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInShadow,
 	in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
 {
+	// 
+	float3 mf_world_position = HitWorldPosition();
+	float3 lightPosition = g_sceneCB.lightPosition.xyz;
+	float4 lightDiffuseColor = g_sceneCB.lightDiffuseColor;
+	float4 specularColor = float4(0, 0, 0, 0);
+	float4 lightSpecularColor = float4(1, 1, 1, 1); // a fully LIT light
+
+	// get diffuse
+	float3 incidentLightRay = normalize(mf_world_position - lightPosition);
+	float diffuse_coefficient = CalculateDiffuseCoefficient(incidentLightRay, normal);
+	
+	//if its a shadow use the radiance number else 1 for fully LIT ... unlike my friday night because of this assignmnet
+	float visibility = isInShadow ? InShadowRadiance : 1.0f;
+	// now we can finlly calcuate
+	float4 diffuseColor = visibility * diffuseCoef * diffuse_coefficient * lightDiffuseColor * albedo;
+
+	// if not in a shadow add specularity
+	if (!isInShadow)
+	{
+		float ks = CalculateSpecularCoefficient(incidentLightRay, normal, specularPower);
+		specularColor = specularCoef * ks * lightSpecularColor;
+	}
+
+
 	// Ambient component
 	// Fake AO: Darken faces with normal facing downwards/away from the sky a little bit
 	float4 ambientColor = g_sceneCB.lightAmbientColor;
@@ -76,7 +110,7 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-	return ambientColor;
+	return ambientColor +specularColor + diffuseColor;
 }
 
 //***************************************************************************
@@ -240,6 +274,11 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
+	float t_far = RayTCurrent();
+	//Returns x + s(y - x).
+	//color = lerp(color, BackgroundColor, t_far);
+	//https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-lerp
+	color = lerp(color, BackgroundColor, .5*exp(-t_far) );
 
     rayPayload.color = color;
 }
@@ -258,6 +297,45 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
+	// verbatim from above without the whole notion of triangles
+	
+	// This is the intersection point on the AABB
+	float3 hitPosition = HitWorldPosition();
+
+	// Trace a ray from the hit position towards the single light source we have. If on our way to the light we hit something, then we have a shadow!
+	Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
+	bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+
+	// Reflected component ray.
+	float4 reflectedColor = float4(0, 0, 0, 0);
+	if (l_materialCB.reflectanceCoef > 0.001)
+	{
+		// Trace a reflection ray from the intersection points using Snell's law. The reflect() HLSL built-in function does this for you!
+		// See https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
+		Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), attr.normal) };
+		float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
+
+		float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), attr.normal, l_materialCB.albedo.xyz);
+		reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
+	}
+
+	// Calculate final color.
+	float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+	float4 color = (phongColor + reflectedColor);
+
+	// TODO: Apply a visibility falloff.
+	// If the ray is very very very far away, tends to sample the background color rather than the color you computed.
+	// This is to mimic some form of distance fog where farther objects appear to blend with the background.
+	// Hint 1: look at the intrinsic function RayTCurrent() that returns how "far away" your ray is.
+	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
+	//		   When t is big, we want the background color to be more pronounced.
+	float t_far = RayTCurrent();
+	//Returns x + s(y - x).
+	//color = lerp(color, BackgroundColor, t_far);
+	//https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-lerp
+	color = lerp(color, BackgroundColor, exp(-t_far));
+
+	rayPayload.color = color;
 
 }
 
@@ -330,6 +408,24 @@ void MyIntersectionShader_AnalyticPrimitive()
 [shader("intersection")]
 void MyIntersectionShader_VolumetricPrimitive()
 {
+	Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+	VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
+	float time = g_sceneCB.elapsedTime;
+	// The point of the intersection shader is to:
+	// (1) find out what is the t at which the ray hits the procedural
+	// (2) pass on some attributes used by the closest hit shader to do some shading (e.g: normal vector)
+	float thit;
+	ProceduralPrimitiveAttributes attr;
+	if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr,time))
+	{
+		PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
 
+		// Make sure the normals are stored in BLAS space and not the local space
+		attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+		attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+
+		// thit is invariant to the space transformation
+		ReportHit(thit, /*hitKind*/ 0, attr);
+	}
 }
 #endif // RAYTRACING_HLSL
