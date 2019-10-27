@@ -6,7 +6,12 @@ Project 5 - DirectX Procedural Raytracing**
   
 * Tested on: Windows 10, i5, Nvidia GTX1660 (Personal)
 
-### Overview
+- [Overview](#Overview)
+- [Performance Analysis](#Performance_Analysis)
+- [Debilitating Bugs/Bloopers](#Debilitating_Bugs_aka_bloopers_in_CIS565_world)
+- [references](#references
+
+# Overview
 
 DirectX12 what more can I say ... It is nifty in theory but debilitating in practice RIP to those who will use this in practice one day.
 
@@ -14,7 +19,7 @@ DirectX12 what more can I say ... It is nifty in theory but debilitating in prac
 
 
 
-### Debilitating Bugs ( aka bloopers in CIS565 world ... )
+### Debilitating Bugs aka bloopes in CIS565 world
 
 ![](images/looks_close_enough.PNG)
 
