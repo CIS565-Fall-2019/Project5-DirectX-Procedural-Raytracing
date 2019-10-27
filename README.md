@@ -11,15 +11,15 @@ Project 5 - DirectX Procedural Raytracing**
 - [Debilitating Bugs/Bloopers](#Debilitating_Bugs_aka_bloopers_in_CIS565_world)
 - [references](#references)
 
-#Overview
+# Overview
 
 DirectX12 what more can I say ... It is nifty in theory but debilitating in practice RIP to those who will use this in practice one day.
 
-#Performance Analysis
+# Performance Analysis
 
 
 
-#Debilitating Bugs aka bloopes in CIS565 world
+# Debilitating Bugs aka bloopes in CIS565 world
 
 ![](images/looks_close_enough.PNG)
 
