@@ -169,13 +169,14 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	float3 centers[3] =
 	{
 		float3(-0.2, 0, -0.2),
-		float3(0.6, 0.1, 0.6),
-		float3(0.2, 0.35, 0.2)
+		float3(0.4, 0.4, -0.4),
+		float3(0.15,0.45, 0.15)
 	};
-	float radius[3] = { 0.7f, 0.8f, 0.4f };
+	float radius[3] = { 0.6, 0.4, 0.2 };
 
 	thit = RayTCurrent();
 	bool hit = false;
+	
 	for (int i = 0; i < 3; i++) {
 		float tmax;
 		float thit_temp;
