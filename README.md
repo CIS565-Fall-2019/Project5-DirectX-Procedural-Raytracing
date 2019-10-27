@@ -68,9 +68,11 @@ As the recursion depth increases, the frame rate drops. But visibly there isn't 
 #### Final Render
 
 <p align="center">
-  <img src="images/final2.gif">
-    <img src="images/final3.gif">
      <img src="images/perfect.png">
+</p>
+<p align="center">
+  <img src="images/final2.gif", width=425>
+    <img src="images/final3.gif", width=425>
 </p>
 
 ### Bloopers
