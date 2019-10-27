@@ -41,7 +41,7 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return 0.0f;
+	return saturate(dot(-incidentLightRay, normal));
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -51,7 +51,11 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	return float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	float3 Ray_reflected = normalize(reflect(incidentLightRay, normal));
+	float3 reverseRayDirection = normalize(-WorldRayDirection());
+
+	return pow(saturate(dot(Ray_reflected, reverseRayDirection)) , specularPower);
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -76,7 +80,26 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-	return ambientColor;
+	float3 hit_pos = HitWorldPosition();
+	float3 incident_ray = normalize(hit_pos - g_sceneCB.lightPosition.xyz);
+
+	float dif_coef = CalculateDiffuseCoefficient(incident_ray, normal);
+	float4 spec_coef = CalculateSpecularCoefficient(incident_ray, normal, specularPower);
+
+
+
+	float4 diffuse_color = dif_coef* diffuseCoef * albedo * g_sceneCB.lightDiffuseColor;
+	float4 specular_color = spec_coef * specularCoef
+
+	if (isInShadow) {
+
+		diffuse_color *= InShadowRadiance;
+		specularColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+		
+	}
+
+
+	return diffuse_color + specular_color + ambientColor;
 }
 
 //***************************************************************************

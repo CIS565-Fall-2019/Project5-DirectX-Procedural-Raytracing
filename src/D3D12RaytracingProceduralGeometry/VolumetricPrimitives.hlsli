@@ -124,9 +124,37 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
-    return false;
+	
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 8.0f);
+
+	float tmin, tmax;
+
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+
+	uint steps = 128;
+	float threshold = 0.5f;
+	float t_point = tmin;
+	float stride = (tmax - tmin) / (steps * 1.0f);
+
+	while (t_point <= tmax) {
+		float3 position = ray.origin + (t_point * ray.direction;)
+		float potential = CalculateMetaballsPotential(position, blobs);
+		float3 normal = CalculateMetaballsNormal(position, blobs);
+		if (potential > threshold && is_a_valid_hit(ray, t_point, normal))
+		{
+			
+			thit = t_point;
+			attr.normal = normal;
+			return true;
+
+		}
+
+		t_point += stride;
+	}
+
+	return false;
+
 }
 
 #endif // VOLUMETRICPRIMITIVESLIBRARY_H
