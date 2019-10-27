@@ -73,7 +73,7 @@ float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration
 		interpolant = 2 * interpolant;
 	}
 	else {
-		interpolant = 1 -2 * (interpolant - 0.5f);
+		interpolant = 1 - 2 * (interpolant - 0.5f);
 	}
 	return smoothstep(0, 1, interpolant);
 }

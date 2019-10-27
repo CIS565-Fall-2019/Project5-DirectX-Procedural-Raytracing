@@ -59,12 +59,17 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Remember to use m_aabbBuffer to get the AABB geometry data you previously filled in.
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
-		
+	/*	
 		UINT offset = 0;
 		geometryDescs[BottomLevelASType::AABB][0].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::AABB) * sizeof(D3D12_RAYTRACING_AABB);
 		geometryDescs[BottomLevelASType::AABB][1].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::Spheres) * sizeof(D3D12_RAYTRACING_AABB);
 		offset += AnalyticPrimitive::Count;
 		geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
+	*/
+		 for (auto primitiveType = 0; primitiveType < IntersectionShaderType::TotalPrimitiveCount; primitiveType++) {
+            (geometryDescs[BottomLevelASType::AABB][primitiveType]).AABBs.AABBs.StartAddress =
+                m_aabbBuffer.resource->GetGPUVirtualAddress() + primitiveType * aabbDescTemplate.AABBs.AABBs.StrideInBytes;
+        }	
 	}
 }
 

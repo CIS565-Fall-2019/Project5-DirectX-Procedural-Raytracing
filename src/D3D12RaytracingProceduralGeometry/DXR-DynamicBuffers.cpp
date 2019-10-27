@@ -184,7 +184,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	// Volumetric primitives.
 	{
 		using namespace VolumetricPrimitive;
-		SetTransformForAABB(offset + Metaballs, mScale15, mRotation);
+		SetTransformForAABB(offset + Metaballs, mScale2, mRotation);
 		offset += VolumetricPrimitive::Count;
 	}
 }

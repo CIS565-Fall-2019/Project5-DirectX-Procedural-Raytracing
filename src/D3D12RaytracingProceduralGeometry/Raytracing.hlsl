@@ -158,9 +158,8 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 	rayDesc.TMax = 10000;
 
 	ShadowRayPayload shadowPayload = { true };
-	uint ray_flag = RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_CULL_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH;
 	TraceRay(g_scene,
-		ray_flag,
+		RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
 		TraceRayParameters::InstanceMask,
 		TraceRayParameters::HitGroup::Offset[RayType::Shadow],
 		TraceRayParameters::HitGroup::GeometryStride,
@@ -243,9 +242,10 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
 
-	float t = RayTCurrent();
-	color = lerp(color, BackgroundColor, 1.0 - exp(-0.000002*t*t*t));
-    rayPayload.color = color;
+	float t = RayTCurrent() / 100.0f;
+	float f = 1.0f / (1.0f + exp(-t + 2.0f));
+	color = lerp(color, BackgroundColor, f);
+	rayPayload.color = color;
 }
 
 // TODO: Write the closest hit shader for a procedural geometry.
@@ -293,8 +293,9 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
 
-	float t = RayTCurrent();
-	color = lerp(color, BackgroundColor, 1.0 - exp(-0.000002*pow(t,3.0f));	
+	float t = RayTCurrent() / 100.0f;
+	float f = 1.0f / (1.0f + exp(-t + 2.0f));
+	color = lerp(color, BackgroundColor, f);
 	rayPayload.color = color;
 }
 
