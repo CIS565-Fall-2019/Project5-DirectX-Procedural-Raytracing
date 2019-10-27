@@ -9,17 +9,17 @@ Project 5 - DirectX Procedural Raytracing**
 - [Overview](#Overview)
 - [Performance Analysis](#Performance_Analysis)
 - [Debilitating Bugs/Bloopers](#Debilitating_Bugs_aka_bloopers_in_CIS565_world)
-- [references](#references
+- [references](#references)
 
 # Overview
 
 DirectX12 what more can I say ... It is nifty in theory but debilitating in practice RIP to those who will use this in practice one day.
 
-### Performance Analysis
+# Performance Analysis
 
 
 
-### Debilitating Bugs aka bloopes in CIS565 world
+# Debilitating Bugs aka bloopes in CIS565 world
 
 ![](images/looks_close_enough.PNG)
 
@@ -39,7 +39,7 @@ If you look you can see that the two purple balls move in a very odd manner. was
 
 problem was my logic for keeping track of closet hit was a bit off. I was keeping track of tmax, a sensical person would have looked at the function return and saw it was evaluating thit... I became sensical after about 2 hours of debugging.
 
-#### references
+# references
 
 Ziad ... without him I would have thrown my computer out the window
 
