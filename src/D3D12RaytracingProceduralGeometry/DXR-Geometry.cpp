@@ -111,7 +111,6 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-		m_aabbBuffer.resource;
 		AllocateUploadBuffer(device, m_aabbs.data(), sizeof(m_aabbs[0]) * m_aabbs.size(), &m_aabbBuffer.resource, L"Axis Aligned Bounding Box Buffers");
 	}
 }

@@ -32,9 +32,9 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		auto& geometryDesc = geometryDescs[BottomLevelASType::Triangle][0];
 		geometryDesc = {D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES, geometryFlags};
 		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress();
-		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width;
+		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width / sizeof(Index);
 		geometryDesc.Triangles.VertexBuffer = { m_vertexBuffer.resource->GetGPUVirtualAddress(), sizeof(Vertex) };
-		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width;
+		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width / sizeof(Vertex);
 		geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
 		geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 	}
@@ -56,9 +56,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
 		for (int i = 0; i < IntersectionShaderType::TotalPrimitiveCount; i++) {
 			auto& geometryDesc = geometryDescs[BottomLevelASType::AABB][i];
-			geometryDesc = { D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS, geometryFlags };
-			geometryDesc.AABBs.AABBCount = m_aabbBuffer.resource->GetDesc().Width;
-			geometryDesc.AABBs.AABBs = {m_aabbBuffer.resource->GetGPUVirtualAddress(), sizeof(m_aabbs[0])};
+			geometryDesc.AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + i * sizeof(D3D12_RAYTRACING_AABB);
 		}
 	}
 }

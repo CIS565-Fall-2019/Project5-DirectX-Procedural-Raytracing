@@ -169,7 +169,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// The intersection shader tests in this project work with local space, but the geometries are provided in bottom level 
 		// AS space. So this data will be used to convert back and forth from these spaces.
 		auto localToAS = mScale * mRotation * mTranslation;
-		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = mScale * mRotation * mTranslation;
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = localToAS;
 		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = DirectX::XMMatrixInverse(nullptr, localToAS);
 
 	};

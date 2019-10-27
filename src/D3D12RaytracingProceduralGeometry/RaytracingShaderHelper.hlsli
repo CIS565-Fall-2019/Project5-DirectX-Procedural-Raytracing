@@ -59,7 +59,7 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // TODO-3.4.2: Return a cycling <0 -> 1 -> 0> animation interpolant
 // Given the total elapsed time, and the duration of a cycle, do the following:
 // (1) Find out how far in the current cycle the time is. E.g if total time is 5 seconds, a cycle is 2 seconds, then we are 50% through the current cycle.
-//	   Call this valye `interpolant`
+//	   Call this value `interpolant`
 // (2) We want the interpolant to cycle from 0 to 1 to 0 ALL in one single cycle.
 //	   So if we are < 50% through the cycle, we want to make sure that this interpolant hits 1 at 50%.
 //		  if we are > 50% through the cycle, we want to make sure that this interpolant hits 0 at 100%.
@@ -68,7 +68,14 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+	float interpolant = (elapsedTime % cycleDuration) / cycleDuration;
+	if (interpolant < 0.5) {
+		interpolant = interpolant * 2;
+	}
+	else {
+		interpolant = 2 - 2 * interpolant;
+	}
+	return smoothstep(0, 1, interpolant);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -129,9 +136,14 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 // as long as the direction of the ray is correct then the depth does not matter.
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
+	uint3 dimensions = DispatchRaysDimensions();
+	float2 normalized = float2(((index.x + 0.5) / dimensions.x) * 2.0 - 1.0, 1.0 - ((index.y + 0.5) / dimensions.y) * 2.0);
+	float4 pixelLoc = mul(float4(normalized, 0, 1), projectionToWorld);
+	pixelLoc = pixelLoc / pixelLoc.w;
+
 	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+    ray.origin = cameraPosition;
+	ray.direction = -normalize(pixelLoc.xyz - cameraPosition);
 
     return ray;
 }
