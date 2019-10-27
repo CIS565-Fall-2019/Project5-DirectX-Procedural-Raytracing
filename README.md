@@ -25,3 +25,43 @@ Project 5 - DirectX Procedural Raytracing**
    Answer: Here is the acceleration structures I think of the scene
 
    ![](images/cq/cq_3.PNG)
+
+
+
+###  Project Overview
+
+​	In this project, we finish a ray tracer using Microsoft latest Direct X ray tracing API: DXR.  The most challenging things in this project is to understand this latest API and call the appropriate functions in the appropriate place. After I implement this project, I have a better understanding of this powerful API now.
+
+​	Besides a basic ray tracer on the fixed geometry, we add some animation features in this project: camera animation, geometry animation on the sphere and metaball and light animation. These added features make the scene become more interesting. 
+
+### Final Render Image
+
+1. With geometry animation
+
+   ![](images/final_render.gif)
+
+2. With camera animation
+
+   1. ![](images/camera_animation.gif)
+
+3. With Light animation
+
+   1. ![](images/light_animation.gif)
+
+4. No animation
+
+   1. ![](images/no_animation.png)
+
+
+
+### Performance Analysis
+
+The performance of the project depends on the max depth we trace. Here is the chart showing this.
+
+![](images/FPS_depth.png)
+
+
+
+### Acknowledgements
+
+​	I can't finish this project without the help of Jiangping Xu, Ziad and many people who struggled together in the Friday afternoon lab. I really appreciate all of their helps and advice to help me debug out problems.
