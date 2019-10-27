@@ -50,4 +50,5 @@ https://www.freecodecamp.org/news/understanding-linear-interpolation-in-ui-anima
 https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
 https://www.scratchapixel.com/lessons/3d-basic-rendering/phong-shader-BRDF
+https://www.scratchapixel.com/lessons/advanced-rendering/rendering-distance-fields/blobbies
 
