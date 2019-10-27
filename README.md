@@ -7,7 +7,7 @@ Project 5 - DirectX Procedural Raytracing**
 * Tested on: Windows 10, i5, Nvidia GTX1660 (Personal)
 
 - [Overview](#Overview)
-- [Performance Analysis](#Performance_Analysis)
+- [Performance_Analysis](#Performance_Analysis)
 - [Debilitating Bugs/Bloopers](#Debilitating_Bugs_aka_bloopers_in_CIS565_world)
 - [references](#references)
 
