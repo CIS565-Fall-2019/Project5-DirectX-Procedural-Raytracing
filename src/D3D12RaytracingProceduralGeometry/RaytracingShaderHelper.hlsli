@@ -68,7 +68,9 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+    float currentCycleTime = fmod(elapsedTime, cycleDuration) / cycleDuration;
+    currentCycleTime = (currentCycleTime <= 0.5f) ? 2 * currentCycleTime : 1 - 2 * (currentCycleTime - 0.5f);
+    return smoothstep(0, 1, currentCycleTime);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -129,9 +131,20 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 // as long as the direction of the ray is correct then the depth does not matter.
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
-	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+    Ray ray;
+    ray.origin = cameraPosition;
+
+    uint3 dimScreen = DispatchRaysDimensions();
+    float2 normalizedCoord;
+    normalizedCoord.x = index.x / (1.0f * dimScreen.x);
+    normalizedCoord.y = index.y / (1.0f * dimScreen.y);
+
+    normalizedCoord.x = (normalizedCoord.x - 0.5f) * 2.0f;
+    normalizedCoord.y = (0.5f - normalizedCoord.y) * 2.0f;
+
+    float4 normalized_final_coord = normalize(float4(normalizedCoord.x, normalizedCoord.y, 1.0f, 1.0f));
+    float4 pointWorld = mul(normalized_final_coord, projectionToWorld);
+    ray.direction = normalize(float3(pointWorld.x, pointWorld.y, pointWorld.z));
 
     return ray;
 }
@@ -141,7 +154,9 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0;
+    float f1;
+    f1 = f0 + (1 - f0)* pow((1 - saturate(dot(-I, N))), 5.0f);
+    return f1;
 }
 
 #endif // RAYTRACINGSHADERHELPER_H
