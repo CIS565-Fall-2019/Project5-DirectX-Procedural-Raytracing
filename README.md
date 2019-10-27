@@ -9,7 +9,7 @@ Project 5 - DirectX Procedural Raytracing**
 - [Overview](#Overview)
 - [Performance Analysis](#Performance-Analysis)
 - [Debilitating Bugs/Bloopers](#Debilitating-Bugs-AKA-Bloopers-In-CIS565-World)
-- [references](#references)
+- [References](#References)
 
 # Overview
 
@@ -41,7 +41,7 @@ If you look you can see that the two purple balls move in a very odd manner. was
 
 problem was my logic for keeping track of closet hit was a bit off. I was keeping track of tmax, a sensical person would have looked at the function return and saw it was evaluating thit... I became sensical after about 2 hours of debugging.
 
-# references
+# References
 
 Ziad ... without him I would have thrown my computer out the window
 
