@@ -45,11 +45,11 @@ void DXProceduralProject::BuildShaderTables()
 		}
 
 		// TODO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
-		for (UINT i = 0; i < RayType::Count; i++)
+		for (UINT i = 0; i < IntersectionShaderType::Count; i++)
 		{
-			for (UINT j = 0; j < IntersectionShaderType::Count; j++) {
-				hitGroupShaderIDs_AABBGeometry[j][i] = stateObjectProperties->GetShaderIdentifier(c_hitGroupNames_AABBGeometry[j][i]);
-				shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[j][i]] = c_hitGroupNames_AABBGeometry[j][i];
+			for (UINT j = 0; j < RayType::Count; j++) {
+				hitGroupShaderIDs_AABBGeometry[i][j] = stateObjectProperties->GetShaderIdentifier(c_hitGroupNames_AABBGeometry[i][j]);
+				shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[i][j]] = c_hitGroupNames_AABBGeometry[i][j];
 			}
 		}
 		

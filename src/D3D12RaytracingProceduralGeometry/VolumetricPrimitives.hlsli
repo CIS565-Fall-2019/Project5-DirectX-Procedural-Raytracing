@@ -22,7 +22,15 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	float distance = length(position - blob.center);
+	if (distance < 0.00001) {
+		return 1.0;
+	}
+	if (distance >= blob.radius) {
+		return 0.0;
+	}
+	float x = distance / blob.radius;
+	return clamp((6.0 * x * x * x * x * x) - (15.0 * x * x * x * x) + (10.0 * x * x * x), 0.0, 1.0);
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -66,7 +74,7 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
     };
 
     // Metaball field radii of max influence
-    float radii[N_METABALLS] = { 0.45, 0.55, 0.45 };
+    float radii[N_METABALLS] = { 0.35, 0.45, 0.35 };
 
     // Calculate animated metaball center positions.
 	float tAnimate = CalculateAnimationInterpolant(elapsedTime, cycleDuration);
@@ -81,8 +89,20 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 // Remember that a metaball is just a solid sphere. Didn't we already do this somewhere else?
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
-	tmin = INFINITY;
-    tmax = -INFINITY;
+	ProceduralPrimitiveAttributes attr;
+	tmin = 0;
+	tmax = -100000000;
+	for (int i = 0; i < N_METABALLS; i++) {
+		Metaball m = blobs[i];
+		float currtmin;
+		float currtmax;
+		RaySphereIntersectionTest(ray, currtmin, currtmax, attr, m.center, m.radius);
+		tmin = min(tmin, currtmin);
+		tmax = max(tmax, currtmax);
+	}
+	
+	/*tmin = INFINITY;
+    tmax = -INFINITY;*/
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,6 +120,25 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0);
+	float tmin = 0;
+	float tmax = 0;
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+	int numSteps = 256;
+	float stepSize = abs(tmax - tmin) / float(numSteps);
+	for (int i = 0; i < numSteps; i++) {
+		float currt = tmin + stepSize * i;
+		float3 currPos = ray.origin + currt * ray.direction;
+		float potential = CalculateMetaballsPotential(currPos, blobs);
+		if (potential > 0.5) {
+			attr.normal = normalize(CalculateMetaballsNormal(currPos, blobs));
+			if (is_a_valid_hit(ray, currt, attr.normal)) {
+				thit = currt;
+				return true;
+			}
+		}
+	}
 	thit = 0.0f;
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
     return false;

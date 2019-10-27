@@ -29,9 +29,10 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 
 	// TODO-2.3: AABB geometry hit groups. Very similar to triangles, except now you have to *also* loop over the primitive types.
 	{
-		for (UINT rayType = 0; rayType < RayType::Count; rayType++)
-		{
-			for (UINT intersectionType = 0; intersectionType < IntersectionShaderType::Count; intersectionType++) {
+		for (UINT intersectionType = 0; intersectionType < IntersectionShaderType::Count; intersectionType++) {
+			for (UINT rayType = 0; rayType < RayType::Count; rayType++)
+			{
+			
 				auto hitGroup = raytracingPipeline->CreateSubobject<CD3D12_HIT_GROUP_SUBOBJECT>();
 				if (rayType == RayType::Radiance)
 				{

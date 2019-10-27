@@ -65,7 +65,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
 		for (UINT aabbType = 0; aabbType < IntersectionShaderType::TotalPrimitiveCount; aabbType++) {
-			geometryDescs[BottomLevelASType::AABB][aabbType].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress(); // Should we be setting these to different things?
+			geometryDescs[BottomLevelASType::AABB][aabbType].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + aabbType * sizeof(D3D12_RAYTRACING_AABB); // Should we be setting these to different things?
 		}
 	}
 }
@@ -209,18 +209,18 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
 		instanceDesc.InstanceMask = 1;
-		instanceDesc.InstanceContributionToHitGroupIndex = BottomLevelASType::AABB * RayType::Count; // Check numbers here
+		instanceDesc.InstanceContributionToHitGroupIndex = 2;// BottomLevelASType::AABB * RayType::Count; // Check numbers here
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 		// Calculate transformation matrix.
 		// We multiply the width by -0.5 in the x,z plane because we want the middle of the plane
 		// (which is currently expanded in the positive x,z plane) to be centered.
-		const XMVECTOR translationVec = XMLoadFloat3(&XMFLOAT3(0.0f, c_aabbWidth / 2.0, 0.0f));
-
-		// Scale in XZ dimensions.
 		XMMATRIX mScale = XMMatrixScaling(c_aabbWidth, c_aabbWidth, c_aabbWidth);
-		XMMATRIX mTranslation = XMMatrixTranslationFromVector(translationVec);
-		//XMMATRIX mTransform = mTranslation;
+		const XMFLOAT3 fWidth = XMFLOAT3(0.0, c_aabbWidth / 2.0, 0.0);
+		const XMVECTOR vWidth = XMLoadFloat3(&fWidth);
+		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vWidth);
+		XMMATRIX mTransform = mScale * mTranslation;
+
 
 		// Store the transform in the instanceDesc.
 		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTranslation);
@@ -382,7 +382,7 @@ void DXProceduralProject::BuildAccelerationStructures()
 	// Hint: you filled in a function that does this.
 	AccelerationStructureBuffers bottomLevelAS[BottomLevelASType::Count];
 	for (UINT i = 0; i < BottomLevelASType::Count; i++) {
-		bottomLevelAS[i] = BuildBottomLevelAS(geometryDescs.at(i));
+		bottomLevelAS[i] = BuildBottomLevelAS(geometryDescs[i]);
 	}
 	
 
@@ -396,8 +396,7 @@ void DXProceduralProject::BuildAccelerationStructures()
 	commandList->ResourceBarrier(BottomLevelASType::Count, resourceBarriers);
 
 	// TODO-2.6: Build top-level AS. Hint, you already made a function that does this.
-	AccelerationStructureBuffers topLevelAS;
-	topLevelAS = BuildTopLevelAS(bottomLevelAS);
+	AccelerationStructureBuffers topLevelAS = BuildTopLevelAS(bottomLevelAS);
 
 	// Kick off acceleration structure construction.
 	m_deviceResources->ExecuteCommandList();
