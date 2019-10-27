@@ -33,3 +33,14 @@ my lerping for fade off color was off.. way offf.... Lerping is not to be confus
 If you look you can see that the two purple balls move in a very odd manner. was kind of neat.
 
 problem was my logic for keeping track of closet hit was a bit off. I was keeping track of tmax, a sensical person would have looked at the function return and saw it was evaluating thit... I became sensical after about 2 hours of debugging.
+
+#### references
+
+Ziad ... without him I would have thrown my computer out the window
+
+http://viclw17.github.io/2018/11/29/raymarching-algorithm/
+https://www.freecodecamp.org/news/understanding-linear-interpolation-in-ui-animations-74701eb9957c/	
+https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
+https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
+https://www.scratchapixel.com/lessons/3d-basic-rendering/phong-shader-BRDF
+
