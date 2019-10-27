@@ -166,18 +166,30 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	float3 center = float3(-0.2, 0, -0.2);
-	float radius = 0.7f;
+	float3 centers[3] =
+	{
+		float3(-0.2, 0, -0.2),
+		float3(0.6, 0.1, 0.6),
+		float3(0.2, 0.35, 0.2)
+	};
+	float radius[3] = { 0.7f, 0.8f, 0.4f };
 
 	thit = RayTCurrent();
-
-	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
-	{
-		return true;
+	bool hit = false;
+	for (int i = 0; i < 3; i++) {
+		float tmax;
+		float thit_temp;
+		ProceduralPrimitiveAttributes attr_temp;
+		if (RaySphereIntersectionTest(ray, thit_temp, tmax, attr_temp, centers[i], radius[i]))
+		{
+			if (thit_temp < thit) {
+				thit = thit_temp;
+				attr = attr_temp;
+				hit = true;
+			}
+		}
 	}
-
-	return false;
+	return hit;
 }
 
 #endif // ANALYTICPRIMITIVES_H

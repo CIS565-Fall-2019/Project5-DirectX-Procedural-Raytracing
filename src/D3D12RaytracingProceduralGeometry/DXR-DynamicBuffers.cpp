@@ -113,7 +113,7 @@ void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
 	auto device = m_deviceResources->GetD3DDevice();
 	auto frameCount = m_deviceResources->GetBackBufferCount();
-	m_aabbPrimitiveAttributeBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"Scene Constant Buffer");
+	m_aabbPrimitiveAttributeBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"aabb Primitive Attribute Buffer");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
@@ -183,7 +183,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	// Volumetric primitives.
 	{
 		using namespace VolumetricPrimitive;
-		SetTransformForAABB(offset + Metaballs, mScale2, mRotation);
+		SetTransformForAABB(offset + Metaballs, mScale15, mRotation);
 		offset += VolumetricPrimitive::Count;
 	}
 }

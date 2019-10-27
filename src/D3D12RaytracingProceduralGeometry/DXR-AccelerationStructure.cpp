@@ -31,16 +31,16 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		//  * The *total size* of the buffer can be accessed from GetDesc().Width (e.g m_indexBuffer.resource->GetDesc().Width)
         //  * We filled in the format of the buffers to avoid confusion.
 		auto& geometryDesc = geometryDescs[BottomLevelASType::Triangle][0];
-		geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 		geometryDesc = {};
 		geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress();
 		geometryDesc.Triangles.VertexBuffer.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
 		geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
-		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width/sizeof(Vertex);
+		geometryDesc.Triangles.IndexCount = m_indexBuffer.resource->GetDesc().Width/sizeof(Index);
 		geometryDesc.Triangles.VertexCount = m_vertexBuffer.resource->GetDesc().Width/sizeof(Vertex);
         geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
         geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+		geometryDesc.Flags = geometryFlags;
 		
 	}
 
@@ -60,11 +60,16 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
 		
-		UINT offset = 0;
-		geometryDescs[BottomLevelASType::AABB][0].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::AABB) * sizeof(D3D12_RAYTRACING_AABB);
-		geometryDescs[BottomLevelASType::AABB][1].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::Spheres) * sizeof(D3D12_RAYTRACING_AABB);
-		offset += AnalyticPrimitive::Count;
-		geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
+		//UINT offset = 0;
+		//geometryDescs[BottomLevelASType::AABB][0].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::AABB) * sizeof(D3D12_RAYTRACING_AABB);
+	//	geometryDescs[BottomLevelASType::AABB][1].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::Spheres) * sizeof(D3D12_RAYTRACING_AABB);
+	//	offset += AnalyticPrimitive::Count;
+		//geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
+		for (UINT i = 0; i < IntersectionShaderType::TotalPrimitiveCount; i++)
+		{
+			auto& geometryDesc = geometryDescs[BottomLevelASType::AABB][i];
+			geometryDesc.AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + i * sizeof(D3D12_RAYTRACING_AABB);
+		}
 	}
 }
 
