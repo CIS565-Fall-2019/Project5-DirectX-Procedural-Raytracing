@@ -87,21 +87,21 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 // You should read about the TraceRay() function to understand what this does.
 float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 {
-    if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
-    {
-        return float4(0, 0, 0, 0);
-    }
+	if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+	{
+		return float4(0, 0, 0, 0);
+	}
 
-    // Set the ray's extents.
-    RayDesc rayDesc;
-    rayDesc.Origin = ray.origin;
-    rayDesc.Direction = ray.direction;
-    // Set TMin to a zero value to avoid aliasing artifacts along contact areas.
-    // Note: make sure to enable face culling so as to avoid surface face fighting.
-    rayDesc.TMin = 0;
-    rayDesc.TMax = 10000;
+	// Set the ray's extents.
+	RayDesc rayDesc;
+	rayDesc.Origin = ray.origin;
+	rayDesc.Direction = ray.direction;
+	// Set TMin to a zero value to avoid aliasing artifacts along contact areas.
+	// Note: make sure to enable face culling so as to avoid surface face fighting.
+	rayDesc.TMin = 0;
+	rayDesc.TMax = 10000;
 
-    RayPayload rayPayload = { float4(0, 0, 0, 0), currentRayRecursionDepth + 1 };
+	RayPayload rayPayload = { float4(0, 0, 0, 0), currentRayRecursionDepth + 1 };
 
 	// TraceRay() is a built-in DXR function. Lookup its documentation to see what it does.
 	// To understand how a ray "finds out" what type of object it hit and therefore call the correct shader hitgroup, it indexes into the shader
@@ -118,15 +118,15 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 	//			--> this gives it the `geometry index`
 	// (3) Identify what type of Ray it is --> this is given right here, say a Radiance ray
 	// (4) Combines all of these inputs to index into the correct shader into the hitgroup shader table.
-    TraceRay(g_scene,
-        RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
-        TraceRayParameters::InstanceMask,
-        TraceRayParameters::HitGroup::Offset[RayType::Radiance],
-        TraceRayParameters::HitGroup::GeometryStride,
-        TraceRayParameters::MissShader::Offset[RayType::Radiance],
-        rayDesc, rayPayload);
+	TraceRay(g_scene,
+		RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+		TraceRayParameters::InstanceMask,
+		TraceRayParameters::HitGroup::Offset[RayType::Radiance],
+		TraceRayParameters::HitGroup::GeometryStride,
+		TraceRayParameters::MissShader::Offset[RayType::Radiance],
+		rayDesc, rayPayload);
 
-    return rayPayload.color;
+	return rayPayload.color;
 }
 
 // TODO-3.2: Trace a shadow ray and return true if it hits any geometry. Very similar to TraceRay() above
@@ -149,9 +149,20 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
+	// Generate a ray for a camera pixel corresponding to an index from the dispatched 2D grid.
+	//Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
+
+	// Cast a ray into the scene and retrieve a shaded color.
+	//UINT currentRecursionDepth = 3;
+	//float4 color = TraceRadianceRay(ray, currentRecursionDepth);
+
+	float4 color1 = float4(0, 1, 0, 1);
+
+	// Write the raytraced color to the output texture.
+	g_renderTarget[DispatchRaysIndex().xy] = color1;
 
 	// Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	//g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 //***************************************************************************
@@ -165,43 +176,43 @@ void MyRaygenShader()
 [shader("closesthit")]
 void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangleIntersectionAttributes attr)
 {
-    // Get the base index of the triangle's first 16 bit index.
-    uint indexSizeInBytes = 2;
-    uint indicesPerTriangle = 3;
-    uint triangleIndexStride = indicesPerTriangle * indexSizeInBytes;
+	// Get the base index of the triangle's first 16 bit index.
+	uint indexSizeInBytes = 2;
+	uint indicesPerTriangle = 3;
+	uint triangleIndexStride = indicesPerTriangle * indexSizeInBytes;
 
 	// PrimitiveIndex() is the triangle index within the mesh. For Procedural primitives, this is the index into the AABB array defining the geometry.
-    uint baseIndex = PrimitiveIndex() * triangleIndexStride;
+	uint baseIndex = PrimitiveIndex() * triangleIndexStride;
 
-    // Load up three 16 bit indices for the triangle.
-    const uint3 indices = Load3x16BitIndices(baseIndex, g_indices);
+	// Load up three 16 bit indices for the triangle.
+	const uint3 indices = Load3x16BitIndices(baseIndex, g_indices);
 
-    // Retrieve corresponding vertex normals for the triangle vertices.
-    float3 triangleNormal = g_vertices[indices[0]].normal;
+	// Retrieve corresponding vertex normals for the triangle vertices.
+	float3 triangleNormal = g_vertices[indices[0]].normal;
 
 	// This is the intersection point on the triangle.
 	float3 hitPosition = HitWorldPosition();
 
-    // Trace a ray from the hit position towards the single light source we have. If on our way to the light we hit something, then we have a shadow!
-    Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
-    bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+	// Trace a ray from the hit position towards the single light source we have. If on our way to the light we hit something, then we have a shadow!
+	Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
+	bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
 
-    // Reflected component ray.
-    float4 reflectedColor = float4(0, 0, 0, 0);
-    if (l_materialCB.reflectanceCoef > 0.001 )
-    {
-        // Trace a reflection ray from the intersection points using Snell's law. The reflect() HLSL built-in function does this for you!
+	// Reflected component ray.
+	float4 reflectedColor = float4(0, 0, 0, 0);
+	if (l_materialCB.reflectanceCoef > 0.001)
+	{
+		// Trace a reflection ray from the intersection points using Snell's law. The reflect() HLSL built-in function does this for you!
 		// See https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
-        Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), triangleNormal) };
-        float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
+		Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), triangleNormal) };
+		float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
 
-        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), triangleNormal, l_materialCB.albedo.xyz);
-        reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
-    }
+		float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), triangleNormal, l_materialCB.albedo.xyz);
+		reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
+	}
 
-    // Calculate final color.
-    float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, triangleNormal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
-    float4 color = (phongColor + reflectedColor);
+	// Calculate final color.
+	float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, triangleNormal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+	float4 color = (phongColor + reflectedColor);
 
 	// TODO: Apply a visibility falloff.
 	// If the ray is very very very far away, tends to sample the background color rather than the color you computed.
@@ -210,7 +221,7 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
 
-    rayPayload.color = color;
+	rayPayload.color = color;
 }
 
 // TODO: Write the closest hit shader for a procedural geometry.
@@ -240,7 +251,10 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-
+	float4 backgroundColor = float4(BackgroundColor);
+	float4 colr1 = float4(0, 0, 1, 1);
+	//rayPayload.color = backgroundColor;
+	rayPayload.color = colr1;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
@@ -257,14 +271,14 @@ void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 // Get ray in AABB's local space.
 Ray GetRayInAABBPrimitiveLocalSpace()
 {
-    PrimitiveInstancePerFrameBuffer attr = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+	PrimitiveInstancePerFrameBuffer attr = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
 
-    // Retrieve a ray origin position and direction in bottom level AS space 
-    // and transform them into the AABB primitive's local space.
-    Ray ray;
-    ray.origin = mul(float4(ObjectRayOrigin(), 1), attr.bottomLevelASToLocalSpace).xyz;
-    ray.direction = mul(ObjectRayDirection(), (float3x3) attr.bottomLevelASToLocalSpace);
-    return ray;
+	// Retrieve a ray origin position and direction in bottom level AS space 
+	// and transform them into the AABB primitive's local space.
+	Ray ray;
+	ray.origin = mul(float4(ObjectRayOrigin(), 1), attr.bottomLevelASToLocalSpace).xyz;
+	ray.direction = mul(ObjectRayDirection(), (float3x3) attr.bottomLevelASToLocalSpace);
+	return ray;
 }
 
 // LOOKAT-3.4.1: Analytic Primitive intersection shader.
@@ -272,25 +286,25 @@ Ray GetRayInAABBPrimitiveLocalSpace()
 [shader("intersection")]
 void MyIntersectionShader_AnalyticPrimitive()
 {
-    Ray localRay = GetRayInAABBPrimitiveLocalSpace();
-    AnalyticPrimitive::Enum primitiveType = (AnalyticPrimitive::Enum) l_aabbCB.primitiveType;
+	Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+	AnalyticPrimitive::Enum primitiveType = (AnalyticPrimitive::Enum) l_aabbCB.primitiveType;
 
 	// The point of the intersection shader is to:
 	// (1) find out what is the t at which the ray hits the procedural
 	// (2) pass on some attributes used by the closest hit shader to do some shading (e.g: normal vector)
-    float thit;
-    ProceduralPrimitiveAttributes attr;
-    if (RayAnalyticGeometryIntersectionTest(localRay, primitiveType, thit, attr))
-    {
-        PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+	float thit;
+	ProceduralPrimitiveAttributes attr;
+	if (RayAnalyticGeometryIntersectionTest(localRay, primitiveType, thit, attr))
+	{
+		PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
 
 		// Make sure the normals are stored in BLAS space and not the local space
-        attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
-        attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+		attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+		attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
 
 		// thit is invariant to the space transformation
-        ReportHit(thit, /*hitKind*/ 0, attr);
-    }
+		ReportHit(thit, /*hitKind*/ 0, attr);
+	}
 }
 
 // TODO-3.4.2: Volumetric primitive intersection shader. In our case, we only have Metaballs to take care of.
