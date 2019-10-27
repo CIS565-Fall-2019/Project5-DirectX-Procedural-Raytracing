@@ -32,7 +32,7 @@ float CalculateMetaballPotential(in float3 position, in Metaball blob)
 	
 	// some ratio
 	close_ness = blob.radius - close_ness;
-	close_ness /= blob.radius;
+	close_ness = close_ness / blob.radius;
 
 	float powa = pow(close_ness, 5);
 	float powb = pow(close_ness, 4);
@@ -135,7 +135,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	Metaball blobs[N_METABALLS];
 	
 	// because this class is satan
-	const float artistic_touch = 1-.666666f;
+	const float artistic_touch =.35f;
 	const float cycleDuration = 6.6666f;
 	
 	// default to 0 unless valid hit occurs
@@ -167,8 +167,8 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 		if (potential > artistic_touch)
 		{
 			//float3 CalculateMetaballsNormal(in float3 position, in Metaball blobs[N_METABALLS])
-			float normal = CalculateMetaballsNormal(position, blobs);
-			if (is_a_valid_hit(ray, temp_min, attr.normal))
+			float3 normal = CalculateMetaballsNormal(position, blobs);
+			if (is_a_valid_hit(ray, temp_min, normal))
 			{
 			    // set variables here or else bugs occur ): 
 				thit = temp_min;

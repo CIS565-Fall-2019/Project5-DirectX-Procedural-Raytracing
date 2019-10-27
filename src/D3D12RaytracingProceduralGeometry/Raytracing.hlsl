@@ -52,14 +52,14 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
 	// reflect
-	float3 reflected_ray = reflect(incidentLightRay,normal);
+	float3 reflected_ray = normalize(reflect(incidentLightRay,normal));
 	//  https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
 	// helpful aF
 	float3 reverse_ray_direction = normalize(-WorldRayDirection());
 	
 	float4 coefficient = saturate(dot(reflected_ray, reverse_ray_direction));
 
-	coefficient = saturate(pow(coefficient, specularPower));
+	coefficient = pow(coefficient, specularPower);
 
 	return coefficient;
 }
@@ -198,6 +198,7 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 	return rayPayload.hit;
 }
 
+
 //***************************************************************************
 //********************------ Ray gen shader -------**************************
 //***************************************************************************
@@ -209,6 +210,9 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
+	// Seed the PRNG using the thread ID
+	UINT rng_state = DispatchRaysIndex().x;
+	
 	float3 cam = g_sceneCB.cameraPosition.xyz;
 	// Generate a ray for a camera pixel corresponding to an index from the dispatched 2D grid.
 	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, cam, g_sceneCB.projectionToWorld);
@@ -279,7 +283,7 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	//Returns x + s(y - x).
 	//color = lerp(color, BackgroundColor, t_far);
 	//https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-lerp
-	color = lerp(color, BackgroundColor, .5*exp(-t_far) );
+	color = lerp(color, BackgroundColor, exp(-t_far) );
 
     rayPayload.color = color;
 }

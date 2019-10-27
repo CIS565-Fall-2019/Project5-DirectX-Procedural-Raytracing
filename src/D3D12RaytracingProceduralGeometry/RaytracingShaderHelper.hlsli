@@ -127,6 +127,22 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
         barycentrics.y * (vertexAttribute[2] - vertexAttribute[0]);
 }
 
+uint rand_lcg(in UINT rng_state)
+{
+	// LCG values from Numerical Recipes
+	rng_state = 1664525 * rng_state + 1013904223;
+	return rng_state;
+}
+
+uint rand_xorshift(in UINT rng_state)
+{
+	// Xorshift algorithm from George Marsaglia's paper
+	rng_state ^= (rng_state << 13);
+	rng_state ^= (rng_state >> 17);
+	rng_state ^= (rng_state << 5);
+	return rng_state;
+}
+
 // TODO-3.1: Generate a ray in world space for a camera pixel corresponding to a dispatch index (analogous to a thread index in CUDA).
 // Check out https://docs.microsoft.com/en-us/windows/win32/direct3d12/direct3d-12-raytracing-hlsl-system-value-intrinsics to see interesting 
 // intrinsic HLSL raytracing functions you may use.
@@ -157,6 +173,11 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 	// in ray tracing our origin is always at the camera
 	ray.origin = cameraPosition;
 	
+	UINT rand = index.x;
+
+	// Generate a random float in [0, 1)...
+	float f0 = float(rand_xorshift(rand)) * (1.0 / 4294967296.0);
+
 	// normalize our coordinates because thats something CG ppl do
 	ray.direction = normalize(world_star.xyz - ray.origin);
 
