@@ -68,7 +68,14 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+	float how_far = fmod(elapsedTime, cycleDuration) / cycleDuration;
+	if (how_far <= 0.5) {
+		how_far = 2.0f * how_far;
+	}
+	else {
+		how_far = 1.0f - (2.0f * (how_far - 0.5f));
+	}
+	return smoothstep(0, 1, how_far);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -129,11 +136,18 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 // as long as the direction of the ray is correct then the depth does not matter.
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
-	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+	uint3 dimensions = DispatchRaysDimensions();
+	float4 normalized_device_coordinates = { 2.0f * ((index.x /(1.0f * dimensions.x)) - 0.5f), 2.0f * (0.5f - (index.y /(1.0f * dimensions.y))), 1.0f, 1.0f };
+	normalized_device_coordinates = normalize(normalized_device_coordinates);
+	//float4 normalized_device_coordinates = { (2.0f * (index.x - dimensions.x / 2.0f)) / dimensions.x, (2.0f * (index.y - dimensions.y / 2.0f)) / dimensions.y, 1.0f, 1.0f };
 
-    return ray;
+	float4 world_coordinates = mul(normalized_device_coordinates, projectionToWorld);
+
+	Ray ray;
+	ray.origin = cameraPosition;
+	ray.direction = normalize(float3(world_coordinates.x, world_coordinates.y, world_coordinates.z));
+
+	return ray;
 }
 
 // TODO-3.6: Fresnel reflectance - schlick approximation.
@@ -141,7 +155,8 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0;
+	float cosi = saturate(dot(-I, N));
+	return (f0 + (1 - f0) * pow(1 - cosi, 5));
 }
 
 #endif // RAYTRACINGSHADERHELPER_H

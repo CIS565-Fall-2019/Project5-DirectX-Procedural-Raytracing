@@ -111,6 +111,11 @@ void DXProceduralProject::CreateConstantBuffers()
 //		structured buffers are for structs that have dynamic data (e.g lights in a scene, or AABBs in this case)
 void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
+	auto device = m_deviceResources->GetD3DDevice();
+	auto num_elements = m_aabbs.size();
+	auto frameCount = m_deviceResources->GetBackBufferCount();
+
+	m_aabbPrimitiveAttributeBuffer.Create(device, num_elements, frameCount, L"Scene Structured Buffer");
 
 }
 
@@ -164,6 +169,11 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// You can infer what the bottom level AS space to local space transform should be.
 		// The intersection shader tests in this project work with local space, but the geometries are provided in bottom level 
 		// AS space. So this data will be used to convert back and forth from these spaces.
+		XMMATRIX transform = XMMatrixMultiply(mScale, mRotation);
+		XMMATRIX final_transform = XMMatrixMultiply(transform, mTranslation);
+		XMMATRIX final_inverse_transform = XMMatrixInverse(nullptr, final_transform);
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = final_transform;
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = final_inverse_transform;
 	};
 
 	UINT offset = 0;
