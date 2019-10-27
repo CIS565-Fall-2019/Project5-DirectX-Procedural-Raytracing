@@ -60,16 +60,12 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
 		
-		//UINT offset = 0;
-		//geometryDescs[BottomLevelASType::AABB][0].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::AABB) * sizeof(D3D12_RAYTRACING_AABB);
-	//	geometryDescs[BottomLevelASType::AABB][1].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::Spheres) * sizeof(D3D12_RAYTRACING_AABB);
-	//	offset += AnalyticPrimitive::Count;
-		//geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
-		for (UINT i = 0; i < IntersectionShaderType::TotalPrimitiveCount; i++)
-		{
-			auto& geometryDesc = geometryDescs[BottomLevelASType::AABB][i];
-			geometryDesc.AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + i * sizeof(D3D12_RAYTRACING_AABB);
-		}
+		UINT offset = 0;
+		geometryDescs[BottomLevelASType::AABB][0].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::AABB) * sizeof(D3D12_RAYTRACING_AABB);
+		geometryDescs[BottomLevelASType::AABB][1].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + AnalyticPrimitive::Spheres) * sizeof(D3D12_RAYTRACING_AABB);
+		offset += AnalyticPrimitive::Count;
+		geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (offset + VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
+	
 	}
 }
 
@@ -312,7 +308,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 		};
 
 		// TODO-2.6: Call the fallback-templated version of BuildBottomLevelASInstanceDescs() you completed above.
-		BuildBottomLevelASInstanceDescs<D3D12_RAYTRACING_FALLBACK_INSTANCE_DESC>(bottomLevelASaddresses, &instanceDescsResource);
+		BuildBottomLevelASInstanceDescs<D3D12_RAYTRACING_FALLBACK_INSTANCE_DESC, WRAPPED_GPU_POINTER>(bottomLevelASaddresses, &instanceDescsResource);
 	}
 	else // DirectX Raytracing
 	{
@@ -324,7 +320,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 		};
 
 		// TODO-2.6: Call the DXR-templated version of BuildBottomLevelASInstanceDescs() you completed above.
-		BuildBottomLevelASInstanceDescs<D3D12_RAYTRACING_INSTANCE_DESC>(bottomLevelASaddresses, &instanceDescsResource);
+		BuildBottomLevelASInstanceDescs<D3D12_RAYTRACING_INSTANCE_DESC, D3D12_GPU_VIRTUAL_ADDRESS>(bottomLevelASaddresses, &instanceDescsResource);
 
 	}
 
