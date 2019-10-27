@@ -41,6 +41,10 @@ If you look you can see that the two purple balls move in a very odd manner. was
 
 problem was my logic for keeping track of closet hit was a bit off. I was keeping track of tmax, a sensical person would have looked at the function return and saw it was evaluating thit... I became sensical after about 2 hours of debugging.
 
+![](images/floatvsfloat3.gif)
+
+This is what happens when you accidentally return a float instead of float3 ): 
+
 # References
 
 Ziad ... without him I would have thrown my computer out the window
