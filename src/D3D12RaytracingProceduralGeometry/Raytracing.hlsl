@@ -209,8 +209,9 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
+	float3 cam = g_sceneCB.cameraPosition.xyz;
 	// Generate a ray for a camera pixel corresponding to an index from the dispatched 2D grid.
-	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
+	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, cam, g_sceneCB.projectionToWorld);
 
 	// set depth to 0 other stuff handles the rest. Or it is a ray tracing fundamental concept I was never taught
 	float4 color = TraceRadianceRay(ray, 0);
