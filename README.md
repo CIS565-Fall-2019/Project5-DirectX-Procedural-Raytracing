@@ -22,7 +22,9 @@ This project implents real time ray tracing with the DXR API.
 
 ![](images/finalRender.png)
 
-Ray tracing works by shooting rays at each pixel from the camera into the scene. On collision, the recursion depth is incremented and the rays go towards the light. If the ray hits another object, it is marked as a shadow ray and performs an additional bounce. If a ray collides with any reflecting material it sends off another ray but also changes the original ray according to Snell's Law.
+Ray tracing works by shooting rays at each pixel from the camera into the scene. On collision, the recursion depth is incremented and the rays go towards the light to color the object. If the ray hits another object, it is marked as a shadow ray. If a ray collides with any reflecting material it sends off another ray but also changes the original ray according to Snell's Law as long as the recursion depth as not been reached.
+
+![](images/raytrace.png)
 
 Below is the graphical representation of this pipeline.
 
