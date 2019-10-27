@@ -33,7 +33,7 @@ turns out there was alot wrong here ... alot ... But I do like the darker purple
 
 ![](images/wtf.PNG)
 
-my lerping for fade off color was off.. way offf.... Lerping is not to be confused with the ever popular LARPing.
+my lerping for fading was off.. way offf.... Lerping is not to be confused with the ever popular LARPing.
 
 ![](images/weird_balls.gif)
 
