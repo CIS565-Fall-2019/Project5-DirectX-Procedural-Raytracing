@@ -16,7 +16,7 @@ DirectX12 what more can I say ... It is nifty in theory but debilitating in prac
 
 ### Debilitating Bugs ( aka bloopers ... )
 
-![](images/looks_close_enough)
+![](images/looks_close_enough.PNG)
 
 After watching my program crash 10000000000000000000 times because my cpu side was wrong, finally I got something up... but then I had to sadly go back and fix alot of stuff ... 
 
