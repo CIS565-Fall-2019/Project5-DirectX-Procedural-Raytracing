@@ -36,7 +36,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
         geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 
 		geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-		geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
+		geometryDesc.Triangles.VertexBuffer.StrideInBytes = 2* sizeof(XMFLOAT3);
 
 		geometryDesc.Triangles.VertexBuffer.StartAddress = m_vertexBuffer.resource->GetGPUVirtualAddress();
 		geometryDesc.Triangles.IndexBuffer = m_indexBuffer.resource->GetGPUVirtualAddress();
@@ -62,9 +62,13 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
 		
-		geometryDescs[BottomLevelASType::AABB][0].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (AnalyticPrimitive::AABB) * sizeof(D3D12_RAYTRACING_AABB);
-		geometryDescs[BottomLevelASType::AABB][1].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (AnalyticPrimitive::Spheres) * sizeof(D3D12_RAYTRACING_AABB);
-		geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
+		//geometryDescs[BottomLevelASType::AABB][0].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (AnalyticPrimitive::AABB) * sizeof(D3D12_RAYTRACING_AABB);
+		//geometryDescs[BottomLevelASType::AABB][1].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (AnalyticPrimitive::Spheres) * sizeof(D3D12_RAYTRACING_AABB);
+		//geometryDescs[BottomLevelASType::AABB][2].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + (VolumetricPrimitive::Metaballs) * sizeof(D3D12_RAYTRACING_AABB);
+
+        for (auto primitiveType = 0; primitiveType < IntersectionShaderType::TotalPrimitiveCount; primitiveType++) {
+            (geometryDescs[BottomLevelASType::AABB][primitiveType]).AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + primitiveType * aabbDescTemplate.AABBs.AABBs.StrideInBytes;
+        }
 	}
 }
 
@@ -150,7 +154,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	// the AccelerationStructureBuffers struct so the top-level AS can use it! 
 	// Don't forget that this is the return value.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h
-	return AccelerationStructureBuffers{scratch, bottomLevelAS, NULL, bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes };
+	return AccelerationStructureBuffers{scratch, bottomLevelAS, nullptr, bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes };
 }
 
 // TODO-2.6: Build the instance descriptor for each bottom-level AS you built before.
@@ -214,7 +218,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
 		instanceDesc.InstanceMask = 1;
-		instanceDesc.InstanceContributionToHitGroupIndex = RayType::Count* BottomLevelASType::AABB;
+		instanceDesc.InstanceContributionToHitGroupIndex = 2;
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 		// Calculate transformation matrix.
@@ -222,12 +226,14 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		// (which is currently expanded in the positive x,z plane) to be centered.
 
 		//////////////////////////
-		const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(0.0f, 0.5f, 0.0f));
+		//const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(0.0f, 0.5f, 0.0f));
 
 		// Scale in XZ dimensions.
-		XMMATRIX mScale = XMMatrixScaling(fWidth.x, fWidth.y, fWidth.z);
-		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
-		XMMATRIX mTransform = mScale * mTranslation;
+		//XMMATRIX mScale = XMMatrixScaling(fWidth.x, fWidth.y, fWidth.z);
+		//XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
+		//XMMATRIX mTransform = mScale * mTranslation;
+
+        XMMATRIX  mTransform = XMMatrixTranslationFromVector(XMLoadFloat3(&XMFLOAT3(0.0f, c_aabbWidth * 0.5f, 0.0f)));
 
 		// Store the transform in the instanceDesc.
 		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);

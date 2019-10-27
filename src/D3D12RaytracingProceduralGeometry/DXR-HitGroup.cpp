@@ -33,7 +33,7 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 			for (UINT rayType = 0; rayType < RayType::Count; rayType++)
 			{
 				auto hitGroup = raytracingPipeline->CreateSubobject<CD3D12_HIT_GROUP_SUBOBJECT>();
-				hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[primitiveType]);
+				
 				if (rayType == RayType::Radiance)
 				{
 					// We import the closest hit shader name
@@ -41,7 +41,8 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 				}
 
 				// We tell the hitgroup that it should export into the correct shader hit group name, with the correct type
-				hitGroup->SetHitGroupExport(c_hitGroupNames_AABBGeometry[primitiveType][rayType]);
+                hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[primitiveType]);
+                hitGroup->SetHitGroupExport(c_hitGroupNames_AABBGeometry[primitiveType][rayType]);
 				hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
 			}
 		}

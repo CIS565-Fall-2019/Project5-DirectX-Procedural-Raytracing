@@ -112,15 +112,15 @@ void DXProceduralProject::BuildShaderTables()
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	
 	{
-		UINT numShaderRecords = RayType::Count;
+		UINT numShaderRecords = 2;
 		UINT shaderRecordSize = shaderIDSize; // No root arguments
 
 		// The RayGen shader table contains a single ShaderRecord: the one single raygen shader!
 		ShaderTable missShaderTable(device, numShaderRecords, shaderRecordSize, L"MissShaderTable");
 
 		// Push back the shader record, which does not need any root signatures.
-		for (UINT i = 0; i < numShaderRecords; i++) {
-			missShaderTable.push_back(ShaderRecord(missShaderIDs+i, shaderRecordSize, nullptr, 0));
+		for (UINT i = 0; i < RayType::Count; i++) {
+			missShaderTable.push_back(ShaderRecord(missShaderIDs[i], shaderRecordSize, nullptr, 0));
 		}
 
 		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer

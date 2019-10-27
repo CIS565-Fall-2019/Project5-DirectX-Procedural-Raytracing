@@ -259,8 +259,8 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	//		   When t is big, we want the background color to be more pronounced.
 
 
-	float t = -RayTCurrent() / 100.0f;
-	color = lerp(color, BackgroundColor, 1 - exp(pow(t, 3.0f)));
+	float t = RayTCurrent() / 1000.0f;
+	color = lerp(color, BackgroundColor, 1 - exp(-1.0*pow(t, 3.0f)));
     rayPayload.color = color;
 }
 
@@ -304,8 +304,8 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
 	float4 color = (phongColor + reflectedColor);
 
-	float t = -RayTCurrent() / 100.0f;
-	color = lerp(color, BackgroundColor, 1 - exp(pow(t, 3.0f)));
+	float t = RayTCurrent() / 1000.0f;
+	color = lerp(color, BackgroundColor, 1 - exp(-1.0*pow(t, 3.0f)));
 	rayPayload.color = color;
 
 }
