@@ -158,8 +158,9 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 	rayDesc.TMax = 10000;
 
 	ShadowRayPayload shadowPayload = { true };
+	uint ray_flag = RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_CULL_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH;
 	TraceRay(g_scene,
-		RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+		ray_flag,
 		TraceRayParameters::InstanceMask,
 		TraceRayParameters::HitGroup::Offset[RayType::Shadow],
 		TraceRayParameters::HitGroup::GeometryStride,
@@ -274,7 +275,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	{
 		// Trace a reflection ray from the intersection points using Snell's law. The reflect() HLSL built-in function does this for you!
 		// See https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
-		Ray reflectionRay = { HitWorldPosition(), reflect(WorldRayDirection(), attr.normal) };
+		Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), attr.normal) };
 		float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
 
 		float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), attr.normal, l_materialCB.albedo.xyz);
@@ -293,7 +294,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	//		   When t is big, we want the background color to be more pronounced.
 
 	float t = RayTCurrent();
-	color = lerp(color, BackgroundColor, 1.0 - exp(-0.000002*t*t*t));	
+	color = lerp(color, BackgroundColor, 1.0 - exp(-0.000002*pow(t,3.0f));	
 	rayPayload.color = color;
 }
 

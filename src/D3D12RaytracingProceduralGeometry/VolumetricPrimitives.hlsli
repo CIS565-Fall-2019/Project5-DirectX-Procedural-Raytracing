@@ -24,7 +24,7 @@ float CalculateMetaballPotential(in float3 position, in Metaball blob){
 	float distance = length(position - blob.center);
 	if (distance >= blob.radius)
 		return 0.0f;
-	float x = (blob.radius - distance) / blob.radius;
+	float x = float((blob.radius - distance)) / float(blob.radius);
 	return 6.0f * pow(x, 5) - 15.0f * pow(x, 4) + 10.0f * pow(x, 3);
 }
 
@@ -86,8 +86,9 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
 	tmax = -INFINITY;
-	float temp_tmin, temp_tmax;
+	
 	for (UINT i = 0; i < N_METABALLS; i++) {
+		float temp_tmin, temp_tmax;
 		if (RaySolidSphereIntersectionTest(ray, temp_tmin, temp_tmax, blobs[i].center, blobs[i].radius)) {
 			tmin = min(temp_tmin, tmin);
 			tmax = max(temp_tmax, tmax);
@@ -112,14 +113,14 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime){
 	Metaball blobs[N_METABALLS];
-	InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f);
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 11.0f);
 	float tmin, tmax; 
 	TestMetaballsIntersection(ray, tmin, tmax, blobs);
 	float step = (tmax - tmin) / 128.0f;
 	for (float t = tmin; t <= tmax; t += step)
 	{
 		float3 position = ray.origin + t * ray.direction;
-		if (CalculateMetaballsPotential(position, blobs) > 0.15f)
+		if (CalculateMetaballsPotential(position, blobs) > 0.2f)
 		{
 			float3 sur_normal = CalculateMetaballsNormal(position, blobs);
 			if (is_a_valid_hit(ray, t, sur_normal))

@@ -107,15 +107,15 @@ void DXProceduralProject::BuildShaderTables()
 	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	{
-		UINT numMissShaderRecords = RayType::Count;
+		UINT numMissShaderRecords = 2;
 		UINT missShaderRecordSize = shaderIDSize; // No root arguments
 
 		// The RayGen shader table contains a single ShaderRecord: the one single raygen shader!
 		ShaderTable missShaderTable(device, numMissShaderRecords, missShaderRecordSize, L"MissShaderTable");
 
 		// Push back the shader record, which does not need any root signatures.
-		missShaderTable.push_back(ShaderRecord(missShaderIDs, missShaderRecordSize, nullptr, 0));
-		missShaderTable.push_back(ShaderRecord(missShaderIDs + 1, missShaderRecordSize, nullptr, 0));
+		missShaderTable.push_back(ShaderRecord(missShaderIDs[0], missShaderRecordSize, nullptr, 0));
+		missShaderTable.push_back(ShaderRecord(missShaderIDs[1], missShaderRecordSize, nullptr, 0));
 		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
 		missShaderTable.DebugPrint(shaderIdToStringMap);
 		m_missShaderTable = missShaderTable.GetResource();
