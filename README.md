@@ -12,11 +12,10 @@ Project 5 - DirectX Procedural Raytracing**
 
 ### Index
 
-- [Introduction]( https://github.com/chhavisharma/Project4-CUDA-ICP#introduction )
-- [Implementation Details]( https://github.com/chhavisharma/Project4-CUDA-ICP#implementation-details )
-- [Analysis](https://github.com/chhavisharma/Project4-CUDA-ICP#analysis )
-- [Results]( https://github.com/chhavisharma/Project4-CUDA-ICP#bloopers )
-- [Bloopers](https://github.com/chhavisharma/Project4-CUDA-ICP#resources-and-references )
+- [Introduction]( https://github.com/chhavisharma/Project5-DirectX-Procedural-Raytracing#introduction )
+- [Performance Analysis](https://github.com/chhavisharma/Project5-DirectX-Procedural-Raytracing#performance-analysis )
+- [Results]( https://github.com/chhavisharma/Project5-DirectX-Procedural-Raytracing#results )
+- [Bloopers](https://github.com/chhavisharma/Project5-DirectX-Procedural-Raytracing#bloopers)
 
 ### Introduction
 
