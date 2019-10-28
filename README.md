@@ -18,17 +18,31 @@ Keyboard Shortcut:
  - `L` - enable/disable light animation.
 
 ## Features
-### Axis-aligned bounding boxes
 
-### Spheres
+### Supported Geometry
+ 1. Triangles
+    
+    Triangles are supported directly in DXR.
 
-### Metalballs
+ 2. Axis-aligned Bounding Box
+    
+    Axis-aligned Bounding Boxs (AABBs) are the simplest type of analytic geometry primitive. The shape renders into boxes that takes all the volume of a procedural AABB. One thing to note is the box has to be axis-aligned (rotation not supported).
+
+ 3. Spheres
+    
+    Spheres are another very simple analytic geometry primitive defined by center and radius. The project supports multiple spheres in a single procedural AABB.
+    
+ 4. Metaballs
+    Metaballs (a.k.a blobs) are special spheres that have this potential that causes adjacent spheres to merge together. This process is rendered with a special technique using potential thresholding.
+
 
 ## Performance Analysis
+The chart below shows how FPS changes with maximum ray depth. As maximum ray depth increases, the FPS drops slightly influenced by reflective materials in the scene.
+
 ![](images/performance.png)
 
 ## Reference
  - [Microsoft Direct3D 12 programming guide](https://docs.microsoft.com/en-us/windows/win32/direct3d12/directx-12-programming-guide)
  - [3D Game Engine Programming - Learning DirectX 12](https://www.3dgep.com/learning-directx-12-2/#Introduction)
  - [Microsoft DirectX-Graphics-Samples](https://github.com/microsoft/DirectX-Graphics-Samples)
- 
+ - Recitation Slides
