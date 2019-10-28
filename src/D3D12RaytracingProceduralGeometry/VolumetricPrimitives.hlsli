@@ -22,7 +22,19 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	float Distance = distance(position,blob.center);
+	float r = blob.radius;
+	float x = (r - Distance)/r;
+
+	if (Distance >= r)
+		return 0.0f;
+	else if (Distance == r)
+		return 1.0f;
+
+	//float d = r - distance;
+	//float x = d / r;
+
+	return (6 * pow(x, 5)) - (15 * pow(x, 4)) + (10 * pow(x, 3));
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -83,6 +95,18 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+
+	for (UINT i = 0; i < N_METABALLS; i++) {
+		float tmin_temp, tmax_temp;
+		if (RaySolidSphereIntersectionTest(ray, tmin_temp, tmax_temp, blobs[i].center, blobs[i].radius)) {
+			tmin = min(tmin, tmin_temp);
+			tmax = max(tmax, tmax_temp);
+		}
+	}
+
+	///////////////////
+	//tmin = max(tmin, RayTMin());
+	//tmax = min(tmax, RayTCurrent());
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,9 +124,37 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
-    return false;
+	
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 8.0f);
+
+	float tmin, tmax;
+
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+
+	uint steps = 128;
+	float threshold = 0.5f;
+	float t_point = tmin;
+	float stride = (tmax - tmin) / (steps * 1.0f);
+
+	while (t_point <= tmax) {
+        float3 position = ray.origin + (t_point * ray.direction);
+		float potential = CalculateMetaballsPotential(position, blobs);
+		float3 normal = CalculateMetaballsNormal(position, blobs);
+		if (potential > threshold && is_a_valid_hit(ray, t_point, normal))
+		{
+			
+			thit = t_point;
+			attr.normal = normal;
+			return true;
+
+		}
+
+		t_point += stride;
+	}
+
+	return false;
+
 }
 
 #endif // VOLUMETRICPRIMITIVESLIBRARY_H

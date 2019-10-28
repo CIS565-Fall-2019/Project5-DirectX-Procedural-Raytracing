@@ -41,7 +41,7 @@ ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB: register(b2); // other
 // Remember to clamp the dot product term!
 float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
-	return 0.0f;
+	return saturate(dot(-incidentLightRay, normal));
 }
 
 // TODO-3.6: Phong lighting specular component.
@@ -51,7 +51,11 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 // Remember to normalize the reflected ray, and to clamp the dot product term 
 float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal, in float specularPower)
 {
-	return float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	float3 Ray_reflected = normalize(reflect(incidentLightRay, normal));
+	float3 reverseRayDirection = normalize(-WorldRayDirection());
+
+	return pow(saturate(dot(Ray_reflected, reverseRayDirection)) , specularPower);
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -76,7 +80,26 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
 	ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
 
-	return ambientColor;
+	float3 hit_pos = HitWorldPosition();
+	float3 incident_ray = normalize(hit_pos - g_sceneCB.lightPosition.xyz);
+
+	float dif_coef = CalculateDiffuseCoefficient(incident_ray, normal);
+	float4 spec_coef = CalculateSpecularCoefficient(incident_ray, normal, specularPower);
+
+
+
+	float4 diffuse_color = dif_coef* diffuseCoef * albedo * g_sceneCB.lightDiffuseColor;
+    float4 specular_color = spec_coef * specularCoef;
+
+	if (isInShadow) {
+
+		diffuse_color *= InShadowRadiance;
+        specular_color = float4(0.0f, 0.0f, 0.0f, 0.0f);
+		
+	}
+
+
+	return diffuse_color + specular_color + ambientColor;
 }
 
 //***************************************************************************
@@ -135,7 +158,31 @@ float4 TraceRadianceRay(in Ray ray, in UINT currentRayRecursionDepth)
 // Hint 2: remember what the ShadowRay payload looks like. See RaytracingHlslCompat.h
 bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 {
-	return false;
+	if (currentRayRecursionDepth >= MAX_RAY_RECURSION_DEPTH)
+	{
+		return true;
+	}
+
+	// Set the ray's extents.
+	RayDesc rayDesc;
+	rayDesc.Origin = ray.origin;
+	rayDesc.Direction = ray.direction;
+	// Set TMin to a zero value to avoid aliasing artifacts along contact areas.
+	// Note: make sure to enable face culling so as to avoid surface face fighting.
+	rayDesc.TMin = 0;
+	rayDesc.TMax = 10000;
+
+	ShadowRayPayload rayPayload = { true };
+
+	TraceRay(g_scene,
+		RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
+		TraceRayParameters::InstanceMask,
+		TraceRayParameters::HitGroup::Offset[RayType::Shadow],
+		TraceRayParameters::HitGroup::GeometryStride,
+		TraceRayParameters::MissShader::Offset[RayType::Shadow],
+		rayDesc, rayPayload);
+
+	return rayPayload.hit;
 }
 
 //***************************************************************************
@@ -149,9 +196,10 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 [shader("raygeneration")]
 void MyRaygenShader()
 {
-
+	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
 	// Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	g_renderTarget[DispatchRaysIndex().xy] = TraceRadianceRay(ray, 0);
+
 }
 
 //***************************************************************************
@@ -210,6 +258,9 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
 
+
+	float t = RayTCurrent() / 1000.0f;
+	color = lerp(color, BackgroundColor, 1 - exp(-1.0*pow(t, 3.0f)));
     rayPayload.color = color;
 }
 
@@ -228,6 +279,35 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
 
+	float3 hitPosition = HitWorldPosition();
+
+	float3 normal = attr.normal;
+
+	// Trace a ray from the hit position towards the single light source we have. If on our way to the light we hit something, then we have a shadow!
+	Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
+	bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+
+	float4 reflectedColor = float4(0, 0, 0, 0);
+
+	if (l_materialCB.reflectanceCoef > 0.001)
+	{
+		// Trace a reflection ray from the intersection points using Snell's law. The reflect() HLSL built-in function does this for you!
+		// See https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
+		Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), normal) };
+		float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
+
+		float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), normal, l_materialCB.albedo.xyz);
+		reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
+	}
+
+	// Calculate final color.
+	float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+	float4 color = (phongColor + reflectedColor);
+
+	float t = RayTCurrent() / 1000.0f;
+	color = lerp(color, BackgroundColor, 1 - exp(-1.0*pow(t, 3.0f)));
+	rayPayload.color = color;
+
 }
 
 //***************************************************************************
@@ -240,14 +320,14 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 [shader("miss")]
 void MyMissShader(inout RayPayload rayPayload)
 {
-
+	rayPayload.color = BackgroundColor;
 }
 
 // TODO-3.3: Complete the Shadow ray miss shader. Is this ray a shadow ray if it hit nothing?
 [shader("miss")]
 void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
 {
-
+	rayPayload.hit = false;
 }
 
 //***************************************************************************
@@ -299,6 +379,24 @@ void MyIntersectionShader_AnalyticPrimitive()
 [shader("intersection")]
 void MyIntersectionShader_VolumetricPrimitive()
 {
+	Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+	VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
 
+	// The point of the intersection shader is to:
+	// (1) find out what is the t at which the ray hits the procedural
+	// (2) pass on some attributes used by the closest hit shader to do some shading (e.g: normal vector)
+	float thit;
+	ProceduralPrimitiveAttributes attr;
+	if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime))
+	{
+		PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+
+		// Make sure the normals are stored in BLAS space and not the local space
+		attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+		attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+
+		// thit is invariant to the space transformation
+		ReportHit(thit, /*hitKind*/ 0, attr);
+	}
 }
 #endif // RAYTRACING_HLSL
