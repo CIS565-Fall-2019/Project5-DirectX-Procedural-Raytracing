@@ -115,13 +115,13 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
 		// The base data lives in m_aabbs.data() (the stuff you filled in!), but the allocationg should be pointed
 		// towards m_aabbBuffer.resource (the actual D3D12 resource that will hold all of our AABB data as a contiguous buffer).
-		AllocateUploadBuffer(device, m_aabbs.data(), IntersectionShaderType::TotalPrimitiveCount * sizeof(D3D12_RAYTRACING_AABB), &m_aabbBuffer.resource);
+		AllocateUploadBuffer(device, m_aabbs.data(), m_aabbs.size() * sizeof(m_aabbs[0]), &m_aabbBuffer.resource);
 	}
 }
 
 // TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
-	BuildProceduralGeometryAABBs();
 	BuildPlaneGeometry();
+	BuildProceduralGeometryAABBs();
 }

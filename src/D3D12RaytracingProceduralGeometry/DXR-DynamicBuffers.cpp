@@ -113,7 +113,8 @@ void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
 	auto device = m_deviceResources->GetD3DDevice();
 	auto frameCount = m_deviceResources->GetBackBufferCount();
-	m_aabbPrimitiveAttributeBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"AABB primitive attributes Buffer");
+	auto numElements = m_aabbs.size();
+	m_aabbPrimitiveAttributeBuffer.Create(device, numElements, frameCount, L"AABB primitive attributes Buffer");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
@@ -168,9 +169,9 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// AS space. So this data will be used to convert back and forth from these spaces.
 		// XMMATRIX localSpaceToBottomLevelAS;   // Matrix from local primitive space to bottom-level object space.
 		// XMMATRIX bottomLevelASToLocalSpace;   // Matrix from bottom-level object space to local primitive space
-		XMMATRIX mTransform = mScale * mRotation * mTranslation;
+		XMMATRIX mTransform = XMMatrixMultiply(XMMatrixMultiply(mScale, mRotation), mTranslation);
 		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = mTransform;
-		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, mTransform);;
+		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, mTransform);
 	};
 
 	UINT offset = 0;

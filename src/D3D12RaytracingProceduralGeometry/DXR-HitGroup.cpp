@@ -36,8 +36,8 @@ void DXProceduralProject::CreateHitGroupSubobjects(CD3D12_STATE_OBJECT_DESC* ray
 				hitGroup->SetIntersectionShaderImport(c_intersectionShaderNames[primitiveType]);
 				if (rayType == RayType::Radiance)
 				{
-						// We import the closest hit shader name
-						hitGroup->SetClosestHitShaderImport(c_closestHitShaderNames[GeometryType::AABB]);
+					// We import the closest hit shader name
+					hitGroup->SetClosestHitShaderImport(c_closestHitShaderNames[GeometryType::AABB]);
 				}
 
 				// We tell the hitgroup that it should export into the correct shader hit group name, with the correct type
