@@ -11,19 +11,46 @@ Project 5 - DirectX Procedural Raytracing**
 </p>
 
 # Overview
+In this project, I made a real-time raytracer using a DirectX Raytracing rendering pipeline.  The raytracer can render triangulated mesh objects, used for the ground plane, analytic procedural geoemtries, including spheres and boxes, and volumetric procedural geometry, metaballs.  These objects are rendered shaded with Phong reflection combined with Schlick's approximation of fresnel reflection. 
 
 # Resources
+- DirectX documentation: https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
+- Phong reflection model: https://en.wikipedia.org/wiki/Phong_reflection_model
+- Schlick's approximation: https://en.wikipedia.org/wiki/Schlick%27s_approximation
 
 # Implementation
 ## CPU Setup
+In order to perform DirectX raytracing on the GPU, we must first send all of the necessary data to the GPU.  This data is prepared and sent from the CPU.
 ### Passing Data
-### Geometry and Acceleration Structures
+To pass data to the GPU, we have to populate buffers with the data to be passed, and then map the data to a region in memory that the GPU can read.  This is accomplished with the GpuUploadBuffer struct.  There are two types of buffers, a constant buffer and a structured buffer.  
+
+A constant buffer is a buffer that can hold a single struct.  We use constant buffers to store the scene data, which includes the lights, camera projections, and elapsed time. We also store material data for the proceudral geometry as well as other meta data in constant buffers.
+
+A structured buffer can hold multiple structs, behaving like an array of constant buffers.  We use structured buffers to store transforms for procedural geometry, triangle position data.  
+
+Once we have the buffers set up, we need to tell the GPU how to access and read the data we passed. We use root signatures to do this. Root signatures can be global, accessed by any defined GPU function, or local, only accessible in some shaders. Root signatures act as a descriptor of a type of resource.  We use three different types of descriptors: ConstantBufferView, ShaderResourceView, and UniformAccessView.  We can tell the GPU where to store the root signature, and then can provide information about the data it represents and how to read it. 
+
+We now have the data passed to a place accessible by the GPU, and a description for how that data should be read on the GPU.  Later in the pipeline, when we finally dispatch the raytracing call, we establish a link between this data and the instructions for how to read the data, completing the data transfer process.
+
+### Geometry
+An important part of raytracing is setting up the geometry that will be displayed on screen.  The first part of setting up the geometry is to set up the hit groups. A hit group specifies the closest hit shader, any hit shader (which we do not use), and the intersection shader (required for all geometry except triangles).  Depending on the type of geometry, we want to apply differnet shaders.  For example, the closest hit shader of a triangle geometry differs from that of a procedural geometry, so we want to specify this to ensure that the GPU uses the right hit groups for each geometry.
+
+We also need to pass in the geometry position and transformation data so the GPU knows where to draw the geometry.  For triangles, this is the vertex positions and the indices that represent the triangles.  For procedural geometry, we must pass in the type of procedural geometry and the axis aligned bounding box (AABB), as well as the transformation of the geometry to its position in the scene. There are two types of procedual geoemtry, volumetric and analytic, and this will change how intersections with the geometry are calcualted.   
+
+The final step in passing the geometry data to the GPU is organizing it in acceleration structures. The raytracing process is expensive, so organizing the geometry into acceleration structures can speed up performance. DXR has built in acceleration structure generation, we just need to pass in the data in the correct way. The acceleration structure consists of Top Level Acceleration Structures (TLAS), and Bottom Level Acceleration Structures (BLAS). The BLAS holds geometry data, and the TLAS holds instances of a BLAS. For example, a BLAS can hold data that represent a sphere, and a TLAS can have multiple instances of that BLAS, each with different transformations, materials, and other properties describing that sphere. 
+
+In our project, we have two BLAS's. One BLAS contains triangle data, and the other holds all of the procedural data, meaning the sphere, box, and metaball data. We then have one TLAS that contains one instance of a triangle BLAS and one instance of the procedural BLAS.
+
 ### Dispatch
+Once we have all of the data set up and passed to the GPU, which now knows how to read in that data, we can finally dispatch our rays to begin the raytracing process. This is where we bind our buffers to the root signatures we created, connecting the data we passed to the instructions we gave to read that data. After all the linking is set, we can call DispatchRays, which dispatches one thread per pixel, where each thread performs the calculations of one ray.
+
 ## GPU Raytracing
 ### Ray Generation
 #### Radiance Rays
 #### Shadow Rays
 ### Geometry
+#### Triangles
+Triangle intersection is built into DXR, so we do not need to implement a triangle intersection shader of our own. For the closest hit shader, we trace a shadow ray towards the light to see if the current point on the triangle is in shadow.  We also trace a reflection ray using Snell's law, applying Schlick's approximation for Fresnel reflection to the reflected color. 
 #### Box
 #### Sphere
 #### Metaballs
