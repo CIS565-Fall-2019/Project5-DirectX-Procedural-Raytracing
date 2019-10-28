@@ -68,7 +68,7 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+    return smoothstep(0, 1, 0);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -152,7 +152,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0;
+    return f0 + (1 - f0) * pow(1 - clamp(dot(-I, N), 0, 1), 5);
 }
 
 #endif // RAYTRACINGSHADERHELPER_H
