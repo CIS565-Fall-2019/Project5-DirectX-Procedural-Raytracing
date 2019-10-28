@@ -2,7 +2,7 @@
 Project 5 - DirectX Procedural Raytracing**
 
 * Disha Jindal: [Linkedin](https://www.linkedin.com/in/disha-jindal/)
-* Tested on: Windows 10, Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz 16GB (SIGLAB)
+* Tested on: Windows 10, Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz 16GB, GTX 1080 (SIGLAB)
 
 ## DirectX Procedural Raytracing
 <p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/camera_geo_light_anime.gif"></p>
@@ -68,5 +68,3 @@ Incorrect configuration for visibility falloff for AABB's, led to this:
 We implemented distance falloff function inside the triangle closest hit shader so that faraway triangles are slightly blurred. By not properly configuring the far away function, the background overshadowed the ground.
 
 <p align="center"><img src="https://github.com/DishaJindal/Project5-DirectX-Procedural-Raytracing/blob/master/images/blooper2_background_not_far_enough.PNG" width="400"></p>
-
-
