@@ -22,7 +22,20 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	float distance = length(position - blob.center);
+
+	if (distance <= blob.radius)
+	{
+		float d = blob.radius - distance;
+		float r = blob.radius;
+		float x = d / r;
+
+		// Note: pow has limited precision!
+		return 6 * x * x * x * x * x
+			- 15 * x * x * x * x
+			+ 10 * x * x * x;
+	}
+	return 0;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -82,7 +95,19 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
 	tmin = INFINITY;
-    tmax = -INFINITY;
+	tmax = -INFINITY;
+
+	for (UINT i = 0; i < N_METABALLS; i++)
+	{
+		float cur_thit, cur_tmax;
+		if (RaySolidSphereIntersectionTest(ray, cur_thit, cur_tmax, blobs[i].center, blobs[i].radius))
+		{
+			tmin = min(cur_thit, tmin);
+			tmax = max(cur_tmax, tmax);
+		}
+	}
+	tmin = max(tmin, RayTMin());
+	tmax = min(tmax, RayTCurrent());
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,8 +125,46 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 10.0f);
+
+	float tmin, tmax;
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+
+	UINT MAX_STEPS = 128;
+	float t = tmin;
+	float minTStep = (tmax - tmin) / MAX_STEPS;
+	UINT i = 0;
+
+	while (i < MAX_STEPS)
+	{
+		float3 pos = ray.origin + t * ray.direction;
+		float potentials[N_METABALLS];    // All metaballs potentials
+		float totalPotential = 0;         // Sum of all metaball field potentials.
+
+		for (UINT j = 0; j < N_METABALLS; j++)
+		{
+			potentials[j] = CalculateMetaballPotential(pos, blobs[j]);
+			totalPotential += potentials[j];
+		}
+
+		float Threshold = 0.25f;
+
+		// continue if totalPotential not cross the threshold
+		// found a shading point otherwise
+		if (totalPotential >= Threshold)
+		{
+			float3 normal = CalculateMetaballsNormal(pos, blobs);
+			if (is_a_valid_hit(ray, t, normal))
+			{
+				thit = t;
+				attr.normal = normal;
+				return true;
+			}
+		}
+		t += minTStep;
+		i++;
+	}
     return false;
 }
 
