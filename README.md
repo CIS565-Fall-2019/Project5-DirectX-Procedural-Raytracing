@@ -5,7 +5,10 @@ Project 5 - DirectX Procedural Raytracing**
   * https://www.linkedin.com/in/grace-gilbert-2493a0156, http://gracelgilbert.com
 * Tested on: Windows 10, i9-9900K @ 3.60GHz 64GB, GeForce RTX 2080 40860MB
 
-![](images/HighQualityStill.gif)
+
+<p align="center">
+  <img width=100% src="images/HighQualityStill.gif">
+</p>
 
 # Overview
 
