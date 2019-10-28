@@ -22,7 +22,14 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	float distance = length(position - blob.center);
+	if (distance >= blob.radius)
+		return 0.0f;
+
+	float r = blob.radius;
+	float d = r - distance;
+	float x = d / r;
+	return 6 * (x*x*x*x*x) - 15 * (x*x*x*x)	+ 10 * (x*x*x);
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -60,9 +67,9 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 {
     float3 keyFrameCenters[N_METABALLS][2] =
     {
-        { float3(-0.3, -0.3, -0.4),float3(0.3,-0.3,-0.0) }, // begin center --> end center
+        { float3(-0.3, -0.3, -0.4), float3(0.3, -0.3, -0.0) }, // begin center --> end center
         { float3(0.0, -0.2, 0.5), float3(0.0, 0.4, 0.5) },
-        { float3(0.4,0.4, 0.4), float3(-0.4, 0.2, -0.4) }
+        { float3(0.4, 0.4, 0.4), float3(-0.4, 0.2, -0.4) }
     };
 
     // Metaball field radii of max influence
@@ -83,6 +90,16 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+	for (UINT i = 0; i < N_METABALLS; i++) {
+		float temp_min, temp_max;
+		if (RaySolidSphereIntersectionTest(ray, temp_min, temp_max, blobs[i].center, blobs[i].radius))
+		{
+			tmin = min(temp_min, tmin);
+			tmax = max(temp_max, tmax);
+		}
+	}
+	tmin = max(tmin, RayTMin());
+	tmax = min(tmax, RayTCurrent());
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,9 +117,32 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
-    return false;
+	//  Initialize a metaball array
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 11.0f);
+
+	float tmin, tmax;  
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+
+	UINT MAX_STEPS = 128;
+	const float Threshold = 0.2f;
+	float step_size = (tmax - tmin) / 128;
+	float t = tmin;
+	while (t < tmax) {
+		float3 pos = ray.origin + t * ray.direction;
+		float potential = CalculateMetaballsPotential(pos, blobs);
+		if (potential > Threshold) {
+			float3 sur_normal = CalculateMetaballsNormal(pos, blobs);
+			if (is_a_valid_hit(ray, t, sur_normal))
+			{
+				thit = t;
+				attr.normal = sur_normal;
+				return true;
+			}
+		}
+		t += step_size;
+	}
+	return false;
 }
 
 #endif // VOLUMETRICPRIMITIVESLIBRARY_H
