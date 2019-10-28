@@ -9,6 +9,8 @@ Project 5 - DirectX Procedural Raytracing**
 DirectX Procedural Raytracing
 ============================
 
+<img src="images/MovingEverything.gif">
+
 ## Table of Contents  
 
 1. [Introduction to Ray Tracing](#intro)  
@@ -24,7 +26,7 @@ DirectX Procedural Raytracing
 ## Introduction to Ray Tracing
 In computer graphics, ray tracing is a rendering technique for generating an image by tracing the path of light as pixels in an image plane and simulating the effects of its encounters with virtual objects. The technique is capable of producing a very high degree of visual realism, quite higher than that of typical scanline rendering methods, but at a greater computational cost. 
 
-![](img/CoverImage.gif)  
+<img src="images/MovingCamera.gif" width=600>
 
 In this project I have implemented a simple ray tracer with procedural geometry with couple of features using the state of art DirectX Raytracing API. Let's begin with talking about how ray tracing works.  
   
@@ -58,7 +60,7 @@ DXR execution pipeline mimics all the ray tracing interactions depicted in the i
 ### Procedural Geometry  
 Procedural Geometry is geometry modelled mathematically instead of having explicit point locality information like meshes, etc. available before runtime. We generate 3 geometries in this project, namely a traingle, a sphere and perhaps the most interesting, a meta ball. Mathematically a metaball is an isosurface in 3D space and essentially represents a smooth blob. 
 
-
+<img src="images/MovingGeom.gif" width=600>
 
  <a name = "as">  
 
@@ -76,11 +78,17 @@ On a high level, the entire scene is divided into `Top Level Acceleration Struct
  
 #### Phong Lighting Model Shading with Schlick's Approximation and other shading specific features
 
+<img src="images/MovingLights.gif" width=600>
 
 
  
  
  <a name = "analysis">
  
- ## Performance Analysis
+ ## Performance Analysis  
  
+Here we analyse the performance of the algorithm in various different, the environment variable chosen to be varied for this is the recursion depth and we see that according to our expectation both fps and number of rays simulated per second drop with increase in recursion depth. Since we are looking at frames per second and rays simulated, naturally  
+
+                                                `Higher is better`
+ 
+<img src="images/Chart.jpg" width=800>
