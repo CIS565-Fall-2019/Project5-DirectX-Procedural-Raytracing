@@ -16,16 +16,12 @@ In computer graphics, ray tracing is a rendering technique for generating photor
 
 ## Table of Contents:
 
-- [CUDA Path Tracing Implementation](#cuda-path-tracing-implementation)
-  * [Core Implementation](#core-implementation)
-  * [Core Implementation + Anti-Aliasing](#core-implementation-+-anti-aliasing)
-  * [Core Implementation + Anti-Aliasing + Motion Blur](#core-implementation-+-anti-aliasing-+-motion-blur)
-- [Perfomance Implementation and Analysis](#perfomance-implementation-and-analysis)
-  * [Stream Compaction](#stream-compaction)
-  * [First bounce intersections Caching](#first-bounce-intersections-caching)
-  * [Material Sort](#material-sort)
+- [DirectX Procedural Ray Tracing](#directx-procedural-ray-tracing)
+  * [DXR Implementation](#dxr-implementation)
+- [Perfomance of the Implementation](#perfomance-of-the-implementation)
 - [Cool Renders](#cool-renders)
 - [Bloopers](#bloopers)
+- [Sources](#sources)
 
 
 ## DirectX Procedural Ray Tracing:
@@ -74,6 +70,17 @@ In essence, the entire *ray tracing pipeline* must be ready on the GPU. In raste
 
 One of the more important parameters of the implementation is the maximum depth of ray recursion. All of the renders in the repo are made using 3 as the maximum depth of recursion. By increasing the depth further than 3 we can see the performance takes a hit which makes sense. You can see the effects of recursion in the following plots:
 
+<p align="center">
+  <img src="images/fps.png">
+</p>
+
+<p align="center">
+  <img src="images/dr.png">
+</p>
+
+<p align="center">
+  <img src="images/mpr.png">
+</p>
 
 ## Cool Renders:
 
@@ -85,7 +92,9 @@ In the following the light source is dynamically rotating slowly across the scen
   <img src="images/light.gif">
 </p>
 
+
 In addition to moving the light source, in the following render, the geometries are dynamically moving across the scene:
+
 
 <p align="center">
   <img src="images/move.gif">
@@ -96,6 +105,7 @@ In addition to moving the light source, in the following render, the geometries 
 ## Bloopers:
 
 Here are some bloopers showing that everyone can and will make mistakes along the way. Especially in this project, there can be so many places that you can make a mistake. :) 
+
 
 <p align="center">
 <img src="images/bloop1.gif" width="350"> 
@@ -109,8 +119,11 @@ Here are some bloopers showing that everyone can and will make mistakes along th
 <img src="images/bloop3.gif" width="350"> 
 </p>
 
+
 ## Sources:
 
-https://docs.microsoft.com/en-us/windows/win32/directx
+[DXR Documentation](https://docs.microsoft.com/en-us/windows/win32/directx)
+
+[Ray Tracing wiki](https://en.wikipedia.org/wiki/Ray_tracing_(graphics))
 
 
