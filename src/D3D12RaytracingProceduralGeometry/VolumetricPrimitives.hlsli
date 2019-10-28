@@ -75,11 +75,12 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
     {
         { float3(-0.3, -0.3, -0.4),float3(0.3,-0.3,-0.0) }, // begin center --> end center
         { float3(0.0, -0.2, 0.5), float3(0.0, 0.4, 0.5) },
-        { float3(0.4,0.4, 0.4), float3(-0.4, 0.2, -0.4) }
+        { float3(0.4,0.4, 0.4), float3(-0.4, 0.2, -0.4) },
+		{ float3(0.4,-0.4, 0.4), float3(-0.4, 0.2, -0.4) }
     };
 
     // Metaball field radii of max influence
-    float radii[N_METABALLS] = { 0.45, 0.55, 0.45 };
+    float radii[N_METABALLS] = { 0.45, 0.55, 0.45, 0.2 };
 
     // Calculate animated metaball center positions.
 	float tAnimate = CalculateAnimationInterpolant(elapsedTime, cycleDuration);
@@ -148,7 +149,7 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 			totalPotential += potentials[j];
 		}
 
-		float Threshold = 0.25f;
+		float Threshold = 0.55f;
 
 		// continue if totalPotential not cross the threshold
 		// found a shading point otherwise

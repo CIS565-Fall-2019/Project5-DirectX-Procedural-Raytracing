@@ -5,40 +5,47 @@ Project 5 - DirectX Procedural Raytracing**
   * www.gtong.me
 * Tested on: Windows 10, i7-8750H @ 2.20GHz 16GB, RTX 2070 8GB (personal laptop)
 
-### Conceptual Questions
+### Overview
 
-##### How to convert pixel locations into rays?
-
-1. Given pixel coordinates (with range [0, height/width]), first cAonvert them into **Normalized Device Coordinate (NDC)** (with range [0, 1]). Note that we add a small shift (0.5) to the pixel position because we want the final camera ray to pass through the middle of the pixel. 
-
-![1571442329983](img/ndc_1.png)
-
-2. Map the NDC with range [0, -1] to **screen space** with range [-1, 1]
-
-   ![1571442329983](img/screen_space.png)
-
-3. Account for image aspect ratio and field of view, we get the point in camera space
-
-   ![1571442329983](img/camera_space.png)
-
-4. Because we don't really care about the z value for generating the ray, we can choose -1 for it. So we get the destination point **(p_x, p_y, -1)**
-
-5. Apply the inverse of **world-to-camera (view) matrix** to the point, we get the point in world coordinate
-
-6. Now we can calculate the ray with the origin (camera position) and destination because they all in world coordinate.
-
-   ```Vec3f rayDirection = rayPWorld - rayOriginWorld; ```
-   ```rayDirection.normalize()```
-
-   
-
-##### Conceptually how one could go about rendering the procedural geometry
-
-1. We can traversal the acceleration structure and find the  `Axis-Aligned Bounding Box` (AABB) that has intersection with the ray
-2. If we find the AABB, depending on what type of the geometry it contains, we can either look for an analytical solution such as solving for the ray-sphere intersection equation to get the intersection points, or use ray marching to find relatively close answers
-3. Shade the closest intersection point and spawn new rays if desired
+This project implements a raytracing based scene renderer and demonstrates the usage of DirectX 12 Raytracing API. It utilizes the built-in acceleration structure, analytic and procedural geometry construction and shadow ray testing.
 
 
+
+![](./img/main.gif)
+
+
+
+### Contents
+
+- Ray Tracing Concept
+- Acceleration Structure
+- Output
+- Performance Analysis
+- Bloopers
+
+
+
+### Ray Tracing Concept
+
+
+
+
+
+![](img\raytrace.jpg)
+
+
+
+Unlike path tracer, ray tracing based renderer simples the the rendering and calculation significantly by only keeping a few rays for each pixel and shading point rather than spawning multiply rays based on BSDF. In this project, we only consider:
+
+- **Primary ray**: the ray shot from camera to each pixel. We need to apply the project_to_world transformation in order to bring the ray to the world coordinate, for further intersection testing with the scene.
+
+- **Shadow ray**:  from the closest_hit point, spawn a shadow ray to the light source to find out if this point is in shadow. It's still cheap for scenes with only a few light sources.
+
+- **Reflected ray**: calculating the reflected ray based on the incident ray direction and normal of hit point. Perform another trace like the primary ray but with the depth incremented.
+
+  
+
+### Acceleration Structure
 
 ##### Diagram of DXR Top-Level/Bottom-Level Acceleration Structures
 
@@ -48,8 +55,44 @@ Project 5 - DirectX Procedural Raytracing**
 
 ![Acceleration Structures](img/as.png)
 
+### Output
+
+![4 meta balls](img/output1.gif)
+
+- Static light and static camera, 4 metaballs and 3 spheres 
 
 
-### Overview
 
-...
+![4 meta balls](img/output_light.gif)
+
+- Animating light source
+
+
+
+![4 meta balls](img/output_camera.gif)
+
+- Animating camera
+
+
+
+### Performance Analysis
+
+![FPS_DEPTH](img/performance.png)
+
+- With the max recursion depth increased from 3 to 10, initially there is a drop in the FPS from 3 to 5, but it quickly stables at around 280 FPS. 
+- It makes sense since the scene doesn't have too many reflected materials and most of rays terminated after 5 bounces.
+
+
+
+### Bloopers
+
+![FPS_DEPTH](img/blooper.png)
+
+When I used **pow(x, 5)** to calculate **x *  x *  x *  x *  x**
+
+
+
+### References
+
+- https://github.com/Microsoft/DirectX-Graphics-Samples
+- https://docs.microsoft.com/en-us/windows/win32/direct3d12/directx-12-programming-guide
