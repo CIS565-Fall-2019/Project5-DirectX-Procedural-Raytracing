@@ -165,34 +165,35 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 // You can hardcode the local centers/radii of the spheres, just try to maintain them between 1 and -1 (and > 0 for the radii).
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
+    const int N_SPHERES = 3;
 	// Define the spheres in local space (within the aabb)
-   float3 center[3] = {
+   float3 center[N_SPHERES] = {
        float3(-0.2, 0, -0.2),
-       float3(-0.8, 0, -0.8),
+       float3(-0.8, 0.5, -0.8),
        float3(0.5, 0, 0.5),
    };
-	float radius[3] = {
+	float radius[N_SPHERES] = {
        0.7f,
        0.1f,
        0.3f,
    };
 
-	thit = RayTCurrent();
-   bool hit = false;
+    thit = RayTCurrent();
+    bool hit = false;
    
-   for (int idx = 0; idx < 1; idx++) {
-       float _thit;
-       float _tmax;
-       ProceduralPrimitiveAttributes _attr;
-       if (RaySphereIntersectionTest(ray, _thit, _tmax, _attr, center[idx], radius[idx]))
-       {
-           if (_thit < thit) {
-               thit = _thit;
-               attr = _attr;
-               hit = true;
-           }
-       }
-   }
+    for (int idx = 0; idx < N_SPHERES; idx++) {
+        float _thit;
+        float _tmax;
+        ProceduralPrimitiveAttributes _attr;
+        if (RaySphereIntersectionTest(ray, _thit, _tmax, _attr, center[idx], radius[idx]))
+        {
+            if (_thit < thit) {
+                thit = _thit;
+                attr = _attr;
+                hit = true;
+            }
+        }
+    }
 
 	return hit;
 }

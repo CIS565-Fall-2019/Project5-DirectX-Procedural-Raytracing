@@ -263,9 +263,9 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
 
-    //float t = RayTCurrent();
-    //float lerp_coeff = 0;
-    //color = lerp(BackgroundColor, color, lerp_coeff);
+    float t = RayTCurrent();
+    float lerp_coeff = exp(-0.0001 * t * t * t);
+    color = lerp(BackgroundColor, color, lerp_coeff);
 
     rayPayload.color = color;
 }
@@ -307,6 +307,9 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     float4 color = (phongColor + reflectedColor);
 
     // (5) TODO: apply visibility falloff.
+    float t = RayTCurrent();
+    float lerp_coeff = exp(-0.0001 * t * t * t);
+    color = lerp(BackgroundColor, color, lerp_coeff);
 
     // (6) Fill the payload color.
     rayPayload.color = color;
@@ -383,6 +386,20 @@ void MyIntersectionShader_AnalyticPrimitive()
 [shader("intersection")]
 void MyIntersectionShader_VolumetricPrimitive()
 {
+    Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+    
+    float thit;
+    ProceduralPrimitiveAttributes attr;
+    if (RayMetaballsIntersectionTest(localRay, thit, attr, g_sceneCB.elapsedTime))
+    {
+        PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
 
+        // Make sure the normals are stored in BLAS space and not the local space
+        attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+        attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+
+        // thit is invariant to the space transformation
+        ReportHit(thit, /*hitKind*/ 0, attr);
+    }
 }
 #endif // RAYTRACING_HLSL
