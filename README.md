@@ -86,7 +86,7 @@ Unlike path tracer, ray tracing based renderer simples the the rendering and cal
 
 ### Bloopers
 
-![FPS_DEPTH](img/blooper.png)
+![blooper](img/blooper.PNG)
 
 When I used **pow(x, 5)** to calculate **x *  x *  x *  x *  x**
 
