@@ -24,11 +24,11 @@ typedef UINT16 Index;
 #endif
 
 // Number of metaballs to use within an AABB. Limit to 3 unless you are attempting the dynamic looping extra-credit.
-#define N_METABALLS 3
+#define N_METABALLS 5
 
 #define N_FRACTAL_ITERATIONS 5      // = <1,...>
 
-#define MAX_RAY_RECURSION_DEPTH 3    // ~ primary rays + reflections + shadow rays from reflected geometry.
+#define MAX_RAY_RECURSION_DEPTH 10   // ~ primary rays + reflections + shadow rays from reflected geometry.
 
 /**************** Scene *****************/
 static const XMFLOAT4 ChromiumReflectance = XMFLOAT4(0.549f, 0.556f, 0.554f, 1.0f);
@@ -108,6 +108,15 @@ namespace AnalyticPrimitive {
 namespace VolumetricPrimitive {
 	enum Enum {
 		Metaballs = 0,
+		Count
+	};
+}
+
+//SDF
+namespace SDFPrimitive {
+	enum Enum {
+		MyCreate = 0,
+		//MyCreate2,
 		Count
 	};
 }

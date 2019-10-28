@@ -34,6 +34,7 @@ void DXProceduralProject::InitializeScene()
 		// Albedos
 		XMFLOAT4 yellow = XMFLOAT4(1.0f, 1.0f, 0.5f, 1.0f);
 		XMFLOAT4 purple = XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+		XMFLOAT4 light_blue = XMFLOAT4(89./255.f, 235./255.f, 255./255.f, 1.0f);
 		XMFLOAT4 chromium_purple = XMFLOAT4(purple.x * ChromiumReflectance.x, 
 											purple.y * ChromiumReflectance.y,
 											purple.z * ChromiumReflectance.z,
@@ -53,6 +54,14 @@ void DXProceduralProject::InitializeScene()
 			using namespace VolumetricPrimitive;
 			SetAttributes(offset + Metaballs, ChromiumReflectance, 1);
 			offset += VolumetricPrimitive::Count;
+		}
+
+		// ADD
+		// SDF primitives.
+		{
+			using namespace SDFPrimitive;
+			SetAttributes(offset + MyCreate, light_blue, 0.7f);
+			offset += SDFPrimitive::Count;
 		}
 	}
 
@@ -149,6 +158,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	XMMATRIX mScale15y = XMMatrixScaling(1, 1.5, 1);
 	XMMATRIX mScale15 = XMMatrixScaling(1.5, 1.5, 1.5);
 	XMMATRIX mScale2 = XMMatrixScaling(2, 2, 2);
+	XMMATRIX mScale3 = XMMatrixScaling(3, 3, 3);
 
 	// Rotation matrix that changes over time
 	XMMATRIX mRotation = XMMatrixRotationY(-2 * animationTime);
@@ -187,4 +197,11 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		SetTransformForAABB(offset + Metaballs, mScale2, mRotation);
 		offset += VolumetricPrimitive::Count;
 	}
+	// ADD
+	// SDF primitives.
+	/*{
+		using namespace SDFPrimitive;
+		SetTransformForAABB(offset + MyCreate, mScale3, mIdentity);
+		offset += SDFPrimitive::Count;
+	}*/
 }

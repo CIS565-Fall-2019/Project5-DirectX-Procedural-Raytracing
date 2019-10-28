@@ -20,6 +20,7 @@ const wchar_t* DXProceduralProject::c_intersectionShaderNames[] =
 {
 	L"MyIntersectionShader_AnalyticPrimitive",
 	L"MyIntersectionShader_VolumetricPrimitive",
+	L"MyIntersectionShader_SDFPrimitive"
 };
 const wchar_t* DXProceduralProject::c_closestHitShaderNames[] =
 {
@@ -42,4 +43,5 @@ const wchar_t* DXProceduralProject::c_hitGroupNames_AABBGeometry[][RayType::Coun
 {
 	{ L"MyHitGroup_AABB_AnalyticPrimitive", L"MyHitGroup_AABB_AnalyticPrimitive_ShadowRay" },
 	{ L"MyHitGroup_AABB_VolumetricPrimitive", L"MyHitGroup_AABB_VolumetricPrimitive_ShadowRay" },
+	{ L"MyHitGroup_AABB_SDFPrimitive", L"MyHitGroup_AABB_SDFPrimitive_ShadowRay"}
 };

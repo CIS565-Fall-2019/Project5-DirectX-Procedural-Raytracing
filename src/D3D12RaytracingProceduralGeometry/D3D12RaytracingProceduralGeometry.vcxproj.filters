@@ -134,6 +134,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="SDFPrimitives.hlsli">
+      <Filter>Assets\Shaders\ProceduralPrimitives</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Raytracing.hlsl">

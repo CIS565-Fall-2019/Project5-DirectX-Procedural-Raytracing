@@ -103,7 +103,8 @@ float3 CalculateNormalForARaySphereHit(in Ray ray, in float thit, float3 center)
 }
 
 // Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects a hollow sphere.
-bool RaySphereIntersectionTest(in Ray ray, out float thit, out float tmax, in ProceduralPrimitiveAttributes attr, in float3 center = float3(0, 0, 0), in float radius = 1)
+bool RaySphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
+	in ProceduralPrimitiveAttributes attr, in float3 center = float3(0, 0, 0), in float radius = 1)
 {
     float t0, t1; // solutions for t if the ray intersects 
 
@@ -123,9 +124,7 @@ bool RaySphereIntersectionTest(in Ray ray, out float thit, out float tmax, in Pr
             thit = t1;
             return true;
         }
-    }
-    else
-    {
+    } else {
 		// use t0.
         attr.normal = CalculateNormalForARaySphereHit(ray, t0, center);
         if (is_a_valid_hit(ray, t0, attr.normal))
@@ -162,22 +161,33 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 }
 
 // TODO-3.4.1: Change this code to support intersecting multiple spheres (~3 spheres). 
-// You can hardcode the local centers/radii of the spheres, just try to maintain them between 1 and -1 (and > 0 for the radii).
+// You can hardcode the local centers/radii of the spheres, just try to maintain them between 1 and -1 
+//(and > 0 for the radii).
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	float3 center = float3(-0.2, 0, -0.2);
-	float radius = 0.7f;
+	//float3 center = float3(-0.2, 0, -0.2);
+	//float radius = 0.7f;
+	//
+	float3 centers[3] = { float3(-0.2f, 0.f, -0.2f) , float3(0.6f, 0.f, 0.f) , float3(0.1f, 0.f, 0.2f) };	
+	float radiuses[3] = {0.3f, 0.5f, 0.2f};
+	
+	thit = RayTCurrent();//current t
+	bool ishit = false;
 
-	thit = RayTCurrent();
-
-	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
-	{
-		return true;
+	for (int i = 0; i < 3; i++) {
+		float _tmax;
+		float _thit;
+		ProceduralPrimitiveAttributes _attr;
+		if (RaySphereIntersectionTest(ray, _thit, _tmax, _attr, centers[i], radiuses[i])) {
+			if (_thit < thit) {
+				thit = _thit;
+				attr = _attr;
+				ishit = true;
+			}
+		}
 	}
-
-	return false;
+	return ishit;
 }
 
 #endif // ANALYTICPRIMITIVES_H

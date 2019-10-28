@@ -221,6 +221,7 @@ PrebuildCheck.bat</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="SDFPrimitives.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\D3D12RaytracingFallback\src\FallbackLayer.vcxproj">

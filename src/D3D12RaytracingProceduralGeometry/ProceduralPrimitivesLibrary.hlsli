@@ -10,11 +10,16 @@
 
 #include "AnalyticPrimitives.hlsli"
 #include "VolumetricPrimitives.hlsli"
+#include "SDFPrimitives.hlsli"
 
 // LOOKAT-3.4.1: Analytic geometry intersection test.
 // AABB local space dimensions: <-1,1>.
-bool RayAnalyticGeometryIntersectionTest(in Ray ray, in AnalyticPrimitive::Enum analyticPrimitive, out float thit, out ProceduralPrimitiveAttributes attr)
+bool RayAnalyticGeometryIntersectionTest(in Ray ray, 
+	  in AnalyticPrimitive::Enum analyticPrimitive, 
+	  out float thit, 
+	  out ProceduralPrimitiveAttributes attr) 
 {
+	//aabb
     float3 aabb[2] = {
         float3(-1,-1,-1),
         float3(1,1,1)
@@ -30,13 +35,25 @@ bool RayAnalyticGeometryIntersectionTest(in Ray ray, in AnalyticPrimitive::Enum 
 
 // LOOKAT-3.4.2: Analytic geometry intersection test.
 // AABB local space dimensions: <-1,1>.
-bool RayVolumetricGeometryIntersectionTest(in Ray ray, in VolumetricPrimitive::Enum volumetricPrimitive, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
+bool RayVolumetricGeometryIntersectionTest(in Ray ray, 
+	in VolumetricPrimitive::Enum volumetricPrimitive, 
+	out float thit, 
+	out ProceduralPrimitiveAttributes attr, 
+	in float elapsedTime)
 {
-    switch (volumetricPrimitive)
-    {
-    case VolumetricPrimitive::Metaballs: return RayMetaballsIntersectionTest(ray, thit, attr, elapsedTime);
-    default: return false;
+    switch (volumetricPrimitive) {
+		case VolumetricPrimitive::Metaballs: return RayMetaballsIntersectionTest(ray, thit, attr, elapsedTime);
+		default: return false;
     }
+}
+
+//SDF
+float RayMarch(in float3 position, in SDFPrimitive::Enum sdfPrimitive)
+{
+	switch (sdfPrimitive) {
+		case SDFPrimitive::MyCreate: return sdTorus(opTwist(position), float2(0.6, 0.2));
+		default: return 0;
+	}
 }
 
 #endif // PROCEDURALPRIMITIVESLIBRARY_H

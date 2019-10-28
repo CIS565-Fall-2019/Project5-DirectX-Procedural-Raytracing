@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 // LOOKAT-1.5: Defines Enums/Namespaces to make code reusable.
 
 #include "RayTracingHlslCompat.h"
 
-// LOOKAT-1.5: The global root signature will contain each of these slots. See the top of Raytracing.hlsl to understand 
+// LOOKAT-1.5: The global root signature will contain each of these slots（槽）. See the top of Raytracing.hlsl to understand 
 // where this fits on the GPU.
 namespace GlobalRootSignature {
     namespace Slot {
@@ -93,20 +93,27 @@ namespace IntersectionShaderType {
     enum Enum {
         AnalyticPrimitive = 0,
         VolumetricPrimitive,
+		SDFPrimitive,//this one also in the AABB BLAS
         Count
     };
     inline UINT PerPrimitiveTypeCount(Enum type)
     {
         switch (type)
         {
-        case AnalyticPrimitive: return AnalyticPrimitive::Count;
-        case VolumetricPrimitive: return VolumetricPrimitive::Count;
+			case AnalyticPrimitive: return AnalyticPrimitive::Count;
+			case VolumetricPrimitive: return VolumetricPrimitive::Count;
+			case SDFPrimitive: return SDFPrimitive::Count;
         }
         return 0;
     }
+	//static const UINT MaxPerPrimitiveTypeCount =
+	//	max(AnalyticPrimitive::Count, VolumetricPrimitive::Count);
+	//static const UINT TotalPrimitiveCount =
+	//	AnalyticPrimitive::Count + VolumetricPrimitive::Count;
+
     static const UINT MaxPerPrimitiveTypeCount =
-        max(AnalyticPrimitive::Count, VolumetricPrimitive::Count);
+        max(SDFPrimitive::Count, max(AnalyticPrimitive::Count, VolumetricPrimitive::Count));
     static const UINT TotalPrimitiveCount =
-        AnalyticPrimitive::Count + VolumetricPrimitive::Count;
+        AnalyticPrimitive::Count + VolumetricPrimitive::Count + SDFPrimitive::Count;
 }
 

@@ -96,6 +96,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 			};
 			return aabb;
 		};
+
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);
 		UINT offset = 0;
 
@@ -110,8 +111,15 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		// Volumetric primitives.
 		{
 			using namespace VolumetricPrimitive;
-			m_aabbs[offset + Metaballs] = InitializeAABB(XMINT3(-1, 0, 0), XMFLOAT3(6, 6, 6));
+			m_aabbs[offset + Metaballs] = InitializeAABB(XMINT3(-1.0, 0, 0), XMFLOAT3(6, 6, 6));
 			offset += VolumetricPrimitive::Count;
+		}
+		//	ADD
+		// SDF primitives.
+		{
+			using namespace SDFPrimitive;
+			m_aabbs[offset + MyCreate] = InitializeAABB(XMINT3(-2.5, 0, 0), XMFLOAT3(3, 3, 3));
+			offset += SDFPrimitive::Count;
 		}
 
 		// TODO-2.5: Allocate an upload buffer for this AABB data.
