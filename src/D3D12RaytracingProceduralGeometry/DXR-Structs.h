@@ -4,7 +4,7 @@
 // for CPU-GPU communication. We recommend reading this file at least once to get an overview of what
 // type of data you'll be dealing with.
 
-// LOOKAT-1.6: Struct defining an Acceleration Structure (Bottom Level or Top Leve)
+// LOOKAT-1.6: Struct defining an Acceleration Structure (Bottom Level or Top Level)
 struct AccelerationStructureBuffers
 {
 	ComPtr<ID3D12Resource> scratch;						// temp data needed by the GPU to build the AS

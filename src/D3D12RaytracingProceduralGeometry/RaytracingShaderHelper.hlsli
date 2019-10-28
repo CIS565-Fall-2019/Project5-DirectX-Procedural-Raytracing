@@ -67,8 +67,12 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 //				  f(0) = 0, f(0.5) = 1, f(1) = 0. And is linear between these 3 points.
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
-{
-	return smoothstep(0, 1, 0);
+{	
+	float current = fmod(elapsedTime, cycleDuration) / cycleDuration;
+	if (current <= 0.5f) {
+		return smoothstep(0.f, 1.f, 2.f * current);
+	}
+	return smoothstep(1, 0, 2.f * current - 1.f);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -130,9 +134,12 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
 	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
-
+	ray.origin = cameraPosition;
+	uint3 dims = DispatchRaysDimensions();
+	float2 convert = float2(2.0f * index.x / dims.x - 1.0f, 2.0f * index.y / dims.y - 1.0f);
+	float4 ndc = normalize(float4(convert.x, convert.y, 1.0f, 1.0f));
+	ndc = mul(ndc, projectionToWorld);
+	ray.direction = normalize(float3(ndc.x, ndx.y, ndx.z) - cameraPosition);
     return ray;
 }
 
@@ -140,7 +147,8 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // See https://en.wikipedia.org/wiki/Schlick%27s_approximation for formula.
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
-{
+{	
+	f0 = f0 + (float3(1.f, 1.f, 1.f) - f0) * pow(1.f - abs(dot(I, N)), 5.f)
 	return f0;
 }
 
