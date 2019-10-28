@@ -3,13 +3,15 @@ Project 5 - DirectX Procedural Raytracing**
 
 Peyman Norouzi
 * [LinkedIn](https://www.linkedin.com/in/peymannorouzi)
-* Tested on: Windows 10, i7-6700 @ 3.40GHz 16GB, Quadro P1000 4096MB (Moore 100B Lab)
+* Tested on: Windows 10, Xeon E5 @ 3.70GHz 32GB, GTX 1070 8192MB (SIG LAB Second Computer from Left)
 
 ## Ray Tracing:
 
-![](img/w_MB.png)
+<p align="center">
+  <img src="images/top2.gif">
+</p>
 
-In computer graphics, ray tracing is a rendering technique for generating photo realistic images. In this approach, we trace paths of light as they leave from a camera as pixels in an image plane and simulating the effects of them encountering with virtual objects. 
+In computer graphics, ray tracing is a rendering technique for generating photo realistic images. In this approach, we trace paths of light as they leave from a camera as pixels in an image plane and simulating the effects of them encountering with virtual objects. In my one of previous projects, I did implement Path tracer on cuda which is a subset of ray tracing method. You can look the previous project [here](https://github.com/pnorouzi/Project3-CUDA-Path-Tracer).
 
 
 ## Table of Contents:
@@ -26,101 +28,79 @@ In computer graphics, ray tracing is a rendering technique for generating photo 
 - [Bloopers](#bloopers)
 
 
-## DirectX Ray Tracing Implementation:
+## DirectX Procedural Ray Tracing:
 
-I am implementing ray tracing on CUDA capable of rendering globally-illuminated images very quickly. The basic idea of the implementation can be seen below:
+As explained earlier, Ray Tracing, is a process in which we can produce/render photo realistic images by firing rays through a imaginary camera and then following the illumination of objects in the scene with a set of pre-defined rules. The process is simillar to path tracing except the fact that it is deterministiv and the tracing process only needs a single pass over the scene. The basic idea of the implementation can be seen below:
 
-![](img/1280px-Ray_trace_diagram.svg.png)
-
-When a ray leaves the camera (pixel), it can hit the objects in the environment and bounce, change direction or get diffused. So it is important to implement the rules that govern the behavior/interactions between rays and materials and objects in the environment. A ray hitting an object can have the following behavior and outcomes: 
-
-![](img/beh_img.png)
-
-The behavior rules can be found below: 
-
-![](img/Ray_Tracing_Illustration_First_Bounce.png)
+<p align="center">
+  <img src="images/raytrace.jpg">
+</p>
 
 
-### Core Implementation:
+### DXR Implementation:
 
-In our core implementation we will model refraction, reflection and difusion behavior of material/ray interaction. For the refraction/reflection implemnetation I will be using Snell's law with Frensel effects using [Schlick's approximation](https://en.wikipedia.org/wiki/Schlick's_approximation). In this implementation, the ray that gets fired from the camera bouces for a maximum of 8 time (Depth of 8) unless it gets diffused or hits the light source. The walls in this rednder only diffuse and the sphere in the enviroment both reflects and refracts. The result of the render is as follows:
+I used the DirectX 12 Raytracing (DXR) API for the implementation. The basic idea and pipeline of the implementation can be understood using the following diagram:
 
-![](img/Basic_core.png)
+<p align="center">
+  <img src="images/pipeline.png">
+</p>
 
-Now let's make the left and right walls into the same material as the sphere. The result looks pretty cool:
+In this project, we use a *minimum depth of 3*, which means we will be calling `TraceRay()` roughly 3 times. We will be tracing the following:
 
-![](img/Basic_m.png)
+1. a **primary (radiance) ray** generated from the camera
+2. a **shadow ray** just in case the ray hits a geometry on its way to the light source
+3. a **reflection** ray in case the material of the object is reflective
 
-let's have two objects now! let's make it red so that the whole render get a red hue! it is starting to look like a Salvador Dali painting!
+Therefore, the lifecycle of a single ray can be thought of as follows:
 
-![](img/Basis_2.png)
+1. generate a ray, see if it hits something
+2. if it hits something, then attempt to *light/color* it
+    * attempting to color that hit point is equivalent to **tracing that ray towards the light source**. 
+    * if that ray hits *another* object on its way to the light, then the region is effectively shadowed
+    * if not, then we successfully colored that point
+3. if at any point we hit a reflective material, then trace another ray in the reflected direction and repeat the process
 
-### Core Implementation + Anti-Aliasing:
+To be able to implement such algrithm on the GPU (to make it fast and performant) we need to make all of the following data available in the GPU before any tracing happens:
 
-we can use Stochastic Sampled Antialiasing method and add some noise to the position of our rays when they get fired from the camera. This would help us greatly for rendering edges of the objects. The result speaks for themselves:
-
-| Without Anti-Aliasing | With Anti-Aliasing |
-| ------------- | ----------- |
-| ![](img/wo_AA.png)  | ![](img/w_AA.png) |
-| ---------------->![](img/wo_AA_Z.png)<---------------- | ---------------->![](img/w_AA_Z.png)<----------------|
-
-As you can see we were able to greatly improve our rendering performance!
-
-### Core Implementation + Anti-Aliasing + Motion Blur:
-
-In this implementation we try to move objects in the image slowly as we are creating the render. As the objects moves, we can average samples(frames) at different times in the animation. The results look super cool:
-
-| Without Motion Blur | With Motion Blur |
-| ------------- | ----------- |
-| ![](img/wo_MB.png)  | ![](img/w_MB.png) |
-| ---------------->![](img/wo_MB_Z.png)<---------------- | ---------------->![](img/w_MB_Z.png)<----------------|
-
+    * all geometries must be positioned within an acceleration structure (KD-Tree, Bounding Volume Hierarchy, or whatever your choice is..)
+    * the camera must be set up
+    * the light sources must be configured
+    * the shading logic must be configured
+    * and the output buffer must be ready
+    
+In essence, the entire *ray tracing pipeline* must be ready on the GPU. In rasterization, this does not need to hold: you can render shadows *after* you render diffuse colors for example. So a good chunk of DXR is spent setting that up from the CPU. Once the GPU knows about all the details on the pipeline, it can execute the ray tracing algorithm. **This is where the DXR API would be very helpful since it would allow us to set up all of these things easier**.
 
 ## Perfomance Implementation and Analysis:
 
 In the naive approach, we track each rays motion and bounce, throughout its journey until our depth requirement is met. But this is not the best and most efficient way to approach this since many rays will be terminating their journey earlier by either hitting the light source or a diffusing surface.
 
-### Stream Compaction: 
-
-Stream compaction would allow us to get rid of rays that have already terminated by hitting the light source or a diffusing surface. This way we can exit earlier in each iteration thus improving our performance. This is especially useful when our depth is a larger number such as 64. We can see the performance improved significantly as follows (the depth is 8):
-
-
-![](img/SC.png)
-
-
-As you can see the time it takes for each depth decreases as we bounce further and further which is as predicted. This is due to having less and less active rays to track as we bounce further and further. The performance improvement is especially significant when we have an open environment (no surrounding walls) which makes sense since a lot more rays would get eliminated because of space being open. Overall if we have a high depth(32 and above) stream compaction can improve the performance significantly. 
-
-
-### First bounce intersections Caching:
-
-The first bounce (rays leaving the camera) is the same for each frame iteration so we are technically able to calculate the first bounce intersection and cache it in our memory and use it for future frame iteration which can help further improve the performance of the implementation which can be seen in the plot below: 
-
-
-<p align="center">
-  <img src="img/Cache.png">
-</p>
-
-
-### Material Sort:
-
-Not every material in the environment is going to be the same when it comes to computational complexity. Some materials (reflective/refractive) have more bounces and thus require more computation when it comes to it. Thus in theory, if we sort our materials by the type of material they are, we can improve the performance even further. But in reality, the material sort seems not to be affecting our performance in the predicted way. There may be two reasons for this: 1. There are not enough materials in the environment for the sort to make a difference, meaning that if there were a lot more materials we could see possible improvements. 2. The time it takes to sort the materials is longer than the possible benefit we get by sorting. 
-
-<p align="center">
-  <img src="img/MS.png">
-</p>
-
 
 ## Cool Renders:
 
-These are my Salvador Dali style masterpieces:
+Here are some cool renders that shows how powerfull DXR ray tracing can be. For all of the renders bellow, the maximum Recurssion Depth is 3.
 
-![](img/final4.png)
-![](img/final3.png)
-![](img/final.png)
+In the following the light source is dynamically rotating slowly across the scene creating realistic shadows of the objects in the scene:
+
+<p align="center">
+  <img src="images/light.gif">
+</p>
+
+In addition to moving the light source, in the following render, the geometries are dynamically moving across the scene:
+
+<p align="center">
+  <img src="images/move.gif">
+</p>
+
 
 
 ## Bloopers:
 
-Here are some bloopers showing that everyone can and will make mistakes along the way. :)
+Here are some bloopers showing that everyone can and will make mistakes along the way. Especially in this project, there can be so many places that you can make a mistake. :) 
 
 <img src="img/blooper_MB.png" width="280"> <img src="img/blooper_refract.PNG" width="280"> <img src="img/blooper_refract2.PNG" width="280">
+
+## Sources:
+
+https://docs.microsoft.com/en-us/windows/win32/directx
+
+
