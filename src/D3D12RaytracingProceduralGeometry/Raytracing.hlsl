@@ -248,7 +248,7 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	// Hint 2: use the built-in function lerp() to linearly interpolate between the computed color and the Background color.
 	//		   When t is big, we want the background color to be more pronounced.
 	float currT = RayTCurrent();
-	color = lerp(color, BackgroundColor, clamp(currT /  50, 0.0, 1.0));
+	color = lerp(color, BackgroundColor, clamp(currT /  90, 0.0, 1.0));
     rayPayload.color = color;
 }
 
@@ -294,7 +294,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 
 	// Apply a visibility falloff.
 	float currT = RayTCurrent();
-	color = lerp(color, BackgroundColor, clamp(currT / 50, 0.0, 1.0));
+	color = lerp(color, BackgroundColor, clamp(currT / 90, 0.0, 1.0));
 	rayPayload.color = color;
 }
 

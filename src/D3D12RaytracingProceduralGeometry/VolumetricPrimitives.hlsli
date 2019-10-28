@@ -22,14 +22,14 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-	float distance = length(position - blob.center);
-	if (distance < 0.00001) {
+	float dist = distance(position, blob.center);
+	if (dist < 0.00001) {
 		return 1.0;
 	}
-	if (distance >= blob.radius) {
+	if (dist > blob.radius) {
 		return 0.0;
 	}
-	float x = distance / blob.radius;
+	float x = (blob.radius - dist) / blob.radius;
 	return clamp((6.0 * x * x * x * x * x) - (15.0 * x * x * x * x) + (10.0 * x * x * x), 0.0, 1.0);
 }
 
@@ -74,7 +74,7 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
     };
 
     // Metaball field radii of max influence
-    float radii[N_METABALLS] = { 0.35, 0.45, 0.35 };
+    float radii[N_METABALLS] = { 0.45, 0.55, 0.45 };
 
     // Calculate animated metaball center positions.
 	float tAnimate = CalculateAnimationInterpolant(elapsedTime, cycleDuration);
@@ -90,15 +90,17 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
 	ProceduralPrimitiveAttributes attr;
-	tmin = 0;
+	tmin = 1000000;
 	tmax = -100000000;
 	for (int i = 0; i < N_METABALLS; i++) {
 		Metaball m = blobs[i];
-		float currtmin;
-		float currtmax;
-		RaySphereIntersectionTest(ray, currtmin, currtmax, attr, m.center, m.radius);
-		tmin = min(tmin, currtmin);
-		tmax = max(tmax, currtmax);
+		float currtmin = 100000;
+		float currtmax = -100000;
+		if (RaySphereIntersectionTest(ray, currtmin, currtmax, attr, m.center, m.radius)) {
+			tmin = min(tmin, currtmin);
+			tmax = max(tmax, currtmax);
+		}
+		
 	}
 	
 	/*tmin = INFINITY;
@@ -125,14 +127,14 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	float tmin = 0;
 	float tmax = 0;
 	TestMetaballsIntersection(ray, tmin, tmax, blobs);
-	int numSteps = 256;
-	float stepSize = abs(tmax - tmin) / float(numSteps);
+	float numSteps = 256.f;
+	float stepSize = abs(tmax - tmin) / numSteps;
 	for (int i = 0; i < numSteps; i++) {
 		float currt = tmin + stepSize * i;
 		float3 currPos = ray.origin + currt * ray.direction;
 		float potential = CalculateMetaballsPotential(currPos, blobs);
-		if (potential > 0.5) {
-			attr.normal = normalize(CalculateMetaballsNormal(currPos, blobs));
+		if (potential > 0.3) {
+			attr.normal = CalculateMetaballsNormal(currPos, blobs);
 			if (is_a_valid_hit(ray, currt, attr.normal)) {
 				thit = currt;
 				return true;
