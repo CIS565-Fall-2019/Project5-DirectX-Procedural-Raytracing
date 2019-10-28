@@ -153,7 +153,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
 	float n1 = 1.5;
-	float n2 = 1.0;
+	float n2 = 0.2;
 	float R0 = ((n1 - n2) / (n1 + n2)) * ((n1 - n2) / (n1 + n2));
 	float theta = dot(N, I);
 	float Rtheta = R0 + (1.0 - R0) * pow(1 - cos(theta), 5);
