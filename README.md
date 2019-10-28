@@ -11,7 +11,7 @@ Peyman Norouzi
   <img src="images/top2.gif">
 </p>
 
-In computer graphics, ray tracing is a rendering technique for generating photo realistic images. In this approach, we trace paths of light as they leave from a camera as pixels in an image plane and simulating the effects of them encountering with virtual objects. In my one of previous projects, I did implement Path tracer on cuda which is a subset of ray tracing method. You can look the previous project [here](https://github.com/pnorouzi/Project3-CUDA-Path-Tracer).
+In computer graphics, ray tracing is a rendering technique for generating photorealistic images. In this approach, we trace paths of light as they leave from a camera as pixels in an image plane and simulating the effects of them encountering with virtual objects. In my one of previous projects, I did implement Path tracer on CUDA which is a subset of the ray-tracing method. You can look at the previous project [here](https://github.com/pnorouzi/Project3-CUDA-Path-Tracer).
 
 
 ## Table of Contents:
@@ -30,7 +30,7 @@ In computer graphics, ray tracing is a rendering technique for generating photo 
 
 ## DirectX Procedural Ray Tracing:
 
-As explained earlier, Ray Tracing, is a process in which we can produce/render photo realistic images by firing rays through a imaginary camera and then following the illumination of objects in the scene with a set of pre-defined rules. The process is simillar to path tracing except the fact that it is deterministiv and the tracing process only needs a single pass over the scene. The basic idea of the implementation can be seen below:
+As explained earlier, Ray Tracing is a process in which we can produce/render photorealistic images by firing rays through an imaginary camera and then following the illumination of objects in the scene with a set of pre-defined rules. The process is similar to path tracing except for the fact that it is deterministic and the tracing process only needs a single pass over the scene. The basic idea of the implementation can be seen below:
 
 <p align="center">
   <img src="images/raytrace.jpg">
@@ -60,7 +60,7 @@ Therefore, the lifecycle of a single ray can be thought of as follows:
     * if not, then we successfully colored that point
 3. if at any point we hit a reflective material, then trace another ray in the reflected direction and repeat the process
 
-To be able to implement such algrithm on the GPU (to make it fast and performant) we need to make all of the following data available in the GPU before any tracing happens:
+To be able to implement such an algorithm on the GPU (to make it fast and performant) we need to make all of the following data available in the GPU before any tracing happens:
 
     * all geometries must be positioned within an acceleration structure (KD-Tree, Bounding Volume Hierarchy, or whatever your choice is..)
     * the camera must be set up
@@ -70,9 +70,9 @@ To be able to implement such algrithm on the GPU (to make it fast and performant
     
 In essence, the entire *ray tracing pipeline* must be ready on the GPU. In rasterization, this does not need to hold: you can render shadows *after* you render diffuse colors for example. So a good chunk of DXR is spent setting that up from the CPU. Once the GPU knows about all the details on the pipeline, it can execute the ray tracing algorithm. **This is where the DXR API would be very helpful since it would allow us to set up all of these things easier**.
 
-## Perfomance Implementation and Analysis:
+## Perfomance of the Implementation:
 
-In the naive approach, we track each rays motion and bounce, throughout its journey until our depth requirement is met. But this is not the best and most efficient way to approach this since many rays will be terminating their journey earlier by either hitting the light source or a diffusing surface.
+One of the more important parameters of the implementation is the maximum depth of ray recursion. All of the renders in the repo are made using 3 as the maximum depth of recursion. By increasing the depth further than 3 we can see the performance takes a hit which makes sense. You can see the effects of recursion in the following plots:
 
 
 ## Cool Renders:
@@ -97,7 +97,17 @@ In addition to moving the light source, in the following render, the geometries 
 
 Here are some bloopers showing that everyone can and will make mistakes along the way. Especially in this project, there can be so many places that you can make a mistake. :) 
 
-<img src="img/blooper_MB.png" width="280"> <img src="img/blooper_refract.PNG" width="280"> <img src="img/blooper_refract2.PNG" width="280">
+<p align="center">
+<img src="images/bloop1.gif" width="350"> 
+</p>
+
+<p align="center">
+<img src="images/bloop2.gif" width="350"> 
+</p>
+
+<p align="center">
+<img src="images/bloop3.gif" width="350"> 
+</p>
 
 ## Sources:
 
