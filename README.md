@@ -5,6 +5,30 @@ Project 5 - DirectX Procedural Raytracing**
   * https://www.linkedin.com/in/grace-gilbert-2493a0156, http://gracelgilbert.com
 * Tested on: Windows 10, i9-9900K @ 3.60GHz 64GB, GeForce RTX 2080 40860MB
 
+![](images/HighQualityStill.gif)
+
+# Overview
+
+# Resources
+
+# Implementation
+## CPU Setup
+### Passing Data
+### Geometry and Acceleration Structures
+### Dispatch
+## GPU Raytracing
+### Ray Generation
+#### Radiance Rays
+#### Shadow Rays
+### Geometry
+#### Box
+#### Sphere
+#### Metaballs
+### Shading
+#### Phong Lighting
+#### Fresnel Reflections with Schlick's Approximation
+### Distance Falloff
+
 ## Concept Questions
 1. Ray tracing begins by firing off rays from the camera's perspective, with 1 ray corresponding to 1 pixel. Say the viewport is (1280 by 720), **how would you convert these pixel locations into rays**, with each ray being defined by an `Origin` and a `Direction`, such that `Ray = Origin + t * Direction`? Consult this [intro](https://www.scratchapixel.com/lessons/3d-basic-rendering/computing-pixel-coordinates-of-3d-point/mathematics-computing-2d-coordinates-of-3d-points) to camera transformations and this [explanation](http://webglfactory.blogspot.com/2011/05/how-to-convert-world-to-screen.html) of world-to-screen/screen-to-world space article to formulate an answer in your own words.
 
