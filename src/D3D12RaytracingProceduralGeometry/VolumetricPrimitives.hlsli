@@ -22,7 +22,13 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	float d = distance(position, blob.center);
+	if (d >= blob.radius) {
+		return 0.0f;
+	}
+	float x = 1 - ( d / blob.radius);
+	return 6.0f * pow(x, 5) - 15.0f * pow(x, 4) + 10.0f * pow(x, 3);
+
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -83,6 +89,19 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+	for (int i = 0; i < N_METABALLS; i++) {
+		float tempTmax;
+		float tempTmin;
+		ProceduralPrimitiveAttributes tempAttr;
+		if (RaySolidSphereIntersectionTest(ray, tempTmin, tempTmax, blobs[i].center, blobs[i].radius))
+		{
+			tmin = min(tempTmin, tmin);
+			tmax = max(tempTmax, tmax);
+		}
+	}
+	// Since it's a solid sphere, clip intersection points to ray extents.
+	tmin = max(tmin, RayTMin());
+	tmax = min(tmax, RayTCurrent());
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,9 +119,24 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
-	thit = 0.0f;
-	attr.normal = float3(0.0f, 0.0f, 0.0f);
-    return false;
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 13.0f);
+	float tmin, tmax;
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+	for (float t = tmin; t <= tmax; t += ((tmax - tmin)/ 128.0f))
+	{
+		float3 position = ray.origin + t * ray.direction;
+		float totalMetaballPotential = CalculateMetaballsPotential(position, blobs);
+		if (totalMetaballPotential > 0.5f) {
+			float3 normal = CalculateMetaballsNormal(position, blobs);
+			if (is_a_valid_hit(ray, t, normal)) {
+				thit = t;
+				attr.normal = normal;
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 #endif // VOLUMETRICPRIMITIVESLIBRARY_H
