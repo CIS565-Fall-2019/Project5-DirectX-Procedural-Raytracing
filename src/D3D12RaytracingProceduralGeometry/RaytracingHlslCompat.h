@@ -100,7 +100,14 @@ namespace AnalyticPrimitive {
 	enum Enum {
 		AABB = 0,
 		Spheres,
-		Count
+        Cube1,
+		Cube2,
+		Cube3,
+		Cube4,
+		Cube5,
+		Cube6,
+		Cube7,
+		Count,
 	};
 }
 

@@ -38,6 +38,12 @@ void DXProceduralProject::InitializeScene()
 											purple.y * ChromiumReflectance.y,
 											purple.z * ChromiumReflectance.z,
 											1.0f);
+        XMFLOAT4 lime_green = XMFLOAT4(0.1961, 0.8039, 0.1961, 1);
+        XMFLOAT4 dark_green = XMFLOAT4(0.0000, 0.4444, 0.0000, 1);
+        XMFLOAT4 dodger_blue = XMFLOAT4(0.1176, 0.5647, 1.0000, 1);
+        XMFLOAT4 crimson = XMFLOAT4(0.8627, 0.0784, 0.2353, 1);
+		XMFLOAT4 cyan = XMFLOAT4(0.0000, 0.9999, 0.8793, 1);
+		XMFLOAT4 orange = XMFLOAT4(0.9999, 0.2705, 0.1000, 1);
 
 		UINT offset = 0;
 		// Analytic primitives.
@@ -45,6 +51,13 @@ void DXProceduralProject::InitializeScene()
 			using namespace AnalyticPrimitive;
 			SetAttributes(offset + AABB, yellow, 0.3f);
 			SetAttributes(offset + Spheres, chromium_purple, 0.8f);
+			SetAttributes(offset + Cube1, lime_green, 0.3f);
+            SetAttributes(offset + Cube2, crimson, 0.2f);
+            SetAttributes(offset + Cube3, dodger_blue, 0.5f);
+			SetAttributes(offset + Cube4, dark_green, 0.4f);
+			SetAttributes(offset + Cube5, cyan, 0.2f);
+			SetAttributes(offset + Cube6, dodger_blue, 0.0f);
+			SetAttributes(offset + Cube7, orange, 0.8f);
 			offset += AnalyticPrimitive::Count;
 		}
 
@@ -113,7 +126,7 @@ void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 {
 	auto device = m_deviceResources->GetD3DDevice();
 	auto frameCount = m_deviceResources->GetBackBufferCount();
-	UINT primitiveCount = AnalyticPrimitive::Count + VolumetricPrimitive::Count;
+    UINT primitiveCount = IntersectionShaderType::TotalPrimitiveCount;
 	
 	m_aabbPrimitiveAttributeBuffer.Create(device, primitiveCount, frameCount, L"AABB Primitive Attribute Buffer");
 }
@@ -150,6 +163,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	XMMATRIX mScale15y = XMMatrixScaling(1, 1.5, 1);
 	XMMATRIX mScale15 = XMMatrixScaling(1.5, 1.5, 1.5);
 	XMMATRIX mScale2 = XMMatrixScaling(2, 2, 2);
+	XMMATRIX mScale025 = XMMatrixScaling(0.25, 0.25, 0.25);
 
 	// Rotation matrix that changes over time
 	XMMATRIX mRotation = XMMatrixRotationY(-2 * animationTime);
@@ -179,6 +193,13 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		using namespace AnalyticPrimitive;
 		SetTransformForAABB(offset + AABB, mScale15y, mIdentity);
 		SetTransformForAABB(offset + Spheres, mScale15, mRotation);
+        SetTransformForAABB(offset + Cube1, mScale025, mIdentity);
+		SetTransformForAABB(offset + Cube2, mScale025, mIdentity);
+		SetTransformForAABB(offset + Cube3, mScale025, mIdentity);
+		SetTransformForAABB(offset + Cube4, mScale025, mIdentity);
+		SetTransformForAABB(offset + Cube5, mScale025, mIdentity);
+		SetTransformForAABB(offset + Cube6, mScale025, mIdentity);
+		SetTransformForAABB(offset + Cube7, mScale025, mIdentity);
 		offset += AnalyticPrimitive::Count;
 	}
 

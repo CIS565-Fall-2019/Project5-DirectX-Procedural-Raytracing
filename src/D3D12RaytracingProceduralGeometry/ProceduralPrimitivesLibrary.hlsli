@@ -22,9 +22,18 @@ bool RayAnalyticGeometryIntersectionTest(in Ray ray, in AnalyticPrimitive::Enum 
 
     switch (analyticPrimitive)
     {
-    case AnalyticPrimitive::AABB: return RayAABBIntersectionTest(ray, aabb, thit, attr);
-    case AnalyticPrimitive::Spheres: return RayMultipleSpheresIntersectionTest(ray, thit, attr);
-    default: return false;
+        case AnalyticPrimitive::AABB:
+        case AnalyticPrimitive::Cube1:
+        case AnalyticPrimitive::Cube2:
+        case AnalyticPrimitive::Cube3:
+        case AnalyticPrimitive::Cube4:
+        case AnalyticPrimitive::Cube5:
+        case AnalyticPrimitive::Cube6:
+        case AnalyticPrimitive::Cube7:
+            return RayAABBIntersectionTest(ray, aabb, thit, attr);
+        case AnalyticPrimitive::Spheres:
+            return RayMultipleSpheresIntersectionTest(ray, thit, attr);
+        default: return false;
     }
 }
 
