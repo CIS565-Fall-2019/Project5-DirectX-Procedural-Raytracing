@@ -211,7 +211,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 	//		Where do you think procedural shader records would start then? Hint: right after - so 2!
 	// * Make each instance hover above the ground by ~ half its width
 	{
-		auto& instanceDesc = instanceDescs[BottomLevelASType::Triangle];
+		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
 		instanceDesc.InstanceMask = 1;
 		instanceDesc.InstanceContributionToHitGroupIndex = 2;
