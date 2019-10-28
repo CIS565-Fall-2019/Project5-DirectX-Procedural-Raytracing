@@ -137,7 +137,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
     ray.origin = cameraPosition;
 
     float x = 2.0 * (float(index.x) / DispatchRaysDimensions().x) - 1;
-    float y = 1 - 2.0 * (float(index.y) / DispatchRaysDimensions().y);
+    float y = 1- 2.0 * (float(index.y) / DispatchRaysDimensions().y);
 	float4 local_cor = float4(x, y, 1.0f, 1.0f);
 	float4 world_cor = mul(local_cor, projectionToWorld);
 	world_cor /= world_cor.w;
