@@ -22,7 +22,13 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	float d = distance(blob.center, position);
+	float x = (d <= blob.radius ? (blob.radius - d) / blob.radius : 0.f);//  1.f - max(distance(blob.center, position), blob.radius) / blob.radius;
+	float x3 = x * x * x;
+	float x4 = x3 * x;
+	float x5 = x4 * x;
+
+	return 6.f * x5 - 15.f * x4 + 10 * x3;
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -83,25 +89,65 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+	
+	for (int blob = 0; blob < N_METABALLS; blob++) {
+		// Variables to pass in
+		float t0 = INFINITY;
+		float t1 = INFINITY;
+		// Use this previously created function, since metaballs are solid spheres
+		if (!RaySolidSphereIntersectionTest(ray, t0, t1,
+			blobs[blob].center, blobs[blob].radius)) {
+			continue;
+		}
+
+		// Retain the minimum and t-values from all intersected blobs :)
+		tmin = min(t0, tmin);
+		tmax = max(t1, tmax); // Clamped by RayTMin() and RayTCurrent() in RSSIntersectionTest
+	}
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
 // The test sphere traces through the metaball field until it hits a threshold isosurface.
 // Returns true if we found a point. False otherwise.
-// 1) Initialize a metaball array. See InitializeAnimatedMetaballs()
-// 2) Test intersections on the metaballs to find the minimum t and the maximum t to raymarch between.
-// 3) Use some number of steps (~128 is a good number for raymarching) to do the following:
-//		a) Compute the total metaball potential over this point by summing ALL potentials of each metaball. 
-//			See CalculateMetaballsPotential().
-//		b) If the total potential crosses an isosurface threshold (defined on (0,1]), then we will potentially
-//			render this point:
-//			i) We compute the normal at this point (see CalculateMetaballsNormal())
-//			ii) Only render this point if it is valid hit. See is_a_valid_hit(). 
-//				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
 	thit = 0.0f;
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
+
+	// 1) Initialize a metaball array. See InitializeAnimatedMetaballs()
+	Metaball blobs[N_METABALLS]; // out variable
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 16.f); // CycleDuration = a value of your choice that will 
+														   // define how much time it takes for an animation to restart
+
+	// 2) Test intersections on the metaballs to find the minimum t and the maximum t to raymarch between.
+	float t0 = 0;
+	float t1 = 0;
+	TestMetaballsIntersection(ray, t0, t1, blobs);
+
+	// 3) Use some number of steps (~128 is a good number for raymarching) to do the following:
+	float maxSteps = 128.f;
+	float dt = (t1 - t0) / maxSteps; 
+	for (int steps = 0; steps < (int) maxSteps; steps++) {
+		//	a) Compute the total metaball potential over this point by summing ALL potentials of each metaball. 
+		//		See CalculateMetaballsPotential().
+		float3 position = ray.origin + t0 * ray.direction;
+		float sumFieldPotential = CalculateMetaballsPotential(position, blobs);
+
+		//	b) If the total potential crosses an isosurface threshold (defined on (0,1]), then we will potentially
+		//		render this point:
+		if (sumFieldPotential > 0.1) {
+			//	i) We compute the normal at this point (see CalculateMetaballsNormal())
+			float3 norm = CalculateMetaballsNormal(position, blobs);
+			//	ii) Only render this point if it is valid hit. See is_a_valid_hit(), which checks segment <RayTMin(), RayTCurrent()>. 
+			if (is_a_valid_hit(ray, t0, norm)) {
+				attr.normal = norm;
+				thit = t0;
+				return true;
+			}
+		}
+		//		If this condition fails, keep raymarching! - At a constant value since no SDF (dt)
+		t0 += dt;
+	}
     return false;
 }
 

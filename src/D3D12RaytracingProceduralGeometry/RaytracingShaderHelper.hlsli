@@ -68,7 +68,11 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+	float step = fmod(elapsedTime, cycleDuration) / cycleDuration;
+	if (step > 0.5f) {
+		step = 1.f - step;
+	}
+	return smoothstep(0, 1, step);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.
@@ -121,17 +125,30 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
 
 // TODO-3.1: Generate a ray in world space for a camera pixel corresponding to a dispatch index (analogous to a thread index in CUDA).
 // Check out https://docs.microsoft.com/en-us/windows/win32/direct3d12/direct3d-12-raytracing-hlsl-system-value-intrinsics to see interesting 
-// intrinsic HLSL raytracing functions you may use.
+// intrinsic HLSL raytracing functions you may use. - This is where I got DispatchRaysDimensions!
 // Remember that you are given the pixel coordinates from index. You need to convert this to normalized-device coordinates first.
 // Want: bottom left corner = (-1,-1) and top right corner = (1,1). 
 // Keep in mind that the pixel space in DirectX is top left = (0,0) and bottom right = (width, height)
 // Once you have the normalized-device coordinates, use the projectionToWorld matrix to find a 3D location for this pixel. The depth will be wrong but
 // as long as the direction of the ray is correct then the depth does not matter.
+// Was having trouble getting this to work at first, so Grace told me to add that "+ 0.5" to the NDC 
+// calculation, and Tabatha reminded me to swap the order of multiplication from what I oiginally imagined
 inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
 {
+	// Converting Pixel Coordinates to Screen Space Coordinates (actually NDC)
+	float screenX = (float(index.x + 0.5f) / float(DispatchRaysDimensions().x)) * 2.f - 1.f;
+	float screenY = 1.f - (float(index.y + 0.5f) / float(DispatchRaysDimensions().y)) * 2.f;
+
+	// Point estimate, assuming Unhomogenized Screen Space but without a proper perpective divide
+	float4 pEst = float4(screenX, screenY, 1.f, 1.f);
+	 
+	// Get 3D location (convert to world space)
+	float4 dir = mul(pEst, projectionToWorld);
+	dir /= dir.w;
+
 	Ray ray;
-    ray.origin = float3(0.0f, 0.0f, 0.0f);
-	ray.direction = normalize(float3(0.0f, 0.0f, 0.0f));
+    ray.origin = cameraPosition;
+	ray.direction = normalize(dir.xyz - cameraPosition);
 
     return ray;
 }
@@ -141,7 +158,8 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0;
+	float cosTheta = abs(dot(normalize(I), normalize(N)));
+	return f0 + (1.f - f0) * pow(1.f - cosTheta, 5.f);
 }
 
 #endif // RAYTRACINGSHADERHELPER_H
