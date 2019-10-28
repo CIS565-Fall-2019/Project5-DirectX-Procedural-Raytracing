@@ -93,6 +93,6 @@ I noticed that the calls to DirectX's `TraceRay()` function cuts my frame rate d
 
 ## Performance Analysis
 
-![](images/falloff.png)
+![](images/graph.png)
 
 As expected, the frame rate goes down with increased ray depth (with few exceptions).
