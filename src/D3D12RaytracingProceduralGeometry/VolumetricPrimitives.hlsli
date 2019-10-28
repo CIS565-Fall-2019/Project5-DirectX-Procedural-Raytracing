@@ -24,7 +24,7 @@ float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
 	float dist = distance(position, blob.center);
 	if (dist >= blob.radius) {
-		return 0.f
+		return 0.f;
 	}
 	float ratio = (blob.radius - dist) / blob.radius;
     return 6 * pow(ratio, 5) - 15 * pow(ratio, 4) + 10 * pow(ratio, 3);
@@ -92,7 +92,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 
 	float temp1;
 	float temp2;
-	for (int i = 0; i < N_METALBALLS; i++) {
+	for (int i = 0; i < N_METABALLS; i++) {
 
 		if (RaySolidSphereIntersectionTest(ray, temp1, temp2, blobs[i].center, blobs[i].radius)) {
 			if (tmin > temp1) {
@@ -104,7 +104,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 		}
 	}
 	tmin = max(tmin, RayTMin());
-	tmax = min(tmax, RayTCurrent())
+	tmax = min(tmax, RayTCurrent());
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -131,13 +131,13 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 	float cur = tmin + step;
 	while (cur <= tmax) {
 		float3 position = ray.origin + ray.direction * cur;
-		if (CalculateMetaballsPotential(pos, blobs) > 0.2f) {
+		if (CalculateMetaballsPotential(position, blobs) > 0.2f) {
 			float3 tempNormal= CalculateMetaballsNormal(position, blobs);
-			if (is_a_valid_hit(ray, cur, tempNormal) {
+			if (is_a_valid_hit(ray, cur, tempNormal)) {
 				thit = cur;
 				attr.normal = tempNormal;
 				return true;
-			}
+			}	
 		}
 		cur += step;
 	}

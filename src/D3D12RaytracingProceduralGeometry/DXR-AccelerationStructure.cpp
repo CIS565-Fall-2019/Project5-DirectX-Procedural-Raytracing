@@ -58,7 +58,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
 		//		 In this project, this lets us specify custom hit groups per AABB geometry.
 		for (UINT primitiveType = 0; primitiveType < IntersectionShaderType::TotalPrimitiveCount; primitiveType++) {
-			geometryDescs[BottomLevelASType::AABB][primitiveType].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + primitiveType * sizeof(D3D12_RAYTRACING_AABB);;
+			geometryDescs[BottomLevelASType::AABB][primitiveType].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + primitiveType * aabbDescTemplate.AABBs.AABBs.StrideInBytes;
 		}
 
 	}
@@ -204,9 +204,8 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 		// Make each instance hover above the ground by ~ half its width
-		const XMVECTOR vBasePosition = c_aabbWidth * XMLoadFloat3(&XMFLOAT3(0.0f, 0.5f, 0.0f));
-		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
-		XMMATRIX mTransform = mTranslation;
+		const XMVECTOR vBasePosition = XMLoadFloat3(&XMFLOAT3(0.0f, 0.5f * c_aabbWidth, 0.0f));
+		XMMATRIX mTransform = XMMatrixTranslationFromVector(vBasePosition);
 
 		// Store the transform in the instanceDesc.
 		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);

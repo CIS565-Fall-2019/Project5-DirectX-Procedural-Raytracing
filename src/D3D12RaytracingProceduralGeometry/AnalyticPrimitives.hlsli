@@ -166,8 +166,8 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	float3 center[3] = {float3(-0.2, 0, -0.2), float3(-0.5, 0.2, 0.3), float3(0.3, 0.5, 0.4)};
-	float radius[3] = { 0.7f, 0.5f, 0.3f };
+	float3 center[3] = {float3(-0.2, 0, -0.2), float3(0.5, 0.5, 0.5), float3(0.8, -0.5f, 0.4)};
+	float radius[3] = { 0.6f, 0.5f, 0.4f };
 
 	thit = RayTCurrent();
 

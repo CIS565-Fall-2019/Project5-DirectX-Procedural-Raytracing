@@ -136,10 +136,10 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 	Ray ray;
 	ray.origin = cameraPosition;
 	uint3 dims = DispatchRaysDimensions();
-	float2 convert = float2(2.0f * index.x / dims.x - 1.0f, 2.0f * index.y / dims.y - 1.0f);
-	float4 ndc = normalize(float4(convert.x, convert.y, 1.0f, 1.0f));
+	float2 convert = float2((2.0f * index.x) / dims.x - 1.0f, 1.0f - (2.0f * index.y) / dims.y);
+	float4 ndc = normalize(float4(convert, 1.0f, 1.0f));
 	ndc = mul(ndc, projectionToWorld);
-	ray.direction = normalize(float3(ndc.x, ndx.y, ndx.z) - cameraPosition);
+	ray.direction = normalize(float3(ndc.x, ndc.y, ndc.z));
     return ray;
 }
 
@@ -148,7 +148,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {	
-	f0 = f0 + (float3(1.f, 1.f, 1.f) - f0) * pow(1.f - abs(dot(I, N)), 5.f)
+	f0 = f0 + (float3(1.f, 1.f, 1.f) - f0) * pow(1.f - saturate(dot(-I, N)), 5.f);
 	return f0;
 }
 

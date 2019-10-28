@@ -54,7 +54,7 @@ float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal
 	float3 reverseRayDir = normalize(-WorldRayDirection());
 	float3 reflectedRay = normalize(reflect(incidentLightRay, normal));
 	float dotProd = saturate(dot(reverseRayDir, reflectedRay));
-	return pow(dotProd, specularPower)
+	return pow(dotProd, specularPower);
 }
 
 // TODO-3.6: Phong lighting model = ambient + diffuse + specular components.
@@ -82,7 +82,7 @@ float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInSh
 	// Diffuse component
 	float3 incident = normalize(HitWorldPosition() - g_sceneCB.lightPosition.xyz);
 	float lambert = CalculateDiffuseCoefficient(incident, normal);
-	float shadow = isInShadow ? : InShadowRadiance : 1.f;
+	float shadow = isInShadow ? InShadowRadiance : 1.f;
 	float4 diffuseColor = albedo * diffuseCoef * lambert * g_sceneCB.lightDiffuseColor * shadow;
 
 	// Specular component
@@ -164,7 +164,7 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
 	rayDesc.TMin = 0;
 	rayDesc.TMax = 10000;
 
-	RayPayload rayPayload = { true };
+	ShadowRayPayload rayPayload = { true };
 
 	TraceRay(g_scene,
 		RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
@@ -190,7 +190,7 @@ void MyRaygenShader()
 {
 	Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
 	// Trace the ray and Write the color to the render target
-    g_renderTarget[DispatchRaysIndex().xy] = traceRay(ray, 0);
+    g_renderTarget[DispatchRaysIndex().xy] = TraceRadianceRay(ray, 0);
 }
 
 //***************************************************************************
@@ -250,7 +250,7 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	//		   When t is big, we want the background color to be more pronounced.
 
 	float current = RayTCurrent();
-	color = lerp(color, BackgroundColor, (1 - exp(-0.000001*pow(t, 2.5f))));
+	color = lerp(color, BackgroundColor, (1 - exp(-0.000001*pow(current, 2.5f))));
     rayPayload.color = color;
 }
 
@@ -298,7 +298,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	//		   When t is big, we want the background color to be more pronounced.
 
 	float current = RayTCurrent();
-	color = lerp(color, BackgroundColor, (1 - exp(-0.000001*pow(t, 2.5f))));
+	color = lerp(color, BackgroundColor, (1 - exp(-0.000001*pow(current, 2.5f))));
 	rayPayload.color = color;
 
 }
@@ -373,7 +373,7 @@ void MyIntersectionShader_AnalyticPrimitive()
 void MyIntersectionShader_VolumetricPrimitive()
 {
 	Ray localRay = GetRayInAABBPrimitiveLocalSpace();
-	AnalyticPrimitive::Enum primitiveType = (AnalyticPrimitive::Enum) l_aabbCB.primitiveType;
+	VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
 
 	float thit;
 	ProceduralPrimitiveAttributes attr;

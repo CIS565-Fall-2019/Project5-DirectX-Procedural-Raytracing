@@ -169,8 +169,8 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		// AS space. So this data will be used to convert back and forth from these spaces.
 
 		auto aabb = &m_aabbPrimitiveAttributeBuffer[primitiveIndex];
-		aabb->localSpaceToBottomLevelAS = mScale * mRotation * mTranslation;
-		aabb->bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, aabb->localSpaceToBottomLevelAS);;
+		aabb->localSpaceToBottomLevelAS = XMMatrixMultiply(XMMatrixMultiply(mScale, mRotation), mTranslation);
+		aabb->bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, aabb->localSpaceToBottomLevelAS);
 	};
 
 	UINT offset = 0;
