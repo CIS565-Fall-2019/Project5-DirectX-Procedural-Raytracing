@@ -113,7 +113,7 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 	tmax = bestTmax;
 }
 
-// TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
+// DONE-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
 // The test sphere traces through the metaball field until it hits a threshold isosurface.
 // Returns true if we found a point. False otherwise.
 // 1) Initialize a metaball array. See InitializeAnimatedMetaballs()

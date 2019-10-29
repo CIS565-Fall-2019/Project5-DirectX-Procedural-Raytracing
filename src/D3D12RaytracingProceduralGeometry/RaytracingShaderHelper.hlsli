@@ -56,7 +56,7 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 	return is_in_range(thit, RayTMin(), RayTCurrent()) && !is_culled(ray, hitSurfaceNormal);
 }
 
-// TODO-3.4.2: Return a cycling <0 -> 1 -> 0> animation interpolant
+// DONE-3.4.2: Return a cycling <0 -> 1 -> 0> animation interpolant
 // Given the total elapsed time, and the duration of a cycle, do the following:
 // (1) Find out how far in the current cycle the time is. E.g if total time is 5 seconds, a cycle is 2 seconds, then we are 50% through the current cycle.
 //	   Call this value `interpolant`
