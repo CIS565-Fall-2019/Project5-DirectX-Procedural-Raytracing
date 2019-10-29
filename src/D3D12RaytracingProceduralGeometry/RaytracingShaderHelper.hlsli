@@ -59,7 +59,7 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // TODO-3.4.2: Return a cycling <0 -> 1 -> 0> animation interpolant
 // Given the total elapsed time, and the duration of a cycle, do the following:
 // (1) Find out how far in the current cycle the time is. E.g if total time is 5 seconds, a cycle is 2 seconds, then we are 50% through the current cycle.
-//	   Call this valye `interpolant`
+//	   Call this value `interpolant`
 // (2) We want the interpolant to cycle from 0 to 1 to 0 ALL in one single cycle.
 //	   So if we are < 50% through the cycle, we want to make sure that this interpolant hits 1 at 50%.
 //		  if we are > 50% through the cycle, we want to make sure that this interpolant hits 0 at 100%.
@@ -68,7 +68,20 @@ bool is_a_valid_hit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
 // (3) Call the hlsl built-in function smoothstep() on this interpolant to smooth it out so it doesn't change abruptly.
 float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
 {
-	return smoothstep(0, 1, 0);
+	float interpolant = fmod(elapsedTime, cycleDuration) / cycleDuration;
+
+	if (interpolant >= 0.5) 
+	{
+		// remap (0.5, 1) to (1, 0)
+		interpolant = 1 - (interpolant - 0.5) * 2;
+	}
+	else 
+	{
+		// remap (0, 0.5) to (0, 1)
+		interpolant *= 2;
+	}
+
+	return smoothstep(0, 1, interpolant);
 }
 
 // Load three 2-byte indices from a ByteAddressBuffer.

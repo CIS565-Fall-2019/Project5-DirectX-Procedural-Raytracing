@@ -13,7 +13,7 @@ struct Metaball
     float  radius;
 };
 
-// TODO-3.4.2: Calculate a magnitude of an influence from a Metaball charge.
+// DONE-3.4.2: Calculate a magnitude of an influence from a Metaball charge.
 // This function should return a metaball potential, which is a float in range [0,1].
 // 1) If the point is at the center, the potential is maximum = 1.
 // 2) If it is at the radius or beyond, the potential is 0.
@@ -33,8 +33,8 @@ float CalculateMetaballPotential(in float3 position, in Metaball blob)
 	}
 	else 
 	{
-		float x = distToCenter / blob.radius;
-		return 6 * pow(x, 5) - 15 * pow(x, 4) + 10 * pow(x, 3);
+		float x = (blob.radius - distToCenter) / blob.radius;
+		return 6 * (x * x * x * x * x) - 15 * (x * x * x * x) + 10 * (x * x * x);
 	}
 }
 
@@ -90,14 +90,12 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
     }
 }
 
-// TODO-3.4.2: Find the entry and exit points for all metaball bounding spheres combined.
+// DONE-3.4.2: Find the entry and exit points for all metaball bounding spheres combined.
 // Remember that a metaball is just a solid sphere. Didn't we already do this somewhere else?
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
 	tmin = INFINITY;
 	tmax = -INFINITY;
-
-	tmin = RayTCurrent(); // ???
 
 	float bestTmin = tmin;
 	float bestTmax = tmax;
@@ -106,14 +104,8 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 	{
 		if (RaySolidSphereIntersectionTest(ray, tmin, tmax, blobs[i].center, blobs[i].radius))
 		{
-			if (tmin < bestTmin)
-			{
-				bestTmin = tmin;
-			}
-			if (tmax > bestTmax)
-			{
-				bestTmax = tmax;
-			}
+			bestTmin = min(bestTmin, tmin);
+			bestTmax = max(bestTmax, tmax);
 		}
 	}
 
@@ -141,27 +133,38 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 
 	// Initialize metaball array
 	Metaball blobs[N_METABALLS];
-	InitializeAnimatedMetaballs(blobs, elapsedTime, 100);
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 5.f);
 
 	// Find min and max t for raymarching
 	float tmin;
 	float tmax;
 	TestMetaballsIntersection(ray, tmin, tmax, blobs);
 
-	float rayMarchStep = (tmax - tmin) / 128.f;
+	// Ray march the metaballs to find intersection
+	const int NUM_STEPS = 128;
+	const float THRESHOLD = 0.25f;
 
-	for (int t = tmin; t <= tmax; t += rayMarchStep) {
+	// make sure tmin <= tmax
+	if (tmin > tmax) {
+		float temp = tmin;
+		tmin = tmax;
+		tmax = temp;
+	}
+
+	float stepSize = (tmax - tmin) / (float)NUM_STEPS;
+
+	for (float t = tmin; t <= tmax; t += stepSize) {
 		float3 position = ray.origin + t * ray.direction;
 		float potential = CalculateMetaballsPotential(position, blobs);
-		if (potential > 0.5) {
+		if (potential > THRESHOLD) {
 			float3 normal = CalculateMetaballsNormal(position, blobs);
 			if (is_a_valid_hit(ray, t, normal)) {
+				thit = t;
 				attr.normal = normal;
 				return true;
 			}
 		}
 	}
-
 
     return false;
 }

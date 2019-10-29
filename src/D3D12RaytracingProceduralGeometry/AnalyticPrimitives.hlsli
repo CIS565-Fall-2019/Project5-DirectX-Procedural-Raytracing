@@ -167,7 +167,7 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 {
 	// Define the spheres in local space (within the aabb)
 	const int numSpheres = 3;
-	float3 centers[numSpheres] = { float3(-0.2, 0, -0.2), float3(-0.5, 0.6, -0.8), float3(0.4, -0.2, 0.0) };
+	float3 centers[numSpheres] = { float3(-0.2, 0, -0.2), float3(-0.5, 0.6, -0.8), float3(0.5, -0.2, 0.0) };
 	float radii[numSpheres] = { 0.5f, 0.3f, 0.2f };
 
 	thit = RayTCurrent();

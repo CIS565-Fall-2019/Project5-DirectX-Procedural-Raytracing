@@ -372,12 +372,13 @@ void MyIntersectionShader_AnalyticPrimitive()
     }
 }
 
-// TODO-3.4.2: Volumetric primitive intersection shader. In our case, we only have Metaballs to take care of.
+// DONE-3.4.2: Volumetric primitive intersection shader. In our case, we only have Metaballs to take care of.
 // The overall structure of this function is parallel to MyIntersectionShader_AnalyticPrimitive() 
 // except you have to call the appropriate intersection test function (see RayVolumetricGeometryIntersectionTest())
 [shader("intersection")]
 void MyIntersectionShader_VolumetricPrimitive()
 {
+	
 	Ray localRay = GetRayInAABBPrimitiveLocalSpace();
 	VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
 
@@ -386,8 +387,7 @@ void MyIntersectionShader_VolumetricPrimitive()
 	// (2) pass on some attributes used by the closest hit shader to do some shading (e.g: normal vector)
 	float thit;
 	ProceduralPrimitiveAttributes attr;
-	float elapsedTime = 0;
-	if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, elapsedTime))
+	if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime))
 	{
 		PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
 
