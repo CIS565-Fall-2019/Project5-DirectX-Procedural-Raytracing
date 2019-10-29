@@ -99,8 +99,9 @@ outputColor = ambientColor + albedo * (diffuseCoef + specularCoef)
 ```
 The specular power affects how bright and pronounced the specular highlights are.
 
-# EXAMPLES WITH DIFFERENT SPECULAR POWERS
-
+Specular Power 1           |  Specular Power 50               | Specular Power 500
+:-------------------------:|:-------------------------:|:-------------------------:
+![](images/SpecularPower1.gif)| ![](images/SpecularPower50.gif) |![](images/SpecularPower500.gif)
 #### Fresnel Reflections with Schlick's Approximation
 Fresnel reflection scales the reflection based on the incident angle of the incoming ray and the indices of refraction of the materials. The scale value we apply to the reflected color is calculated as follows:
 
