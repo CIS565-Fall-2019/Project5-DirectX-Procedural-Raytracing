@@ -129,5 +129,10 @@ Many of the lighting, shading, and geometry features are especially evident when
 </p>
 
 # Performance Analysis
+Tracing a radiance ray involves recursion as we bounce the ray around the scene for reflections. We cap the recursion depth to prevent infinite loops. The chart below illustrates the effect on performance as we increase the maximum ray recursion depth:
+
+![](images/PerformanceAnalysisFPSvsDepth.PNG)
+
+The above data not suprisingly indicates a performance hit as we allow for more ray recursion bounces. As we keep increasing the ray depth, the FPS begins to decrease more slowly. This may be because many of the rays terminate on their own after a certain number of bounces, so even though we are increasing the maximum recursion depth, many of the rays may not be using the extra available bounces, causing less of a slow down.
 
 
