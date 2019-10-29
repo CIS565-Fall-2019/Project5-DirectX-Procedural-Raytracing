@@ -178,18 +178,43 @@ bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out Procedur
 	thit = RayTCurrent();
 
 	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center1, radius1))
+	bool hit = false;
+	thit = 1000000;
+
+	float thit1 = 1000;
+	ProceduralPrimitiveAttributes attr1;
+	if (RaySphereIntersectionTest(ray, thit1, tmax, attr1, center1, radius1))
 	{
+		hit = true;
+		if (thit1 < thit) {
+			thit = thit1;
+			attr = attr1;
+		}
+	}
+	float thit2 = 1000;
+	ProceduralPrimitiveAttributes attr2;
+	if (RaySphereIntersectionTest(ray, thit2, tmax, attr2, center2, radius2))
+	{
+		hit = true;
+		if (thit2 < thit) {
+			thit = thit2;
+			attr = attr2;
+		}
+	}
+	float thit3 = 10000;
+	ProceduralPrimitiveAttributes attr3;
+	if (RaySphereIntersectionTest(ray, thit3, tmax, attr3, center3, radius3))
+	{
+		hit = true;
+		if (thit3 < thit) {
+			thit = thit3;
+			attr = attr3;
+		}
+	}
+	if (hit) {
 		return true;
 	}
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center2, radius2))
-	{
-		return true;
-	}
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center3, radius3))
-	{
-		return true;
-	}
+	
 
 	return false;
 }
