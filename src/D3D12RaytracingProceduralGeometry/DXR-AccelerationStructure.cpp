@@ -5,7 +5,7 @@
 using namespace std;
 using namespace DX;
 
-// LOOKAT-2.6, TODO-2.6: Build geometry descs for the bottom-level AS for the plane and for the procedural geometries in the scene.
+// LOOKAT-2.6, DONE-2.6: Build geometry descs for the bottom-level AS for the plane and for the procedural geometries in the scene.
 // A bottom-level AS is a unique (or multiple) piece(s) of geometry, each for each type of object in your scene.
 // Example: if you had 2 boxes in your scene, then you would make 1 bottom level AS for 1 box 
 //			and then 2 different instances.
@@ -25,7 +25,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// Triangle bottom-level AS contains a single plane geometry.
 		geometryDescs[BottomLevelASType::Triangle].resize(1); // only 1 triangle-type geometry: the plane
 
-		// TODO-2.6: Fill the triangle geometry desc.
+		// DONE-2.6: Fill the triangle geometry desc.
 		// Remember to use m_indexBuffer and m_vertexBuffer to get pointers to the data.
 		// GPUVirtualAddresses can be accessed from a D3D12Resource using GetGPUVirtualAddress() (e.g m_vertexBuffer.resource->GetGPUVirtualAddress())
 		// The number of elements of a D3D12 resource can be accessed from GetDesc().Width (e.g m_indexBuffer.resource->GetDesc().Width)
@@ -57,7 +57,7 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		// One AABB primitive per procedural geometry.
 		geometryDescs[BottomLevelASType::AABB].resize(IntersectionShaderType::TotalPrimitiveCount, aabbDescTemplate);
 
-		// TODO-2.6: Fill the AABB geometry desc for every procedural geometry.
+		// DONE-2.6: Fill the AABB geometry desc for every procedural geometry.
 		// Look-up what a D3D12_RAYTRACING_GEOMETRY_AABBS_DESC structs needs to be filled in correctly.
 		// Remember to use m_aabbBuffer to get the AABB geometry data you previously filled in.
 		// Note: Having separate geometries allows of separate shader record binding per geometry.
@@ -65,11 +65,10 @@ void DXProceduralProject::BuildGeometryDescsForBottomLevelAS(array<vector<D3D12_
 		for (UINT prim = 0; prim < IntersectionShaderType::TotalPrimitiveCount; prim++) {
 			geometryDescs[BottomLevelASType::AABB][prim].AABBs.AABBs.StartAddress = m_aabbBuffer.resource->GetGPUVirtualAddress() + prim * sizeof(D3D12_RAYTRACING_AABB);
 		}
-		// ????
 	}
 }
 
-// TODO-2.6: Given the geometry and the geometry descriptors, build the bottom-level acceleration structures.
+// DONE-2.6: Given the geometry and the geometry descriptors, build the bottom-level acceleration structures.
 AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlags)
 {
 	auto device = m_deviceResources->GetD3DDevice();
@@ -82,7 +81,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 
 	// The bottom-level inputs are the geometries you build in BuildGeometryDescsForBottomLevelAS()
 	// Again, these tell the AS where the actual geometry data is and how it is laid out.
-	// TODO-2.6: fill the bottom-level inputs. Consider using D3D12_ELEMENTS_LAYOUT_ARRAY as the DescsLayout.
+	// DONE-2.6: fill the bottom-level inputs. Consider using D3D12_ELEMENTS_LAYOUT_ARRAY as the DescsLayout.
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS &bottomLevelInputs = bottomLevelBuildDesc.Inputs;
 	bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 	bottomLevelInputs.Flags = buildFlags;
@@ -125,7 +124,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 		AllocateUAVBuffer(device, bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes, &bottomLevelAS, initialResourceState, L"BottomLevelAccelerationStructure");
 	}
 
-	// TODO-2.6: Now that you have the scratch and actual bottom-level AS desc, pass their GPU addresses to the bottomLevelBuildDesc.
+	// DONE-2.6: Now that you have the scratch and actual bottom-level AS desc, pass their GPU addresses to the bottomLevelBuildDesc.
 	// Consider reading about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
 	bottomLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
@@ -144,7 +143,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 		m_dxrCommandList->BuildRaytracingAccelerationStructure(&bottomLevelBuildDesc, 0, nullptr);
 	}
 
-	// TODO-2.6: After we finished building the bottom-level AS, save all the info in
+	// DONE-2.6: After we finished building the bottom-level AS, save all the info in
 	// the AccelerationStructureBuffers struct so the top-level AS can use it! 
 	// Don't forget that this is the return value.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h
@@ -156,7 +155,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildBottomLevelAS(const vecto
 	return bottomLevelASBuffers;
 }
 
-// TODO-2.6: Build the instance descriptor for each bottom-level AS you built before.
+// DONE-2.6: Build the instance descriptor for each bottom-level AS you built before.
 // An instance descriptor will contain information on how these bottom-level ASes will be instanstiated in the scene.
 // Among other things, we will pass the world transformation matrix in the instance descriptor.
 // InstanceDescType will either be D3D12_RAYTRACING_INSTANCE_DESC for real DXR or D3D12_RAYTRACING_FALLBACK_INSTANCE_DESC for fallback layer.
@@ -199,7 +198,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(instanceDesc.Transform), mTransform);
 	}
 
-	// TODO-2.6: Create instanced bottom-level AS with procedural geometry AABBs.
+	// DONE-2.6: Create instanced bottom-level AS with procedural geometry AABBs.
 	// * Make sure to set InstanceContributionToHitGroupIndex to beyond the shader records for the triangle AABB.
 	//		For triangles, we have 1 shader record for radiance rays, and another for shadow rays.
 	//		Where do you think procedural shader records would start then? Hint: right after.
@@ -226,7 +225,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 	AllocateUploadBuffer(device, instanceDescs.data(), bufferSize, &(*instanceDescsResource), L"InstanceDescs");
 };
 
-// TODO-2.6: Build the top-level acceleration structure.
+// DONE-2.6: Build the top-level acceleration structure.
 // The top-level acceleration structure is a set of bottom-level *instances*. It is basically = scene.
 // This should be very similar to BuildBottomLevelAS() except now we have to add in the instances!
 AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationStructureBuffers bottomLevelAS[BottomLevelASType::Count], D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlags)
@@ -238,7 +237,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC topLevelBuildDesc = {};
 
-	// TODO-2.6: fill in the topLevelInputs, read about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS.
+	// DONE-2.6: fill in the topLevelInputs, read about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS.
 	// Consider using D3D12_ELEMENTS_LAYOUT_ARRAY as a DescsLayout since we are using an array of bottom-level AS.
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS &topLevelInputs = topLevelBuildDesc.Inputs;
 	topLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
@@ -258,7 +257,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	}
 	ThrowIfFalse(topLevelPrebuildInfo.ResultDataMaxSizeInBytes > 0);
 
-	// TODO-2.6: Allocate a UAV buffer for the scratch/temporary top-level AS data.
+	// DONE-2.6: Allocate a UAV buffer for the scratch/temporary top-level AS data.
 	AllocateUAVBuffer(device, topLevelPrebuildInfo.ScratchDataSizeInBytes, &scratch, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, L"ScratchResource");
 
 	// Allocate space for the top-level AS.
@@ -273,7 +272,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 			initialResourceState = D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
 		}
 
-		// TODO-2.6: Allocate a UAV buffer for the actual top-level AS.
+		// DONE-2.6: Allocate a UAV buffer for the actual top-level AS.
 		AllocateUAVBuffer(device, topLevelPrebuildInfo.ResultDataMaxSizeInBytes, &topLevelAS, initialResourceState, L"TopLevelAccelerationStructure");
 	}
 
@@ -301,7 +300,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 			CreateFallbackWrappedPointer(bottomLevelAS[1].accelerationStructure.Get(), static_cast<UINT>(bottomLevelAS[1].ResultDataMaxSizeInBytes) / sizeof(UINT32))
 		};
 
-		// TODO-2.6: Call the fallback-templated version of BuildBottomLevelASInstanceDescs() you completed above.
+		// DONE-2.6: Call the fallback-templated version of BuildBottomLevelASInstanceDescs() you completed above.
 		BuildBottomLevelASInstanceDescs<D3D12_RAYTRACING_FALLBACK_INSTANCE_DESC, WRAPPED_GPU_POINTER>(bottomLevelASaddresses, &instanceDescsResource);
 	}
 	else // DirectX Raytracing
@@ -313,7 +312,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 			bottomLevelAS[1].accelerationStructure->GetGPUVirtualAddress()
 		};
 
-		// TODO-2.6: Call the DXR-templated version of BuildBottomLevelASInstanceDescs() you completed above.
+		// DONE-2.6: Call the DXR-templated version of BuildBottomLevelASInstanceDescs() you completed above.
 		BuildBottomLevelASInstanceDescs<D3D12_RAYTRACING_INSTANCE_DESC, D3D12_GPU_VIRTUAL_ADDRESS>(bottomLevelASaddresses, &instanceDescsResource);
 	}
 
@@ -324,7 +323,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 		m_fallbackTopLevelAccelerationStructurePointer = CreateFallbackWrappedPointer(topLevelAS.Get(), numBufferElements);
 	}
 
-	// TODO-2.6: fill in the topLevelBuildDesc. Read about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
+	// DONE-2.6: fill in the topLevelBuildDesc. Read about D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC.
 	// This should be as easy as passing the GPU addresses to the struct using GetGPUVirtualAddress() calls.
 	topLevelBuildDesc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
 	topLevelBuildDesc.DestAccelerationStructureData = topLevelAS->GetGPUVirtualAddress();
@@ -343,7 +342,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 		m_dxrCommandList->BuildRaytracingAccelerationStructure(&topLevelBuildDesc, 0, nullptr);
 	}
 
-	// TODO-2.6: After we finished building the top-level AS, save all the info in the AccelerationStructureBuffers struct.
+	// DONE-2.6: After we finished building the top-level AS, save all the info in the AccelerationStructureBuffers struct.
 	// Very similar to how you did this in BuildBottomLevelAS() except now you have to worry about topLevelASBuffers.instanceDesc.
 	// Consider looking into the AccelerationStructureBuffers struct in DXR-Structs.h.
 	// Make sure to return the topLevelASBuffers before you exit the function.
@@ -356,7 +355,7 @@ AccelerationStructureBuffers DXProceduralProject::BuildTopLevelAS(AccelerationSt
 	return topLevelASBuffers;
 }
 
-// TODO-2.6: This will wrap building the Acceleration Structure! This is what we will call when building our scene.
+// DONE-2.6: This will wrap building the Acceleration Structure! This is what we will call when building our scene.
 void DXProceduralProject::BuildAccelerationStructures()
 {
 	auto device = m_deviceResources->GetD3DDevice();
@@ -367,11 +366,11 @@ void DXProceduralProject::BuildAccelerationStructures()
 	// Reset the command list for the acceleration structure construction.
 	commandList->Reset(commandAllocator, nullptr);
 
-	// TODO-2.6: Build the geometry descriptors. Hint: you filled in a function that does this.
+	// DONE-2.6: Build the geometry descriptors. Hint: you filled in a function that does this.
 	array<vector<D3D12_RAYTRACING_GEOMETRY_DESC>, BottomLevelASType::Count> geometryDescs;
 	BuildGeometryDescsForBottomLevelAS(geometryDescs);
 
-	// TODO-2.6: For each bottom-level object (triangle, procedural), build a bottom-level AS.
+	// DONE-2.6: For each bottom-level object (triangle, procedural), build a bottom-level AS.
 	// Hint: you filled in a function that does this.
 	AccelerationStructureBuffers bottomLevelAS[BottomLevelASType::Count];
 	for (UINT bottomLevelASType = 0; bottomLevelASType < BottomLevelASType::Count; bottomLevelASType++) {
@@ -387,7 +386,7 @@ void DXProceduralProject::BuildAccelerationStructures()
 	}
 	commandList->ResourceBarrier(BottomLevelASType::Count, resourceBarriers);
 
-	// TODO-2.6: Build top-level AS. Hint, you already made a function that does this.
+	// DONE-2.6: Build top-level AS. Hint, you already made a function that does this.
 	AccelerationStructureBuffers topLevelAS = BuildTopLevelAS(bottomLevelAS);
 
 	// Kick off acceleration structure construction.
@@ -396,7 +395,7 @@ void DXProceduralProject::BuildAccelerationStructures()
 	// Wait for GPU to finish as the locally created temporary GPU resources will get released once we go out of scope.
 	m_deviceResources->WaitForGpu();
 
-	// TODO-2.6: Store the AS buffers. The rest of the buffers will be released once we exit the function.
+	// DONE-2.6: Store the AS buffers. The rest of the buffers will be released once we exit the function.
 	// Do this for both the bottom-level and the top-level AS. Consider re-reading the DXProceduralProject class
 	// to find what member variables should be set.
 	for (UINT i = 0; i < BottomLevelASType::Count; i++)

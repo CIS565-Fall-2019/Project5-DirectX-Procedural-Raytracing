@@ -22,7 +22,20 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
-    return 0.0f;
+	float distToCenter = length(position - blob.center);
+	if (distToCenter > blob.radius) 
+	{
+		return 0.f;
+	}
+	else if (distToCenter == 0) 
+	{
+		return 1.f;
+	}
+	else 
+	{
+		float x = distToCenter / blob.radius;
+		return 6 * pow(x, 5) - 15 * pow(x, 4) + 10 * pow(x, 3);
+	}
 }
 
 // LOOKAT-1.9.4: Calculates field potential from all active metaballs. This is just the sum of all potentials.
@@ -82,7 +95,30 @@ void InitializeAnimatedMetaballs(out Metaball blobs[N_METABALLS], in float elaps
 void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[N_METABALLS])
 {    
 	tmin = INFINITY;
-    tmax = -INFINITY;
+	tmax = -INFINITY;
+
+	tmin = RayTCurrent(); // ???
+
+	float bestTmin = tmin;
+	float bestTmax = tmax;
+
+	for (int i = 0; i < N_METABALLS; i++) 
+	{
+		if (RaySolidSphereIntersectionTest(ray, tmin, tmax, blobs[i].center, blobs[i].radius))
+		{
+			if (tmin < bestTmin)
+			{
+				bestTmin = tmin;
+			}
+			if (tmax > bestTmax)
+			{
+				bestTmax = tmax;
+			}
+		}
+	}
+
+	tmin = bestTmin;
+	tmax = bestTmax;
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -102,6 +138,31 @@ bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrim
 {
 	thit = 0.0f;
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
+
+	// Initialize metaball array
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 100);
+
+	// Find min and max t for raymarching
+	float tmin;
+	float tmax;
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+
+	float rayMarchStep = (tmax - tmin) / 128.f;
+
+	for (int t = tmin; t <= tmax; t += rayMarchStep) {
+		float3 position = ray.origin + t * ray.direction;
+		float potential = CalculateMetaballsPotential(position, blobs);
+		if (potential > 0.5) {
+			float3 normal = CalculateMetaballsNormal(position, blobs);
+			if (is_a_valid_hit(ray, t, normal)) {
+				attr.normal = normal;
+				return true;
+			}
+		}
+	}
+
+
     return false;
 }
 

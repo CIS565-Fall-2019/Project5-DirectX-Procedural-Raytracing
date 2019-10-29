@@ -5,7 +5,7 @@
 using namespace std;
 using namespace DX;
 
-// LOOKAT-2.7, TODO-2.7: Build shader tables.
+// LOOKAT-2.7, DONE-2.7: Build shader tables.
 // This encapsulates all shader records - shaders and the arguments for their local root signatures.
 void DXProceduralProject::BuildShaderTables()
 {
@@ -22,14 +22,14 @@ void DXProceduralProject::BuildShaderTables()
 	// The state object can be thought of a pipeline state object that holds application shader information.
 	// Remember that we filled the RTPSO in CreateRaytracingPipelineStateObject in DXR-Pipeline.cpp.
 	// Given a pipeline state object, we can retrieve the properties that allows to access functions such as GetShaderIdentifier()
-	// TODO-2.7: fill in this lambda function that given a stateObjectProperties, will tell you all the shader ids used.
+	// DONE-2.7: fill in this lambda function that given a stateObjectProperties, will tell you all the shader ids used.
 	auto GetShaderIDs = [&](auto* stateObjectProperties)
 	{
 		// Ray generation shader
 		rayGenShaderID = stateObjectProperties->GetShaderIdentifier(c_raygenShaderName);
 		shaderIdToStringMap[rayGenShaderID] = c_raygenShaderName;
 
-		// TODO-2.7: Miss shaders.
+		// DONE-2.7: Miss shaders.
 		// Similar to the raygen shader, but now we have 1 for each ray type (radiance, shadow)
 		// Don't forget to update shaderIdToStringMap.
 		for (UINT i = 0; i < RayType::Count; i++)
@@ -45,7 +45,7 @@ void DXProceduralProject::BuildShaderTables()
 			shaderIdToStringMap[hitGroupShaderIDs_TriangleGeometry[i]] = c_hitGroupNames_TriangleGeometry[i];
 		}
 
-		// TODO-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
+		// DONE-2.7: Hitgroup shaders for the AABBs. We have 2 for each AABB.
 		for (UINT i = 0; i < IntersectionShaderType::Count; i++)
 		{
 			for (UINT j = 0; j < RayType::Count; j++)
@@ -103,7 +103,7 @@ void DXProceduralProject::BuildShaderTables()
 		m_rayGenShaderTable = rayGenShaderTable.GetResource();
 	}
 
-	// TODO-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
+	// DONE-2.7: Miss shader table. Very similar to the RayGen table except now we push_back() 2 shader records
 	// 1 for the radiance ray, 1 for the shadow ray. Don't forget to call DebugPrint() on the table for your sanity!
 	{
 		UINT numShaderRecords = 2;
@@ -146,7 +146,7 @@ void DXProceduralProject::BuildShaderTables()
 			}
 		}
 
-		// TODO-2.7: AABB geometry hit groups. Very similar to the triangle case.
+		// DONE-2.7: AABB geometry hit groups. Very similar to the triangle case.
 		// The root arguments are now LocalRootSignature::AABB::RootArguments (see RaytracingSceneDefines.h)
 		// Essentially, the root arguments for the AABB is a material + the primitive instance constant buffer.
 		// Hint 1:	the material can be found in m_aabbMaterialCB.

@@ -119,7 +119,7 @@ float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
         barycentrics.y * (vertexAttribute[2] - vertexAttribute[0]);
 }
 
-// TODO-3.1: Generate a ray in world space for a camera pixel corresponding to a dispatch index (analogous to a thread index in CUDA).
+// DONE-3.1: Generate a ray in world space for a camera pixel corresponding to a dispatch index (analogous to a thread index in CUDA).
 // Check out https://docs.microsoft.com/en-us/windows/win32/direct3d12/direct3d-12-raytracing-hlsl-system-value-intrinsics to see interesting 
 // intrinsic HLSL raytracing functions you may use.
 // Remember that you are given the pixel coordinates from index. You need to convert this to normalized-device coordinates first.
@@ -142,17 +142,19 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 	float4 worldPos = mul(float4(xNDC, yNDC, 0.f, 1.f), projectionToWorld);
 	worldPos.xyz /= worldPos.w;
 
-	ray.direction = normalize(float3(worldPos - ray.origin));
+	ray.direction = normalize(float3(worldPos.xyz - ray.origin.xyz));
 
     return ray;
 }
 
-// TODO-3.6: Fresnel reflectance - schlick approximation.
+// DONE-3.6: Fresnel reflectance - schlick approximation.
 // See https://en.wikipedia.org/wiki/Schlick%27s_approximation for formula.
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0;
+	// f0 is the R0 of the wiki link
+	float cosTheta = dot(N, -I); // N . V
+	return (f0 + (1.f - f0) * pow(1.f - cosTheta, 5));
 }
 
 #endif // RAYTRACINGSHADERHELPER_H

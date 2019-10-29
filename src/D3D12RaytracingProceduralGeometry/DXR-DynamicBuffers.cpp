@@ -103,7 +103,7 @@ void DXProceduralProject::CreateConstantBuffers()
 	m_sceneCB.Create(device, frameCount, L"Scene Constant Buffer");
 }
 
-// TODO-2.1: Create the AABB Primitive Attribute Buffer.
+// DONE-2.1: Create the AABB Primitive Attribute Buffer.
 // This means you will need to allocate the AABB attributes on the GPU and map them onto the CPU.
 //	*	This should be very similar to CreateConstantBuffers(), which allocates 
 //		1 constant buffer on the GPU and maps it on the CPU for writing
@@ -130,7 +130,7 @@ void DXProceduralProject::UpdateCameraMatrices()
 	m_sceneCB->projectionToWorld = XMMatrixInverse(nullptr, viewProj);
 }
 
-// TODO-2.1: Update the PrimitiveInstancePerFrameBuffer for every AABB stored in m_aabbPrimitiveAttributeBuffer[].
+// DONE-2.1: Update the PrimitiveInstancePerFrameBuffer for every AABB stored in m_aabbPrimitiveAttributeBuffer[].
 //	*	The localSpaceToBottomLevelAS will transform the AABB from local space (a.k.a model space) to bottom-level AS space
 //		which is an intermediate transform state. Think of it as taking a bland T-posing model and making a funny pose with it,
 //		say now it is squatting instead.
@@ -160,7 +160,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 				+ XMLoadFloat3(reinterpret_cast<XMFLOAT3*>(&m_aabbs[primitiveIndex].MaxX))); // i.e middle of AABB.
 		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vTranslation);
 
-		// TODO-2.1: Fill in this lambda function.
+		// DONE-2.1: Fill in this lambda function.
 		// It should create a transform matrix that is equal to scale * rotation * translation.
 		// This matrix would transform the AABB from local space to bottom level AS space.
 		// You can infer what the bottom level AS space to local space transform should be.

@@ -28,7 +28,7 @@ bool RayAnalyticGeometryIntersectionTest(in Ray ray, in AnalyticPrimitive::Enum 
     }
 }
 
-// LOOKAT-3.4.2: Analytic geometry intersection test.
+// LOOKAT-3.4.2: Volumetric geometry intersection test.
 // AABB local space dimensions: <-1,1>.
 bool RayVolumetricGeometryIntersectionTest(in Ray ray, in VolumetricPrimitive::Enum volumetricPrimitive, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {

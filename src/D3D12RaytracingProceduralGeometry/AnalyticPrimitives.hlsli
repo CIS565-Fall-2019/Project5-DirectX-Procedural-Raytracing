@@ -161,23 +161,39 @@ bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, 
     return true;
 }
 
-// TODO-3.4.1: Change this code to support intersecting multiple spheres (~3 spheres). 
+// DONE-3.4.1: Change this code to support intersecting multiple spheres (~3 spheres). 
 // You can hardcode the local centers/radii of the spheres, just try to maintain them between 1 and -1 (and > 0 for the radii).
 bool RayMultipleSpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
 {
 	// Define the spheres in local space (within the aabb)
-	float3 center = float3(-0.2, 0, -0.2);
-	float radius = 0.7f;
+	const int numSpheres = 3;
+	float3 centers[numSpheres] = { float3(-0.2, 0, -0.2), float3(-0.5, 0.6, -0.8), float3(0.4, -0.2, 0.0) };
+	float radii[numSpheres] = { 0.5f, 0.3f, 0.2f };
 
 	thit = RayTCurrent();
 
+	bool intersect = false;
+	float bestThit = thit;
+	ProceduralPrimitiveAttributes bestAttr = attr;
+
 	float tmax;
-	if (RaySphereIntersectionTest(ray, thit, tmax, attr, center, radius))
+	for (int i = 0; i < numSpheres; i++) 
 	{
-		return true;
+		if (RaySphereIntersectionTest(ray, thit, tmax, attr, centers[i], radii[i])) 
+		{
+			if (thit < bestThit) 
+			{
+				bestThit = thit;
+				bestAttr = attr;
+			}
+			intersect = true;
+		}
 	}
 
-	return false;
+	thit = bestThit;
+	attr = bestAttr;
+	
+	return intersect;
 }
 
 #endif // ANALYTICPRIMITIVES_H
