@@ -111,8 +111,9 @@ In the above equation, n1 and n2 are the indices of refraction, and cos(theta) i
 
 The indices of refraction influence how reflective the surface appears.
 
-# IMAGES WITH DIFFERENT INDICES OF REFRACTION
-
+IOR 1: 3.5, IOR 2: 0.05    |  IOR 1: 1.5, IOR 2: 0.2   | IOR 1: 1.5, IOR 2: 1.0
+:-------------------------:|:-------------------------:|:-------------------------:
+![](images/n1_3.5n2_0.05.gif)| ![](images/SpecularPower50.gif) |![](images/n1_1.0n2_1.5.gif)
 
 ### Distance Falloff
 To provide a smooth transition between the scene and the background, I apply a distance falloff. To do this, when setting the color at an intersection in the closest hit shader, I linearly interpolate between the actual color and the background color. The interpolation value depends on the t value of the intersection, meaning the depth from the camera. When the intersection is farther from camera, the background color has a stronger influence, causing a smooth transition from the scene to the background. This transition can be sharpened or smoothed out by manipulating scaling the depth value. 
