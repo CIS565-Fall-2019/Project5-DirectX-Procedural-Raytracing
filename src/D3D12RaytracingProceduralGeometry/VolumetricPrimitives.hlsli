@@ -22,6 +22,11 @@ struct Metaball
 //		of the distance from the center to the radius.
 float CalculateMetaballPotential(in float3 position, in Metaball blob)
 {
+	float dist = length(position - blob.center);
+	if (dist < blob.radius) {
+		float ratio = 1 - (dist / blob.radius);
+		return 6 * pow(ratio, 5) - 15 * pow(ratio, 4) + 10 * pow(ratio, 3);
+	}
     return 0.0f;
 }
 
@@ -83,6 +88,21 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 {    
 	tmin = INFINITY;
     tmax = -INFINITY;
+
+	for (int i = 0; i < N_METABALLS; i++) {
+		float3 center = blobs[i].center;
+		float radius = blobs[i].radius;
+
+		float thit;
+
+		float newtmax;
+		ProceduralPrimitiveAttributes attr;
+		if (RaySphereIntersectionTest(ray, thit, newtmax, attr, center, radius))
+		{
+			if (thit < tmin) tmin = thit;
+			if (newtmax > tmax) tmax = newtmax;
+		}
+	}
 }
 
 // TODO-3.4.2: Test if a ray with RayFlags and segment <RayTMin(), RayTCurrent()> intersects metaball field.
@@ -100,6 +120,25 @@ void TestMetaballsIntersection(in Ray ray, out float tmin, out float tmax, inout
 //				If this condition fails, keep raymarching!
 bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
 {
+	Metaball blobs[N_METABALLS];
+	InitializeAnimatedMetaballs(blobs, elapsedTime, 10);
+	float tmin, tmax;
+	TestMetaballsIntersection(ray, tmin, tmax, blobs);
+	if (tmax < tmin) {
+		return false;
+	}
+	float inc = (tmax - tmin) / 128.f;
+	for (int i = 0; i < 128; i++) {
+		thit = tmin + inc * i;
+		float3 p = ray.origin + ray.direction * thit;
+		float potential = CalculateMetaballsPotential(p, blobs);
+		if (potential > 0.3) {
+			attr.normal = CalculateMetaballsNormal(p, blobs);
+			if (is_a_valid_hit(ray, thit, attr.normal)) {
+				return true;
+			}
+		}
+	}
 	thit = 0.0f;
 	attr.normal = float3(0.0f, 0.0f, 0.0f);
     return false;

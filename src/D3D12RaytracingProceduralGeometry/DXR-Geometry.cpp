@@ -87,7 +87,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 		auto InitializeAABB = [&](auto& offsetIndex, auto& size)
 		{
 			D3D12_RAYTRACING_AABB aabb{basePosition.x + offsetIndex.x * stride.x, basePosition.y + offsetIndex.y * stride.y, basePosition.z + offsetIndex.z * stride.z,
-				basePosition.x + size.x, basePosition.y + size.y, basePosition.z + size.z};
+				basePosition.x + size.x + offsetIndex.x * stride.x, basePosition.y + size.y + offsetIndex.y * stride.y, basePosition.z + size.z + offsetIndex.z * stride.z};
 			return aabb;
 		};
 		m_aabbs.resize(IntersectionShaderType::TotalPrimitiveCount);

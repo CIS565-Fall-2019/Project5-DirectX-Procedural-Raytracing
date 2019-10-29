@@ -143,7 +143,7 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 
 	Ray ray;
     ray.origin = cameraPosition;
-	ray.direction = -normalize(pixelLoc.xyz - cameraPosition);
+	ray.direction = normalize(pixelLoc.xyz - cameraPosition);
 
     return ray;
 }
@@ -153,7 +153,11 @@ inline Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 
 // f0 is usually the albedo of the material assuming the outside environment is air.
 float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
 {
-	return f0;
+	float n1 = 1;
+	float n2 = 0.1;
+	float R0 = pow((n1 - n2) / (n1 + n2), 2);
+	float coefficient = R0 + (1 - R0) * pow(1 - abs(dot(I, N)), 5);
+	return f0 * coefficient;
 }
 
 #endif // RAYTRACINGSHADERHELPER_H

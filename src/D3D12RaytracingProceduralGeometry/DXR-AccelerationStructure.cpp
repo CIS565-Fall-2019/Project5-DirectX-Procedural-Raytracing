@@ -192,24 +192,17 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 	//		Where do you think procedural shader records would start then? Hint: right after.
 	// * Make each instance hover above the ground by ~ half its width
 	{
-		const XMUINT3 NUM_AABB = XMUINT3(700, 1, 700);
-		const XMFLOAT3 fWidth = XMFLOAT3(
-			NUM_AABB.x * c_aabbWidth + (NUM_AABB.x - 1) * c_aabbDistance,
-			NUM_AABB.y * c_aabbWidth + (NUM_AABB.y - 1) * c_aabbDistance,
-			NUM_AABB.z * c_aabbWidth + (NUM_AABB.z - 1) * c_aabbDistance);
-		const XMVECTOR vWidth = XMLoadFloat3(&fWidth);
-
 		auto& instanceDesc = instanceDescs[BottomLevelASType::AABB];
 		instanceDesc = {};
 		instanceDesc.InstanceMask = 1;
-		instanceDesc.InstanceContributionToHitGroupIndex = BottomLevelASType::AABB * RayType::Count;
+		instanceDesc.InstanceContributionToHitGroupIndex = 2;// BottomLevelASType::AABB * RayType::Count;
 		instanceDesc.AccelerationStructure = bottomLevelASaddresses[BottomLevelASType::AABB];
 
 		// Calculate transformation matrix.
-		const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(0, c_aabbWidth / 2.f, 0));
+		const XMVECTOR vBasePosition = XMLoadFloat3(&XMFLOAT3(0, c_aabbWidth / 2.f, 0));
 
 		// Scale in XZ dimensions.
-		XMMATRIX mScale = XMMatrixScaling(fWidth.x, fWidth.y, fWidth.z);
+		XMMATRIX mScale = XMMatrixScaling(1, 1, 1);
 		XMMATRIX mTranslation = XMMatrixTranslationFromVector(vBasePosition);
 		XMMATRIX mTransform = mScale * mTranslation;
 
