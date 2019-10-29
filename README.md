@@ -7,7 +7,7 @@ Project 5 - DirectX Procedural Raytracing**
 
 
 <p align="center">
-  <img width=100% src="images/HighQualityStill.gif">
+  <img width=100% src="images/CorrectStill.gif">
 </p>
 
 # Overview
@@ -65,6 +65,8 @@ Box intersection is essentially just intersecting with the AABB, as the AABB is 
 
 #### Sphere
 Sphere intersection is done by setting the ray equation equal to the equation for a sphere to determine which position along the ray is also a position on the sphere. This results in solving a quadratic equation. If there are two solutions, meaning the ray hits the sphere entering and leaving, we use the smaller one as the minimum hit position. To calculate the normal at this intersection, we take the normalized direction from the center to the hit position.
+
+Note that in all of the example videos below that highlight specific features, the process of intersecting multiple spheres is incorrect. Instead of finding the closest sphere intersection, I just find the first sphere that intersects, so one sphere stays in front of the others even when it should be behind. I fixed this for the header video and the final video with the moving camera, but most of the smaller example ones have the error.
 
 #### Metaballs
 For metaballs intersection, we use raymarching. We first start by intersecting the metaball sphere os influence as if they were regular spheres. This gives us minimum and maximum bounds for where our intersection might occur. We then start at the minimum possible intersections and take incremental steps until we have hit the metaball surface. To check if we've hit the surface, we calculate the accumulated potential of the metaballs at that point, which is the sum of the potential for each individual metaball.
@@ -125,7 +127,7 @@ Smooth Falloff    |  Medium Falloff   | Sharp Falloff
 Many of the lighting, shading, and geometry features are especially evident when the camera is moving, enabling us to see the scene from different angles.
 
 <p align="center">
-  <img width=100% src="images/HighQualityMoving.gif">
+  <img width=100% src="images/CorrectMoving.gif">
 </p>
 
 # Performance Analysis
