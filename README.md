@@ -118,8 +118,9 @@ IOR 1: 3.5, IOR 2: 0.05    |  IOR 1: 1.5, IOR 2: 0.2   | IOR 1: 1.5, IOR 2: 1.0
 ### Distance Falloff
 To provide a smooth transition between the scene and the background, I apply a distance falloff. To do this, when setting the color at an intersection in the closest hit shader, I linearly interpolate between the actual color and the background color. The interpolation value depends on the t value of the intersection, meaning the depth from the camera. When the intersection is farther from camera, the background color has a stronger influence, causing a smooth transition from the scene to the background. This transition can be sharpened or smoothed out by manipulating scaling the depth value. 
 
-# INSERT IMAGES WITH DIFFERENT FALLOFFS
-
+Smooth Falloff    |  Medium Falloff   | Sharp Falloff
+:-------------------------:|:-------------------------:|:-------------------------:
+![](images/SmoothTransition.gif)| ![](images/SpecularPower50.gif) |![](images/SharpTransition.gif)
 # Moving Camera Shot
 Many of the lighting, shading, and geometry features are especially evident when the camera is moving, enabling us to see the scene from different angles.
 
