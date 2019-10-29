@@ -28,7 +28,7 @@ typedef UINT16 Index;
 
 #define N_FRACTAL_ITERATIONS 5      // = <1,...>
 
-#define MAX_RAY_RECURSION_DEPTH 9   // ~ primary rays + reflections + shadow rays from reflected geometry.
+#define MAX_RAY_RECURSION_DEPTH 3   // ~ primary rays + reflections + shadow rays from reflected geometry.
 
 /**************** Scene *****************/
 static const XMFLOAT4 ChromiumReflectance = XMFLOAT4(0.549f, 0.556f, 0.554f, 1.0f);
