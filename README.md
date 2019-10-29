@@ -78,8 +78,10 @@ potential = 6x^5 - 15x^4 + 10x^3
 ```
 If the sum of the potentials of all the metaballs exceeds a certain threshold, then we consider that an intersection. To calculate the normal at that intersection, we use a gradient of the potential. 
 
-# VARYING POTENTIAL THRESHOLD IMAGES
-# SMALL STEP NUMBER IMAGES
+0.05 Threshold           |  0.5 Threshold               | 0.8 Threshold
+:-------------------------:|:-------------------------:|:-------------------------:
+![](images/Threshold0.05.gif)| ![](images/Threshold0.5.gif) |![](images/Threshold0.8.gif)
+
 
 ### Shading
 Shading is calculated in the closest hit shader. When we hit an object, we want to determine the color at that point on the object. The first step is finding the reflected color and determining if the point is in shadow. Next we apply Phong lighting and Fresnel reflection. The color found in Phon lighting gets added to the reflected color.
