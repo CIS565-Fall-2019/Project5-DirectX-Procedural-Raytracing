@@ -46,68 +46,75 @@ Once we have all of the data set up and passed to the GPU, which now knows how t
 
 ## GPU Raytracing
 ### Ray Generation
+Essential in raytracing is actually casting the rays into the scene.  To do this, we need to get a ray origin and direction for every pixel. Because we are casting rays from our camera eye, the ray origin will always be the position of the camera. To get the ray direction, we first must find the position of each pixel in world space. To do this, we convert the pixels from screen space to NDC space, and then project them to world space using the camera's projection matrix. Once we have this world space position of the pixel, we can get the direction from the camera's eye to the pixel, and that is our ray direction. There are two types of rays in our scene, radiance rays and shadow rays.
+
 #### Radiance Rays
+Radiance rays are rays that are traced until they hit the nearest object. Upon hitting that object, they're job is to determine the color that reaches the orign of the ray, which will ultimately be the color that reaches the camera lens and is displayed on screen. If the object is reflective, we cast another radiance ray to get the color of the reflection. We do this iteratively, capping the number of ray iterations to 3 to avoid infinite loops. If a ray misses all geometry in the scene, it returns the background color. 
+
 #### Shadow Rays
+In addition to casting reflection rays, we also cast shadow feeler rays each time we intersect an object. Shadow rays are rays cast directly towards the light source to determine if the intersection point is occluded and in shadow. These rays do not return a color or intersection information, rather just a boolean of whether the ray reached light or hit an object on the way. If the ray is in shadow, meaning it hits and object before reaching light, we darken the color value of the intersection.
+
 ### Geometry
+For all geometry, we essentially perform the same closest hit shader. This means that when we hit a piece of geometry, we trace a shadow ray to see if it is in shadow. We also trace a reflection ray using Snell's law to get the reflected color, and Schlick's approximation for Fresnel reflection. The shape of the geometry is determined by the intersection function
+
 #### Triangles
-Triangle intersection is built into DXR, so we do not need to implement a triangle intersection shader of our own. For the closest hit shader, we trace a shadow ray towards the light to see if the current point on the triangle is in shadow.  We also trace a reflection ray using Snell's law, applying Schlick's approximation for Fresnel reflection to the reflected color. 
+Triangle intersection is built into DXR, so we do not need to implement a triangle intersection shader of our own.
+
 #### Box
+Box intersection is essentially just intersecting with the AABB, as the AABB is already the shape of the box we want to render. The normal of the intersection point is determined by which face of the box was hit. 
+
 #### Sphere
+Sphere intersection is done by setting the ray equation equal to the equation for a sphere to determine which position along the ray is also a position on the sphere. This results in solving a quadratic equation. If there are two solutions, meaning the ray hits the sphere entering and leaving, we use the smaller one as the minimum hit position. To calculate the normal at this intersection, we take the normalized direction from the center to the hit position.
+
 #### Metaballs
+For metaballs intersection, we use raymarching. We first start by intersecting the metaball sphere os influence as if they were regular spheres. This gives us minimum and maximum bounds for where our intersection might occur. We then start at the minimum possible intersections and take incremental steps until we have hit the metaball surface. To check if we've hit the surface, we calculate the accumulated potential of the metaballs at that point, which is the sum of the potential for each individual metaball.
+
+The potential calculation for the metaballs is a quintic expression that depends on the distance of the position to the center of the metaball in relation to the radius of influence. If the position is outside the sphere of influence, the potential is 0, and if it directly at the center of the metaball, the potential is 1. Otherwise, the potential is calculated as follows:
+
+```
+distance = distance(currentPosition, metaballCenter)
+x = (radius - distance) / radius
+potential = 6x^5 - 15x^4 + 10x^3
+```
+If the sum of the potentials of all the metaballs exceeds a certain threshold, then we consider that an intersection. To calculate the normal at that intersection, we use a gradient of the potential. 
+
+# VARYING POTENTIAL THRESHOLD IMAGES
+# SMALL STEP NUMBER IMAGES
+
 ### Shading
+Shading is calculated in the closest hit shader. When we hit an object, we want to determine the color at that point on the object. The first step is finding the reflected color and determining if the point is in shadow. Next we apply Phong lighting and Fresnel reflection. The color found in Phon lighting gets added to the reflected color.
+
 #### Phong Lighting
+Phong lighting is a way to get specular highlights on materials in the direction of the light source.  First there is some ambient color to prevent areas of complete darkness. Next we calculate the diffuse coefficient, which applies lambertian shading. This makes it so that surfaces that face the light head on are brighter, and surfaces that face the light as a grazing angle do not get as much light. 
+
+Finally we get the specular coefficient. To do this, we get the reflected ray direction using the built in reflect function, reflecting the incident light ray about the normal of the intersection.  The coefficient can then be calculated as follows:
+```
+SpecularCoefficient = dot(reflectedRay, -incidentLightRay) ^ specularPower
+```
+The final color returned is as follows:
+```
+outputColor = ambientColor + albedo * (diffuseCoef + specularCoef)
+```
+The specular power affects how bright and pronounced the specular highlights are.
+
+# EXAMPLES WITH DIFFERENT SPECULAR POWERS
+
 #### Fresnel Reflections with Schlick's Approximation
+Fresnel reflection scales the reflection based on the incident angle of the incoming ray and the indices of refraction of the materials. The scale value we apply to the reflected color is calculated as follows:
+
+![](images/fresnel.PNG)
+
+In the above equation, n1 and n2 are the indices of refraction, and cos(theta) is the dot product of the normal and the incident angle.
+
+The indices of refraction influence how reflective the surface appears.
+
+# IMAGES WITH DIFFERENT INDICES OF REFRACTION
+
 ### Distance Falloff
+To provide a smooth transition between the scene and the background, I apply a distance falloff. To do this, when setting the color at an intersection in the closest hit shader, I linearly interpolate between the actual color and the background color. The interpolation value depends on the t value of the intersection, meaning the depth from the camera. When the intersection is farther from camera, the background color has a stronger influence, causing a smooth transition from the scene to the background. This transition can be sharpened or smoothed out by manipulating scaling the depth value. 
 
-## Concept Questions
-1. Ray tracing begins by firing off rays from the camera's perspective, with 1 ray corresponding to 1 pixel. Say the viewport is (1280 by 720), **how would you convert these pixel locations into rays**, with each ray being defined by an `Origin` and a `Direction`, such that `Ray = Origin + t * Direction`? Consult this [intro](https://www.scratchapixel.com/lessons/3d-basic-rendering/computing-pixel-coordinates-of-3d-point/mathematics-computing-2d-coordinates-of-3d-points) to camera transformations and this [explanation](http://webglfactory.blogspot.com/2011/05/how-to-convert-world-to-screen.html) of world-to-screen/screen-to-world space article to formulate an answer in your own words.
+# INSERT IMAGES WITH DIFFERENT FALLOFFS
 
-To convert the pixel locations into rays, we start by setting the origin of the ray to the camera's eye position, as we are casting rays from our camera. 
-
-To find the direction of the ray, we must find the pixel's world space position given its pixel space position. This process is the inverse of the process we use to convert world space positions into screen pixel positions. Say our pixel position is (x, y). The first step is taking the pixels from pixel space to homogenized screen space:
-```
-homogenizedScreenX = 2 * (pixelX / screenWidth) - 1
-homogenizedScreenY = 1 - 2 * (pixelY / screenHeight)
-```
-Next we want to transform our homogenized screen space point into unhomogenized screen spcae. In the reverse direction, to get from unhomogenized to homogenized, we divide all coordinates by the depth of the point from the camera, so now we need to multiply by this depth. To do this, we will need a z value, as z represents depth. We will set this z value to 1.  This is because we know that a z value of 1 in homogenized screen space corresponds to the far clip plane, a known camera value. Therefore, to convert our homgenized screen space point into unhomogenized space, we multiply the 3D point (homogenizedScreenX. homogenizedScreenY, 1) by the far clip plane depth:
-```
-unhomgenizedSceenSpace = (homogenizedScreenX, homogenizedScreenY, 1) * farclip
-```
-Note that here I chose the depth of the point to be the far clip plane. Because we are ultimately finding the direction from the camera to this point and there are infinitely many positions along this direction, it's depth does not actually matter, as we will normalize the direction anyways. Therefore, I choose the far clip plane as this is a known value, making the calculation simpler.
-
-The final step is to transform the unhomogenized screen space point by the inverse of the view projection matrix, which will bring it back into world space from screen and camera space. The inverse projection brings it back to camera space, and the inverse view matrix brings it to world space. Our transformation matrix looks like the following:
-```
-viewProjInverse = inverse(projMatrix * viewMatrix)
-```
-Our final world space position is the following:
-```
-worldSpacePoint = viewProjInverse * vec4(unhomogenizedScreenSpace, 1)
-```
-Note the extra 1 is because the inverse view projection matrix is a 4x4 matrix, so we must make the point a vec4. We choose 1 as the fourth coordinates as 1 allows the point to be translated in the transformation.
-
-Also note that in the implementation in the assignment, instead of performing the unhomogenization stage, we get our world space positions by transforming  (homogenizedScreenX, homogenizedScreenY, 0, 1) by a projection to world transformation matrix:
-```
-worldSpacePoint = projectionToWorld * vec4(homogenizedScreenX, homogenizedScreenY, 0, 1)
-```
-
-Now that we have the pixel's position in world space, we can find the ray diretion by finding the direction between the camera eye and the world space position:
-```
-origin = cameraEye
-direction = normalize(worldSpacePoint - cameraEye)
-```
-
-2. Each procedural geometry can be defined using 3 things: the `Axis-Aligned Bounding Box` (AABB) (e.g. bottom left corner at (-1,-1,-1) and top right corner at (1,1,1)) that surrounds it, the `Type` (e.g. Sphere) of the procedural geometry contained within the AABB, and an `Equation` describing the procedural geometry (e.g. Sphere: `(x - center)^2 = r^2`). **Using these 3 constructs, conceptually explain how one could go about rendering the procedural geometry**. To be specific, consider how to proceed when a ray enters the AABB of the procedural geometry.
-
-The first step will be to see if a ray has any chance of hitting the geometry. We check this by seeing if the ray intersects with the geometry's AABB. If not, we know there is no intersection. If it does hit the AABB, we then must check if the ray intersects the object. To do this, we first must get the type of geometry we are testing intersection with. The geometry's type determines the equation the describes it, and this equation is needed for intersection testing.
-
-Once we have this equation, we can use it to find the intersection with our geometry.  For analytic geometry, we know the equation of geometry and the equation of a point along a ray (x = rayOrigin + t * rayDirection). We can equate these two equations and solve for the position that is both on the ray and on the surface.  If there is no valid solution to this, we know that the ray missed the object.
-
-For volumetric geometry, for example the metaballs, we can use raymarching. In ray marching, we start at a point a certain distance along our ray and make small steps along the ray until hitting the object or missing it. The starting position is the position where our ray intersected the boudning box, as this is the farthest point along the ray that we know is not already past our geometry. We can use the equation for the metaballs to see if our current point evaluates to something that exceeds the threshold of being in the metaball. While we are outside the geometry, we continue to step forward along the ray in small steps. As soon as we go from being outside to inside, we know that the intersection occured between the current position and the position before the last step. If we never find our ray inside the geometry, it means there is no intersection. Of course we cannot infinitely ray march our ray to find that it never is inside, but we can see if it leaves the AABB without hitting the geometry. Once our ray is outside the AABB, if it has not yet hit the geometry, it never will and we can return no intersection.
-
-3. **Draw a diagram of the DXR Top-Level/Bottom-Level Acceleration Structures** of the following scene. Refer to section 2.6 below for an explanation of DXR Acceleration Structures. We require that you limit your answer to 1 TLAS. You may use multiple BLASes, but you must define the Geometry contained within each BLAS.
-
-![](images/ASDiagram.png)
-
-Each type of geometry, sphere, box, model, and plane, has its own BLAS, and then each instance of geometry has an instance in the TLAS that points to the type of geometry that it is. The instance would store the transformation of the geometry, the color, and the pose if it is a type of geometry that has a pose, as well as any other descriptive information about that instance of the geometry.
+# Performance Analysis
 
 
