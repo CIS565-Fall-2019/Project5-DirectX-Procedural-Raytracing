@@ -110,10 +110,18 @@ The indices of refraction influence how reflective the surface appears.
 
 # IMAGES WITH DIFFERENT INDICES OF REFRACTION
 
+
 ### Distance Falloff
 To provide a smooth transition between the scene and the background, I apply a distance falloff. To do this, when setting the color at an intersection in the closest hit shader, I linearly interpolate between the actual color and the background color. The interpolation value depends on the t value of the intersection, meaning the depth from the camera. When the intersection is farther from camera, the background color has a stronger influence, causing a smooth transition from the scene to the background. This transition can be sharpened or smoothed out by manipulating scaling the depth value. 
 
 # INSERT IMAGES WITH DIFFERENT FALLOFFS
+
+# Moving Camera Shot
+Many of the lighting, shading, and geometry features are especially evident when the camera is moving, enabling us to see the scene from different angles.
+
+<p align="center">
+  <img width=100% src="images/HighQualityMoving.gif">
+</p>
 
 # Performance Analysis
 
