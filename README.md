@@ -9,7 +9,7 @@ Project 5 - DirectX Procedural Raytracing**
 
 ![](images/showcase.gif)
 
-This project implements a GPU-parallelized raytracer using the DirectX Raytracing API. The raytracer can render triangle, box, sphere, and metaball primitives. It supports a phong shading model with a raytraced reflective component, atmospheric perspective fog, and raytraced shadows.
+This project implements a GPU-parallelized raytracer using the DirectX Raytracing API. The raytracer can render triangle, box, sphere, and metaball primitives. It uses axis-aligned bounding boxes around primitives to avoid evaluating primitive collisions on rays that miss each object's bounding volume. It supports a phong shading model with a raytraced reflective component, atmospheric perspective fog, and raytraced shadows.
 
 ![](images/raydepthfps.png)
 
