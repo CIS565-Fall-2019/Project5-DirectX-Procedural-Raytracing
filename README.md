@@ -45,13 +45,13 @@ We can look at the effect of the maximum ray recursion depth on performance (hig
 
 ![](images/FPSvsRayDepth.png)
 
-Contrary to what was expected, changing the maximum ray depth has little effect on performance. 
+Contrary to what was expected, changing the maximum ray depth has little effect on performance. Only reflection rays would potentially use the full recursion depth (a reflection ray hits another reflective surface, creating another reflection ray, and so on), so perhaps most of these rays are terminating early (by not intersecting anything within the scene).
 
-An important factor to consider is that changing the maximum ray depth has little apparent visual effect:
+An important factor to consider is that changing the maximum ray depth has little to no apparent visual effect:
 
 Max Depth: 3 | Max Depth: 10 | 
 --- | --- | 
-![](images/depth3.PNG) | ![](images/depth10.PNG) |
+![](images/depth3crop.PNG) | ![](images/depth10crop.PNG) |
 
 ## Bloopers
 
